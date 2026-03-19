@@ -1,0 +1,157 @@
+is_global = true
+build_property.TargetFramework = net8.0
+build_property.TargetFramework = net8.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = PartsControlSystem
+build_property.RootNamespace = PartsControlSystem
+build_property.ProjectDir = C:\Users\caparrar\Documents\PartsControlSystem\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 8.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\caparrar\Documents\PartsControlSystem
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 8.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Admin/AdminAccess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRtaW5BY2Nlc3MuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Home/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxEYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Home/IportalConfirmationForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJcG9ydGFsQ29uZmlybWF0aW9uRm9ybS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Home/Privacy.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxQcml2YWN5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/ImportData/DataEntry.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW1wb3J0RGF0YVxEYXRhRW50cnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/PartsDownload/DownloadPartsData.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFydHNEb3dubG9hZFxEb3dubG9hZFBhcnRzRGF0YS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Supplier/SupplierSetting.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3VwcGxpZXJcU3VwcGxpZXJTZXR0aW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/ActivityDetails.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcQWN0aXZpdHlEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/ActivityMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcQWN0aXZpdHlNb25pdG9yaW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/DE/_DEEvaluation.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcREVcX0RFRXZhbHVhdGlvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/IQC/_IQCKatakenFinish.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcSVFDXF9JUUNLYXRha2VuRmluaXNoLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/IQC/_IQCKatakenSubmission.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcSVFDXF9JUUNLYXRha2VuU3VibWlzc2lvbi5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/IQC/_IQCTestRun.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcSVFDXF9JUUNUZXN0UnVuLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingFabrication.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nRmFicmljYXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingPOIssuance.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nUE9Jc3N1YW5jZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingQuotationRequestApproval.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nUXVvdGF0aW9uUmVxdWVzdEFwcHJvdmFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingRequestOrder.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nUmVxdWVzdE9yZGVyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingTransfer.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nVHJhbnNmZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/QA/_QASpecialEvaluation.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcUUFcX1FBU3BlY2lhbEV2YWx1YXRpb24uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/Partials/SQC/_SQCDFM_QCDApproval.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcU1FDXF9TUUNERk1fUUNEQXBwcm92YWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/UpdatePerActivity/UpdateActivity.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcVXBkYXRlQWN0aXZpdHkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/ApprovalMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxBcHByb3ZhbE1vbml0b3JpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/FourMForm.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxGb3VyTUZvcm0uY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/_DataEntry.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxfRGF0YUVudHJ5LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/_FormApproval.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxfRm9ybUFwcHJvdmFsLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/_FormSending.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxfRm9ybVNlbmRpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_4MForm/_FormUpdate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcXzRNRm9ybVxfRm9ybVVwZGF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/caparrar/Documents/PartsControlSystem/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-soveckydww

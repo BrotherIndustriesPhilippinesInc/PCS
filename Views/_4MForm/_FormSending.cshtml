@@ -1,0 +1,167 @@
+﻿@model List<PartsControlSystem.Models._4mForm>
+
+<div class="table-responsive" style="max-height:480px; overflow:auto;">
+    <table id="formSendingTable" class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Supplier Submission Date</th>
+                <th>Target Implementation Date</th>
+                <th>Company Name</th>
+                <th>Supplier PIC</th>
+                <th colspan="3">Control Number</th>
+                <th>PQC PIC</th>
+                <th>Judgement</th>
+                <th>4M Form</th>
+                <th class="text-center">Send</th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                var groupedData = Model.GroupBy(x => x.ControlNumber).ToList();
+                int groupIndex = 1;
+
+                foreach (var group in groupedData)
+                {
+                    var header = group.First();
+                    string collapseId = $"collapse-sending-{groupIndex}";
+
+                    <!-- ================= PARENT ROW ================= -->
+                    <tr class="table-success"
+                        style="cursor:pointer"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#@collapseId"
+                        aria-expanded="false">
+
+                        <td>@groupIndex</td>
+                        <td>@header.SupplierSubmissionDate.ToString("yyyy-MM-dd")</td>
+                        <td>@header.TargetImplementationDate.ToString("yyyy-MM-dd")</td>
+                        <td>@header.CompanyName</td>
+                        <td>@header.SupplierPIC</td>
+
+                        <td colspan="3">
+                            <strong>@header.ControlNumber</strong>
+                            <span class="badge bg-secondary ms-2">
+                                @group.Count() item(s)
+                            </span>
+                        </td>
+
+                        <td>@header.PQCPIC</td>
+
+                        <!-- Judgement -->
+                        <td>
+                            <span class="badge bg-success text-light">@header.Status</span>
+                        </td>
+
+                        <!-- 4M form -->
+                        <td class="text-center">
+                            @if (!string.IsNullOrEmpty(header.AttachmentPath))
+                            {
+                                <a class="btn btn-sm btn-outline-primary"
+                                    href="@Url.Action("DownloadAttachmentPDF", "_4mForm", new { id = header.Id })">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No Attachment</span>
+                            }
+                        </td>
+
+                        <!-- SEND (PARENT LEVEL) -->
+                        <td class="text-center">
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary send-btn"
+                                    data-id="@header.Id"
+                                    title="Send Email">
+                                <i class="fa-solid fa-paper-plane me-1"></i> Send
+                            </button>
+                        </td>
+
+                        <!-- EXPAND -->
+                        <td class="text-center">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </td>
+                    </tr>
+
+                    <!-- ================= CHILD ROW ================= -->
+                    <tr class="collapse" id="@collapseId">
+                        <td colspan="11" class="p-0">
+                            <table class="table table-sm table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Type of Change</th>
+                                        <th>Part Code</th>
+                                        <th>Part Name</th>
+                                        <th>Change Reason</th>
+                                        <th>Judgement</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in group)
+                                    {
+                                        <tr>
+                                            <td>@item.TypeOfChange</td>
+                                            <td>@item.PartCode</td>
+                                            <td>@item.PartName</td>
+                                            <td>@item.ChangeReason</td>
+                                            <td>
+                                                <span class="badge bg-success text-light">@item.Status</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+
+                    groupIndex++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="11" class="text-center text-muted">
+                        No approved 4M form yet.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+    <!-- ================= STYLES ================= -->
+    <style>
+        #formSendingTable thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f8f9fa;
+            z-index: 2;
+        }
+
+        tr[aria-expanded="true"] .fa-chevron-down {
+            transform: rotate(180deg);
+            transition: transform 0.2s ease;
+        }
+    </style>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const params = new URLSearchParams(window.location.search);
+            const tab = params.get("tab");
+
+            if (tab) {
+                const trigger = document.querySelector(
+                    `[data-bs-target="#${tab}"]`
+                );
+
+                if (trigger) {
+                    const tabInstance = new bootstrap.Tab(trigger);
+                    tabInstance.show();
+                }
+            }
+        });
+    </script>

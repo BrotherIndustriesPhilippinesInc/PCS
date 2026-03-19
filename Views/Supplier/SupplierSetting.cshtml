@@ -1,0 +1,395 @@
+﻿
+@{
+	ViewData["Title"] = "Supplier Setting";
+}
+
+@model List<PartsControlSystem.Models.Supplier>
+
+<div class="container-fluid px-4 mt-4">
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0">
+            <h5 class="fw-semibold mb-0">
+                <i class="fa-solid fa-building me-2 text-primary"></i>
+                Register Supplier
+            </h5>
+        </div>
+
+        <div class="card-body">
+
+            <form id="supplierForm">
+
+                <div class="row g-3 align-items-end">
+
+                    <!-- Supplier Name -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Supplier Name</label>
+                        <input type="text" class="form-control" name="SupplierName" required>
+                    </div>
+
+                    <!-- Part Category -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Parts Category</label>
+                        <input type="text" class="form-control" name="PartsCategory" required>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Location</label>
+                        <select class="form-select" name="Location" required>
+                            <option value="">Select</option>
+                            <option value="Local">Local</option>
+                            <option value="Overseas">Overseas</option>
+                        </select>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">
+                            Email Address
+                            <small class="text-muted">(semicolon separated)</small>
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               name="Email"
+                               placeholder="email1@mail.com; email2@mail.com">
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="col-md-1 d-grid">
+                        <button type="button" id="saveSupplierBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-save"></i> Submit
+                        </button>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+   
+        <div class="card mt-4 mb-4 shadow">
+            <div class="card-header">
+                <i class="fas fa-table"></i>
+                List of Supplier
+            </div>
+            <div class="card-body">
+                <table id="supplierTable" class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Company Name</th>
+                            <th>Parts Category</th>
+                            <th>Local / Overseas</th>
+                            <th>Email</th>
+                            <th style="width:120px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+   
+</div>
+
+<!-- Update Supplier Modal -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content shadow">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fa-solid fa-pen me-2"></i>Edit Supplier
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="editSupplierId">
+
+                <div class="mb-3">
+                    <label class="form-label">Company Name</label>
+                    <input type="text" id="editSupplierName" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Parts Category</label>
+                    <input type="text" id="editPartsCategory" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Location</label>
+                    <select id="editLocation" class="form-select">
+                        <option value="Local">Local</option>
+                        <option value="Overseas">Overseas</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <textarea id="editEmail" class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" onclick="updateSupplier()">
+                    <i class="fa-solid fa-save me-1"></i>Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@* Supplier *@
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("saveSupplierBtn").addEventListener("click", function() {
+            const form = document.getElementById("supplierForm");
+            let emailField = form.elements["Email"].value.trim();
+
+            if (!emailField) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Email Required',
+                    text: 'Please enter at least one email.',
+                    confirmButtonColor: '#ffc107'
+                });
+                return;
+            }
+
+            // Remove all whitespace from the email field
+            emailField = emailField.replace(/\s+/g, '');
+
+            // Update the form field with cleaned email
+            form.elements["Email"].value = emailField;
+
+            const emails = emailField.split(";").filter(e => e.length > 0);
+            const invalidEmails = emails.filter(e => !validateEmail(e));
+
+            if (invalidEmails.length > 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Invalid Emails',
+                    html: `
+                        <p>Invalid email(s) detected:</p>
+                        <p><strong>${invalidEmails.join(", ")}</strong></p>
+                        <hr>
+                        <small>Multiple emails must be separated by semicolons (;)</small>
+                    `,
+                    confirmButtonColor: '#ffc107'
+                });
+                return;
+            }
+
+            const formData = new FormData(form);
+
+            // Log what's being sent
+            console.log("Form data being sent:");
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ': ' + pair[1]);
+            }
+
+            fetch('@Url.Action("AddSupplier", "Supplier")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(async res => {
+                const text = await res.text();
+                console.log("Response status:", res.status);
+                console.log("Response text:", text);
+
+                if (!res.ok) {
+                    throw new Error("HTTP error! status: " + res.status + ", response: " + text);
+                }
+
+                return text ? JSON.parse(text) : {};
+            })
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: data.message,
+                        confirmButtonColor: '#198754'
+                    });
+                    form.reset();
+                    const modalEl = document.getElementById('registerSupplierModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) {
+                        modal.hide();
+                    }
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        html: Array.isArray(data.errors) ? data.errors.join("<br>") : (data.errors || "Unknown error"),
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message || 'Failed to submit form.',
+                    confirmButtonColor: '#dc3545'
+                });
+            });
+        });
+
+        function validateEmail(email) {
+            const re = /^[a-zA-Z0-9._-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            return re.test(email);
+        }
+    });
+</script>
+
+<script>
+    let supplierDataTable;
+
+    // ================= LOAD TABLE =================
+    async function loadUserTable() {
+        const tableElement = document.getElementById('supplierTable');
+
+        const response = await fetch('@Url.Action("GetSupplier", "Supplier")');
+        const json = await response.json();
+        const supplier = json.data;
+
+        if (supplierDataTable) {
+            supplierDataTable.destroy();
+        }
+
+        supplierDataTable = new simpleDatatables.DataTable(tableElement, {
+            data: {
+                headings: [
+                    "Company Name",
+                    "Parts Category",
+                    "Local / Overseas",
+                    "Email",
+                    "Action"
+                ],
+                data: supplier.map(u => [
+                    u.supplierName,
+                    u.partsCategory,
+                    `<span class="badge ${u.location === "Local" ? "bg-success" : "bg-primary"}">${u.location}</span>`,
+                    u.email,
+                    `<div class="d-flex gap-1 justify-content-center">
+                        <button class="btn btn-sm btn-outline-primary edit-btn" data-id="${u.supplierId}">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-id="${u.supplierId}">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>`
+                ])
+            },
+            searchable: true,
+            fixedHeight: true,
+            perPage: 10
+        });
+    }
+
+    // ================= EVENT DELEGATION =================
+    document.addEventListener("click", function(e) {
+        // EDIT
+        if (e.target.closest(".edit-btn")) {
+            const id = e.target.closest(".edit-btn").dataset.id;
+            openEditModal(id);
+        }
+
+        // DELETE
+        if (e.target.closest(".delete-btn")) {
+            const id = e.target.closest(".delete-btn").dataset.id;
+            deleteSupplier(id);
+        }
+    });
+
+    // ================= OPEN EDIT MODAL =================
+    async function openEditModal(id) {
+        // Use Razor Url.Action
+        const url = '@Url.Action("GetSupplierById", "Supplier")' + '?id=' + id;
+
+        const response = await fetch(url);
+        const supplier = await response.json();
+
+        if (!supplier || supplier.success === false) {
+            Swal.fire("Error", supplier.message || "Supplier not found.", "error");
+            return;
+        }
+        document.getElementById("editSupplierId").value = supplier.supplierId;
+        document.getElementById("editSupplierName").value = supplier.supplierName;
+        document.getElementById("editPartsCategory").value = supplier.partsCategory;
+        document.getElementById("editLocation").value = supplier.location;
+        document.getElementById("editEmail").value = supplier.email;
+
+
+        new bootstrap.Modal(document.getElementById("editSupplierModal")).show();
+    }
+
+
+    // ================= UPDATE SUPPLIER =================
+    async function updateSupplier() {
+        const data = {
+            supplierId: document.getElementById("editSupplierId").value,
+            supplierName: document.getElementById("editSupplierName").value,
+            partsCategory: document.getElementById("editPartsCategory").value,
+            location: document.getElementById("editLocation").value,
+            email: document.getElementById("editEmail").value
+        };
+
+        const response = await fetch('@Url.Action("Save", "Supplier")', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire("Updated!", "Supplier updated successfully.", "success");
+            bootstrap.Modal.getInstance(document.getElementById("editSupplierModal")).hide();
+            loadUserTable();
+        } else {
+            Swal.fire("Error", result.message, "error");
+        }
+    }
+
+    // ================= DELETE SUPPLIER =================
+       async function deleteSupplier(id) {
+        const confirmResult = await Swal.fire({
+            title: "Delete Supplier?",
+            text: "This action cannot be undone!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#dc3545",
+            confirmButtonText: "Yes, delete it"
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        const url = '@Url.Action("Delete", "Supplier")' + '?id=' + id;
+
+        const response = await fetch(url, { method: "POST" });
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire("Deleted!", "Supplier email has been removed.", "success");
+            loadUserTable();
+        } else {
+            Swal.fire("Error", result.message, "error");
+        }
+    }
+
+
+    // ================= INIT =================
+    document.addEventListener("DOMContentLoaded", loadUserTable);
+</script>
+
+

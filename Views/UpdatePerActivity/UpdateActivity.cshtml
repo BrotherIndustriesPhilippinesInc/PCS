@@ -1,0 +1,106 @@
+﻿@model List<PartsControlSystem.ViewModels.ActivityCardViewModel>
+
+@{
+    ViewData["Title"] = "Update Per Activity";
+}
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        @foreach (var card in Model ?? Enumerable.Empty<PartsControlSystem.ViewModels.ActivityCardViewModel>())
+        {
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+                <div class="card mold-card modern-card h-100 position-relative"
+                     style="min-height: 350px; cursor: pointer;"
+                     onclick="location.href='@Url.Action("ActivityDetails", "UpdatePerActivity", new { activityName = card.ActivityName })';">
+
+                    <div class="card-header text-center fw-semibold text-white">
+                        @card.ActivityName
+                    </div>
+                    <div class="card-body">
+                        @foreach (var sec in card.SectionCounts)
+                        {
+                            <div class="stat-row">
+                                <span>@sec.Section</span>
+                                <span class="fw-bold">@sec.Count</span>
+                            </div>
+                        }
+
+                        <div class="">
+                            <div class="total-entry">
+                                TOTAL ENTRY <span>@card.SectionCounts.Sum(x => x.Count)</span>
+                            </div>
+                            <div class="total-delay mt-1">
+                                TOTAL DELAY <span>0</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <style>
+        .mold-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            border: none;
+            height: 600px;
+        }
+        
+        .modern-card {
+            transition: all 0.25s ease;
+        }
+
+        .modern-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #0d6efd, #0a58ca);
+            border-radius: 16px 16px 0 0;
+            padding: 14px;
+            font-size: 0.95rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: #ffffff;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .total-entry {
+            background: #ffffff;
+            color: #8F751F;
+            border: 1px solid #BF991C;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .total-delay {
+            background: #ffffff;
+            color: #C81622;
+            border: 1px solid #C81622;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+    </style>
+}
+    

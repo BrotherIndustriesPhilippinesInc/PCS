@@ -1,0 +1,153 @@
+﻿@model IEnumerable<PartsControlSystem.ViewModels.QASpecialEvaluationVM>
+
+@foreach (var item in Model)
+{
+    <div class="card shadow-sm mb-3 border-0"
+         data-controlno="@item.ControlNo"
+         data-endpoint="@Url.Action("SaveQASpecialEvaluation", "UpdatePerActivity")"
+         data-fields="NeedNoNeed,LeadTime,ActualFinishDate,Result,Remarks">
+
+        <div class="card-header py-2 bg-secondary text-white fw-semibold small">
+            QA – Special Evaluation
+        </div>
+
+        <div class="card-body py-3">
+            <!-- ROW 1 -->
+            <div class="row g-2 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Control No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ControlNo" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Section</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Section" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Tooling Type</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingType" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Category</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingCategory" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Model</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Model" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Part Code</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ChildPart" readonly />
+                </div>
+
+
+            </div>
+
+            <!-- ROW 2 -->
+            <div class="row g-2 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Part Name</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.PartName" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Tooling Mgt. No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingManagement" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Supplier</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Supplier" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">BIPH Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.BiphMoldNo" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Supplier Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.SupplierMoldNo" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Mold Maker</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.MoldMaker" readonly />
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="border-top my-2"></div>
+
+            <!-- ROW 3 -->
+            <div class="row g-2 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Limit Date</label>
+                    <input type="date" class="form-control form-control-sm" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Remaining Days</label>
+                    <input type="text" class="form-control form-control-sm" readonly />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Need / No Need?</label>
+                    <select class="form-select form-select-sm"
+                            name="NeedNoNeed"
+                            style="background-color: #FFF4B6; color: #333333"
+                            required>
+                        <option value="">-- Select --</option>
+                        <option value="Need">Need</option>
+                        <option value="No Need">No Need</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Lead Time (No. of Days)</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           name="LeadTime"
+                           style="background-color: #FFF4B6; color: #333333" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Actual Finish Date</label>
+                    <input type="date"
+                           class="form-control form-control-sm"
+                           name="ActualFinishDate"
+                           style="background-color: #FFF4B6; color: #333333" required />
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label small mb-1">Result (OK/NG/No Need)</label>
+                    <input type="text"
+                           class="form-control form-control-sm"
+                           name="Result"
+                           style="background-color: #FFF4B6; color: #333333" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label small mb-1">Remarks</label>
+                    <textarea class="form-control form-control-sm"
+                              name="Remarks"
+                              rows="2"></textarea>
+                </div>
+            </div>
+
+            <!-- ACTION ROW -->
+            <div class="row mt-3">
+                <div class="col text-end">
+                    <button type="button"
+                            class="btn btn-sm btn-success btn-save-approval">
+                        <i class="fa-solid fa-save me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

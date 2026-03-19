@@ -1,0 +1,259 @@
+﻿@model PartsControlSystem.Models._4mForm
+
+
+<div class="card mb-4 shadow">
+    <div class="card-header bg-secondary text-white">
+        <i class="fa-solid fa-file-lines me-2"></i>
+        Please fill in all fields.
+    </div>
+    <div class="p-2">
+        <form id="_4mForm" method="post" enctype="multipart/form-data" asp-controller="_4mForm" asp-action="Submit">
+            @Html.AntiForgeryToken() <!-- Must be inside the form -->
+
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-bordered align-middle w-100">
+                        <tbody>
+                            <tr>
+                                <th>Supplier Submission Date</th>
+                                <td>
+                                    <input type="date" name="SupplierSubmissionDate"
+                                           class="form-control"
+                                           value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Target Implementation Date</th>
+                                <td>
+                                    <input type="date" name="TargetImplementationDate"
+                                           class="form-control"
+                                           value="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Company Name</th>
+                                <td>
+                                    <input type="text"
+                                           name="CompanyName"
+                                           id="companyNameInput"
+                                           class="form-control"
+                                           autocomplete="off"
+                                           placeholder="Start typing company name..."
+                                           required>
+                                    <div id="companyNameSuggestions" class="autocomplete-suggestions"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Supplier PIC</th>
+                                <td><input type="text" name="SupplierPIC" class="form-control" required></td>
+                            </tr>
+                            <tr>
+                                <th>Type of Change</th>
+                                <td><input type="text" name="TypeOfChange" class="form-control" required></td>
+                            </tr>
+                            <tr>
+                                <th>Part Code</th>
+                                <td><input type="text" name="PartCode" class="form-control" required></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="col-md-6">
+                    <table class="table table-bordered align-middle w-100">
+                        <tbody>
+                            <tr>
+                                <th>Part Name</th>
+                                <td><input type="text" name="PartName" class="form-control" required></td>
+                            </tr>
+                            <tr>
+                                <th>Change Reason</th>
+                                <td><input type="text" name="ChangeReason" class="form-control" required></td>
+                            </tr>
+                            <tr>
+                                <th>PQC PIC</th>
+                                <td><input type="text" name="PQCPIC" class="form-control" required></td>
+                            </tr>
+                            <tr>
+                                <th>Attach Form</th>
+                                <td>
+                                    <input type="file" id="attachment" name="Attachment"
+                                           class="form-control"
+                                           accept=".pdf,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+                                           required>
+                                    <small class="text-muted">Excel (.xlsx / .xls) only</small>
+                                </td>
+                            </tr>
+
+
+                            <!-- PDF Preview -->
+                            <tr id="previewRow" style="display:none;">
+                                <th>Preview</th>
+                                <td>
+                                    <iframe id="pdfPreview" style="width:100%;height:200px;border:1px solid #ccc;"></iframe>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="2">
+                                    <button type="submit" id="submitBtn" class="btn btn-primary w-100">
+                                        <i class="bi bi-check-lg me-2"></i> Submit
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<style>
+    .autocomplete-suggestions {
+        position: absolute;
+        background: white;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        display: none;
+        width: calc(25% - 2px);
+    }
+
+    .autocomplete-suggestions.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-item.active {
+        background-color: #e9ecef;
+    }
+
+    .no-results {
+        padding: 10px 15px;
+        color: #6c757d;
+        font-style: italic;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const companyInput = document.getElementById('companyNameInput');
+        const suggestionsDiv = document.getElementById('companyNameSuggestions');
+        let companies = [];
+        let selectedIndex = -1;
+
+        // Fetch company names from server
+        fetch('@Url.Action("GetSupplierCompanies", "_4mForm")')
+            .then(res => res.json())
+            .then(data => {
+                companies = data;
+            })
+            .catch(err => console.error('Error loading companies:', err));
+
+        // Input event - show suggestions
+        companyInput.addEventListener('input', function() {
+            const searchText = this.value.trim().toLowerCase();
+            selectedIndex = -1;
+
+            if (searchText.length === 0) {
+                suggestionsDiv.classList.remove('show');
+                return;
+            }
+
+            // Filter companies
+            const filtered = companies.filter(company =>
+                company.toLowerCase().includes(searchText)
+            );
+
+            // Display suggestions
+            if (filtered.length > 0) {
+                suggestionsDiv.innerHTML = filtered.map(company =>
+                    `<div class="autocomplete-item" data-value="${company}">${company}</div>`
+                ).join('');
+                suggestionsDiv.classList.add('show');
+            } else {
+                suggestionsDiv.innerHTML = '<div class="no-results">No companies found</div>';
+                suggestionsDiv.classList.add('show');
+            }
+        });
+
+        // Click on suggestion
+        suggestionsDiv.addEventListener('click', function(e) {
+            if (e.target.classList.contains('autocomplete-item')) {
+                companyInput.value = e.target.getAttribute('data-value');
+                suggestionsDiv.classList.remove('show');
+            }
+        });
+
+        // Keyboard navigation
+        companyInput.addEventListener('keydown', function(e) {
+            const items = suggestionsDiv.querySelectorAll('.autocomplete-item');
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
+                updateActiveItem(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedIndex = Math.max(selectedIndex - 1, 0);
+                updateActiveItem(items);
+            } else if (e.key === 'Enter' && selectedIndex >= 0) {
+                e.preventDefault();
+                if (items[selectedIndex]) {
+                    companyInput.value = items[selectedIndex].getAttribute('data-value');
+                    suggestionsDiv.classList.remove('show');
+                }
+            } else if (e.key === 'Escape') {
+                suggestionsDiv.classList.remove('show');
+            }
+        });
+
+        function updateActiveItem(items) {
+            items.forEach((item, index) => {
+                item.classList.toggle('active', index === selectedIndex);
+            });
+
+            // Scroll into view
+            if (items[selectedIndex]) {
+                items[selectedIndex].scrollIntoView({ block: 'nearest' });
+            }
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!companyInput.contains(e.target) && !suggestionsDiv.contains(e.target)) {
+                suggestionsDiv.classList.remove('show');
+            }
+        });
+
+        // Focus event - show all if empty
+        companyInput.addEventListener('focus', function() {
+            if (this.value.trim() === '' && companies.length > 0) {
+                suggestionsDiv.innerHTML = companies.map(company =>
+                    `<div class="autocomplete-item" data-value="${company}">${company}</div>`
+                ).join('');
+                suggestionsDiv.classList.add('show');
+            }
+        });
+    });
+</script>

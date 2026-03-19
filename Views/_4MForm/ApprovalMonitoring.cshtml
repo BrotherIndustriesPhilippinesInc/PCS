@@ -1,0 +1,238 @@
+﻿@{
+    ViewData["Title"] = "4M Form Monitoring";
+}
+
+@model List<PartsControlSystem.Models._4mForm>
+
+<div class="container-fluid px-4">
+
+    <!-- Card Wrapper -->
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+
+                <!-- Supplier Submission Date -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Supplier Submission Date</label>
+                    <input type="date" id="filterSubmissionDate" class="form-control">
+                </div>
+
+                <!-- Target Implementation Date -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Target Implementation Date</label>
+                    <input type="date" id="filterTargetDate" class="form-control">
+                </div>
+
+                <!-- Company Name -->
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Company Name</label>
+                    <input type="text" id="filterCompany" class="form-control" placeholder="Search company...">
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Status</label>
+                    <select id="filterStatus" class="form-select">
+                        <option value="">All</option>
+                        <option value="FOR ROHS PIC APPROVAL">FOR ROHS PIC APPROVAL</option>
+                        <option value="APPROVED">APPROVED</option>
+                        <option value="REJECTED">REJECTED</option>
+                    </select>
+                </div>
+
+                <!-- Reset -->
+                <div class="col-md-1 text-end">
+                    <button id="resetFilters" class="btn btn-outline-warning w-100">
+                        Reset
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="card-header bg-white border-0 pb-0">
+
+            <div class="table-responsive" style="max-height:480px; overflow:auto;">
+                <table id="formSendingTable" class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Supplier Submission Date</th>
+                            <th>Target Implementation Date</th>
+                            <th>Company Name</th>
+                            <th>Supplier PIC</th>
+                            <th colspan="3">Control Number</th>
+                            <th>PQC PIC</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            var groupedData = Model.GroupBy(x => x.ControlNumber).ToList();
+                            int groupIndex = 1;
+
+                            foreach (var group in groupedData)
+                            {
+                                var header = group.First();
+                                string collapseId = $"collapse-sending-{groupIndex}";
+
+                                <!-- ================= PARENT ROW ================= -->
+                                <tr class="table-success parent-row"
+                                    data-submission="@header.SupplierSubmissionDate.ToString("yyyy-MM-dd")"
+                                    data-target="@header.TargetImplementationDate.ToString("yyyy-MM-dd")"
+                                    data-company="@header.CompanyName.ToLower()"
+                                    data-status="@header.Status"
+                                    style="cursor:pointer"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@collapseId"
+                                    aria-expanded="false">
+
+                                    <td>@groupIndex</td>
+                                    <td>@header.SupplierSubmissionDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@header.TargetImplementationDate.ToString("yyyy-MM-dd")</td>
+                                    <td>@header.CompanyName</td>
+                                    <td>@header.SupplierPIC</td>
+
+                                    <td colspan="3">
+                                        <strong>@header.ControlNumber</strong>
+                                        <span class="badge bg-secondary ms-2">
+                                            @group.Count() item(s)
+                                        </span>
+                                    </td>
+
+                                    <td>@header.PQCPIC</td>
+
+                                    <!-- Judgement -->
+                                    <td>
+                                        <span class="badge bg-success text-light">@header.Status</span>
+                                    </td>
+
+                                    <!-- EXPAND -->
+                                    <td class="text-center">
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </td>
+                                </tr>
+
+                                <!-- ================= CHILD ROW ================= -->
+                                <tr class="collapse" id="@collapseId">
+                                    <td colspan="11" class="p-0">
+                                        <table class="table table-sm table-striped mb-0">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>Type of Change</th>
+                                                    <th>Part Code</th>
+                                                    <th>Part Name</th>
+                                                    <th>Change Reason</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in group)
+                                                {
+                                                    <tr>
+                                                        <td>@item.TypeOfChange</td>
+                                                        <td>@item.PartCode</td>
+                                                        <td>@item.PartName</td>
+                                                        <td>@item.ChangeReason</td>
+                                                        <td>
+                                                            <span class="badge bg-success text-light">@item.Status</span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                groupIndex++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="11" class="text-center text-muted">
+                                    No approved 4M form yet.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <script>
+                    const submissionInput = document.getElementById("filterSubmissionDate");
+                    const targetInput = document.getElementById("filterTargetDate");
+                    const companyInput = document.getElementById("filterCompany");
+                    const statusSelect = document.getElementById("filterStatus");
+                    const resetBtn = document.getElementById("resetFilters");
+
+                    const rows = document.querySelectorAll(".parent-row");
+
+                    function applyFilters() {
+                        rows.forEach(row => {
+                            const submission = row.dataset.submission;
+                            const target = row.dataset.target;
+                            const company = row.dataset.company;
+                            const status = row.dataset.status;
+
+                            let show = true;
+
+                            if (submissionInput.value && submission !== submissionInput.value)
+                                show = false;
+
+                            if (targetInput.value && target !== targetInput.value)
+                                show = false;
+
+                            if (companyInput.value && !company.includes(companyInput.value.toLowerCase()))
+                                show = false;
+
+                            if (statusSelect.value && status !== statusSelect.value)
+                                show = false;
+
+                            row.style.display = show ? "" : "none";
+
+                            // hide child row also
+                            const nextRow = row.nextElementSibling;
+                            if (nextRow && nextRow.classList.contains("collapse")) {
+                                nextRow.style.display = show ? "" : "none";
+                            }
+                        });
+                    }
+
+                    submissionInput.addEventListener("change", applyFilters);
+                    targetInput.addEventListener("change", applyFilters);
+                    companyInput.addEventListener("keyup", applyFilters);
+                    statusSelect.addEventListener("change", applyFilters);
+
+                    resetBtn.addEventListener("click", () => {
+                        submissionInput.value = "";
+                        targetInput.value = "";
+                        companyInput.value = "";
+                        statusSelect.value = "";
+                        applyFilters();
+                    });
+                </script>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- ================= STYLES ================= -->
+        <style>
+            #formSendingTable thead th {
+                position: sticky;
+                top: 0;
+                background-color: #f8f9fa;
+                z-index: 2;
+            }
+
+            tr[aria-expanded="true"] .fa-chevron-down {
+                transform: rotate(180deg);
+                transition: transform 0.2s ease;
+            }
+        </style>
+

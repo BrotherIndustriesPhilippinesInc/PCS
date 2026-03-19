@@ -1,0 +1,508 @@
+﻿@{
+    ViewData["Title"] = "Admin Access";
+}
+
+@model List<PartsControlSystem.Models.User>
+
+<div class="card mb-4 shadow">
+    <div class="card-header bg-info">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fa-solid fa-user me-2"></i>
+                User Account
+            </div>
+
+        </div>
+
+        <div class="modal fade" id="registerSupplierModal" tabindex="-1" aria-labelledby="registerSupplierModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-md modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="registerSupplierModalLabel">
+                            <i class="fa-solid fa-building me-2"></i>Register Supplier
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form id="supplierForm">
+
+                            <!-- Supplier Name -->
+                            <div class="mb-3">
+                                <label class="form-label">Name of Supplier</label>
+                                <input type="text" class="form-control" name="SupplierName" required>
+                            </div>
+
+                            <!-- Part Category -->
+                            <div class="mb-3">
+                                <label class="form-label">Part Category</label>
+                                <input type="text" class="form-control" name="PartsCategory" required>
+                            </div>
+
+                            <!-- Local / Supplier -->
+                            <div class="mb-3">
+                                <label class="form-label">Local / Supplier</label>
+                                <select class="form-select" name="Location" required>
+                                    <option value="">-- Select --</option>
+                                    <option value="Local">Local</option>
+                                    <option value="Oversea">Overseas</option>
+                                </select>
+                            </div>
+
+                            <!-- Email Address -->
+                            <div class="mb-3">
+                                <label class="form-label">Email Address <small><i>(Enter emails separated by semicolon)</i></small></label>
+                                <textarea class="form-control" name="Email" rows="3" placeholder="example1@mail.com; example2@mail.com"></textarea>
+                            </div>
+
+                        </form>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="saveSupplierBtn" class="btn btn-primary">
+                            <i class="fa-solid fa-save me-1"></i>Save Supplier
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        
+    </div>
+    <div class="p-2">
+        <form id="employeeForm">
+            <div class="row">
+                <!-- Left column -->
+                <div class="col-md-6">
+                    <table class="table table-bordered align-middle w-100">
+                        <tbody>
+                            <tr>
+                                <th style="width: 30%;">Employee No.</th>
+                                <td>
+                                    <input oninput="this.value = this.value.toUpperCase();" type="text" id="employeeNo" class="form-control" placeholder="Type employee number and press enter." required>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>ADID</th>
+                                <td>
+                                    <input type="text" id="adid" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>First Name</th>
+                                <td>
+                                    <input type="text" id="firstName" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Last Name</th>
+                                <td>
+                                    <input type="text" id="lastName" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Right column -->
+                <div class="col-md-6">
+                    <table class="table table-bordered align-middle w-100">
+                        <tbody>
+                           
+                            <tr>
+                                <th>Email</th>
+                                <td>
+                                    <input type="text" id="email" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Section</th>
+                                <td>
+                                    <input type="text" id="section" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Department</th>
+                                <td>
+                                    <input type="text" id="department" class="form-control" placeholder="Auto fill" readonly>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Authority</th>
+                                <td>
+                                    <select id="authority" class="form-select" required>
+                                        <option value="" selected disabled>Select authority</option>
+                                        <option value="Admin">Admin</option>
+                                        <option value="User">User</option>
+                                    </select>
+                                </td>
+                            </tr> 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @* Position not visible in form *@
+            <input type="hidden" id="position" name="position" />
+
+            <div class="d-flex justify-content-end align-items-center gap-2 mt-2">
+                <select id="approver" class="form-select w-auto" name="ApproverRole" required>
+                    <option value="" selected disabled>-- Select Approver Role--</option>
+                    <option value="N/A">N/A</option>
+                    <option value="ROHS PIC">ROHS PIC</option>
+                    <option value="PSUG PIC">PSUG PIC</option>
+                    <option value="SUPERVISOR">SUPERVISOR</option>
+                    <option value="MANAGER">MANAGER</option>
+                </select>
+
+                <button type="submit" class="btn btn-primary px-4">
+                    Create Account
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+<form asp-action="DeleteUsers" asp-controller="Admin" method="post" id="deleteForm">
+    <div class="card mb-4 shadow">
+        <div class="card-header">
+            <i class="fas fa-table"></i>
+            List of Users
+        </div>
+        <div class="card-body">
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th style="width: 35px;" class="d-flex justify-content-center align-items-center">
+                            <input type="checkbox" id="selectAll" class="form-check-input">
+                        </th>
+                        <th>Employee ID</th>
+                        <th>ADID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Section</th>
+                        <th>Department</th>
+                        <th>Authority</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var user in Model)
+                        {
+                            <tr>
+                                <td class="d-flex justify-content-center align-items-center">
+                                    <input type="checkbox" name="userIds" value="@user.EmployeeId" class="row-check form-check-input">
+                                </td>
+                                <td>@user.EmployeeId</td>
+                                <td>@user.ADID</td>
+                                <td>@user.FirstName @user.LastName</td>
+                                <td>@user.Email</td>
+                                <td>@user.Section</td>
+                                <td>@user.Department</td>
+                                <td>@user.Authority</td>
+                                <td>@user.Created</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center">No users found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end m-3">
+            <button type="button" class="btn btn-danger px-4" id="deleteBtn">Delete User</button>
+        </div>
+    </div>
+</form>
+
+
+@section Scripts {
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // global Toastr configuration
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "4000"
+        }
+    </script>
+
+
+    <script>
+        //Script for auto fill-out all input fields
+
+        const empNo = document.getElementById("employeeNo");
+
+        //Prevent form refresh on Enter key
+        empNo.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                this.blur(); // triggers the 'change' event below
+            }
+        });
+
+        empNo.addEventListener("change", function () {
+            const empId = this.value.trim().toUpperCase();
+            this.value = empId;
+
+            if (!empId) return;
+
+
+            const fetchUrl = '@Url.Action("GetDetailsById", "Employee")' + 
+                     '?id=' + encodeURIComponent(empId);
+
+
+            fetch(fetchUrl)
+                .then(async response => {
+                    const contentType = response.headers.get("content-type") || "";
+
+                    if (!response.ok || !contentType.includes("application/json")) {
+                        const errorHtml = await response.text();
+                        console.error("Expected JSON, got:", errorHtml);
+                        throw new Error("Server returned invalid response.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data || data.success === false) {
+                        throw new Error(data.message || "User not found.");
+                    }
+
+                    document.getElementById("adid").value = data.adid || "";
+                    document.getElementById("firstName").value = data.firstName || "";
+                    document.getElementById("lastName").value = data.lastName || "";
+                    document.getElementById("email").value = data.email || "";
+                    document.getElementById("section").value = data.section || "";
+                    document.getElementById("department").value = data.department || "";
+
+                    // Populate hidden Position
+                    document.getElementById("position").value = data.position || "";
+                })
+                .catch(error => {
+                  console.error("Error fetching employee data:", error);
+                });
+        })
+
+    </script>
+
+    @* Script for saving user account *@
+    <script>
+        document.getElementById("employeeForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const data = {
+                EmployeeId: document.getElementById("employeeNo").value.trim(),
+                ADID: document.getElementById("adid").value.trim(),
+                FirstName: document.getElementById("firstName").value.trim(),
+                LastName: document.getElementById("lastName").value.trim(),
+                Email: document.getElementById("email").value.trim(),
+                Section: document.getElementById("section").value.trim(),
+                Department: document.getElementById("department").value.trim(),
+                Position: document.getElementById("position").value.trim(),
+                Authority: document.getElementById("authority").value.trim(),
+                ApproverRole: document.getElementById("approver").value.trim()
+            };
+
+            // ✅ Validation using SweetAlert2
+            for (const [key, value] of Object.entries(data)) {
+                if (!value) {
+                    await Swal.fire({
+                        icon: 'warning',
+                        title: 'Missing Field',
+                        text: `Please fill out ${key}`,
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return;
+                }
+            }
+
+            // ✅ Confirm submission
+            const confirmResult = await Swal.fire({
+                title: 'Confirm Submission',
+                text: "Do you want to create this account?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, create it!',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            });
+
+            if (!confirmResult.isConfirmed) return;
+
+            try {
+                const response = await fetch('@Url.Action("CreateAccount", "Admin")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // await Swal.fire({
+                    //     icon: 'success',
+                    //     title: 'Account Created!',
+                    //     text: 'User has been successfully registered.',
+                    //     timer: 1500,
+                    //     showConfirmButton: false
+                    // });
+
+                    toastr.success('User has been successfully registered!');
+
+                    document.getElementById("employeeForm").reset();
+
+                    // Reload table without page refresh
+                    await loadUserTable();
+
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: result.message || 'Something went wrong.'
+                    });
+                }
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Server Error',
+                    text: 'Unable to connect to server.'
+                });
+            }
+        });
+    </script>
+
+    <script>
+        let userDataTable; // global variable to hold the instance
+
+        // Function to load users from the database
+        async function loadUserTable() {
+            const tableElement = document.getElementById('userTable');
+            const response = await fetch('@Url.Action("GetUsers", "Admin")');
+            const json = await response.json();
+            const users = json.data;
+
+            // Destroy and re-create if table already exists
+            if (userDataTable) {
+                userDataTable.destroy();
+            }
+
+            // Recreate the DataTable
+            userDataTable = new simpleDatatables.DataTable(tableElement, {
+                data: {
+                    headings: [
+                        "Select",
+                        "Employee ID",
+                        "ADID",
+                        "Full Name",
+                        "Email",
+                        "Section",
+                        "Department",
+                        "Authority",
+                        "Created"
+                    ],
+                    data: users.map(u => [
+                         `<input type="checkbox" class="row-check form-check-input" value="${u.employeeId}" />`,
+                        u.employeeId,
+                        u.adid,
+                        u.fullName,
+                        u.email,
+                        u.section,
+                        u.department,
+                        u.authority,
+                        u.created
+                    ])
+                },
+                searchable: true,
+                fixedHeight: true,
+                perPage: 10
+            });
+        }
+
+        // // Load on page start
+        window.addEventListener('DOMContentLoaded', loadUserTable);
+
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            // Select all checkboxes
+            $("#selectAll").click(function () {
+                $(".row-check").prop('checked', this.checked);
+            });
+
+            $("#deleteBtn").click(function () {
+                // Get checked checkboxes inside DataTable
+                var selectedIds = [];
+
+                // For simple-datatables, query checkboxes inside the table wrapper
+                $("#userTable").find(".row-check:checked").each(function () {
+                    selectedIds.push($(this).val());
+                });
+
+                if (selectedIds.length === 0) {
+                    toastr.warning("Please select at least one user.");
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to delete ${selectedIds.length} user(s).`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Submit via AJAX
+                        $.ajax({
+                            url: '@Url.Action("DeleteUsers", "Admin")',
+                            type: 'POST',
+                            data: { userIds: selectedIds }, // array of selected IDs
+                            traditional: true,              // <- important for model binding
+                            success: function (res) {
+                                toastr.success(res.successMessage || `${selectedIds.length} user(s) deleted successfully!`);
+                                loadUserTable(); // reload table
+                            },
+                            error: function () {
+                                toastr.error("Failed to delete users.");
+                            }
+                        });
+                    }
+                });
+
+                // Show success message if exists
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <text>toastr.success("@TempData["SuccessMessage"]");</text>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <text>toastr.error("@TempData["ErrorMessage"]");</text>
+                }
+            });
+        });
+    </script>
+
+
+    
+
+}
+

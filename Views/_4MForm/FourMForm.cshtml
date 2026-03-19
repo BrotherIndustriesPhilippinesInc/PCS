@@ -1,0 +1,743 @@
+﻿@{
+    ViewData["Title"] = "4M Form Automation";
+}
+
+@model PartsControlSystem.ViewModels.FourMFormViewModel
+
+
+<div class="container-fluid px-4">
+
+    <!-- Card Wrapper -->
+    <div class="card shadow-sm border-0">
+
+        <!-- Header -->
+        <div class="card-header bg-white border-0 pb-0">
+            <!-- Tabs -->
+            <ul class="nav nav-pills nav-fill gap-2" id="fourMTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active shadow-sm"
+                            id="data-entry-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#data-entry"
+                            type="button"
+                            role="tab">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>
+                        4M Data Entry
+                    </button>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link shadow-sm"
+                            id="form-update-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#form-update"
+                            type="button"
+                            role="tab">
+                        <i class="fa-solid fa-file-pen me-2"></i>
+                        4M Form Update
+                    </button>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link shadow-sm"
+                            id="form-update-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#form-approval"
+                            type="button"
+                            role="tab">
+                        <i class="fa-solid fa-user-check me-2"></i>
+                        4M System Approval
+                    </button>
+                </li>
+
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link shadow-sm"
+                            id="system-approval-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#form-sending"
+                            type="button"
+                            role="tab">
+                        <i class="fa-solid fa-envelope me-2"></i>
+                        4M Form Sending
+                    </button>
+                </li>
+
+            </ul>
+        </div>
+
+        <!-- Content -->
+        <div class="card-body pt-4">
+            <div class="tab-content" id="fourMTabContent">
+
+                <div class="tab-pane fade show active" id="data-entry" role="tabpanel">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-semibold ">4M Data Entry</h6>
+                            <div>
+                                <!-- Download Excel Template -->
+                                <a href="javascript:void(0);"
+                                   class="btn btn-outline-success"
+                                   onclick="confirmDownload()">
+                                    <i class="fa-solid fa-file-excel me-2"></i>
+                                    Download Template
+                                </a>
+
+
+                                <!-- Open Batch Entry Modal -->
+                                <button type="button"
+                                        class="btn btn-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#batchEntryModal">
+                                    <i class="fa-solid fa-layer-group me-2"></i>
+                                    Batch Data Entry
+                                </button>
+                            </div>
+                          
+
+                            <div class="modal fade" id="batchEntryModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-md">
+                                    <div class="modal-content rounded-4 shadow">
+
+                                        <!-- Header -->
+                                        <div class="modal-header bg-success text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fa-solid fa-file-excel me-2"></i>
+                                                Batch Upload
+                                            </h5>
+                                            <button type="button"
+                                                    class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <!-- Body -->
+                                        <div class="modal-body">
+                                            <p class="mb-3">
+                                                Please upload the completed <strong>4M Data entry template</strong> and the
+                                                corresponding <strong>4M Form attachment</strong>.
+                                            </p>
+
+                                            <form id="batchUploadForm" method="post"
+                                                  enctype="multipart/form-data"
+                                                  asp-action="BatchUpload"
+                                                  asp-controller="_4mForm">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <!-- Excel Template -->
+                                                <div class="mb-3">
+                                                    <label class="form-label">
+                                                        <i class="fa-solid fa-file-excel me-1 text-success"></i>
+                                                        Excel Template
+                                                    </label>
+                                                    <input type="file"
+                                                           name="excelFile"
+                                                           class="form-control"
+                                                           accept=".xls,.xlsx"
+                                                           required />
+                                                    <small class="text-muted">
+                                                        Allowed formats: .xls, .xlsx
+                                                    </small>
+                                                </div>
+
+                                                <!-- 4M Form Attachment (Excel) -->
+                                                <div class="mb-3">
+                                                    <label class="form-label">
+                                                        <i class="fa-solid fa-table me-1 text-primary"></i>
+                                                        4M Form Attachment (Excel)
+                                                    </label>
+                                                    <input type="file"
+                                                           name="attachmentFile"
+                                                           class="form-control"
+                                                           accept=".xls,.xlsx"
+                                                           required />
+                                                    <small class="text-muted">
+                                                        Allowed formats: .xls, .xlsx
+                                                    </small>
+                                                </div>
+
+                                                <div class="alert alert-warning small">
+                                                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                                                    Ensure both Excel files follow the official template structure.
+                                                </div>
+
+                                                <!-- Footer Buttons -->
+                                                <div class="d-flex justify-content-end">
+                                                    <button type="button"
+                                                            class="btn btn-secondary me-2"
+                                                            data-bs-dismiss="modal">
+                                                        Cancel
+                                                    </button>
+
+                                                    <button type="submit"
+                                                            class="btn btn-success">
+                                                        <i class="fa-solid fa-cloud-arrow-up me-1"></i>
+                                                        Upload
+                                                    </button>
+                                                </div>
+                                            </form>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <!-- Data Entry Content -->
+                        <div class="tab-pane fade show active" id="data-entry" role="tabpanel">
+                            @await Html.PartialAsync("_DataEntry", Model.DataEntry)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="form-update" role="tabpanel">
+                    <div class="p-3 bg-light rounded-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-semibold mb-0">4M Form Update</h6>
+
+                            <!-- Search Input -->
+                            <div class="mb-0" style="min-width: 300px;">
+                                <div class="input-group shadow rounded-pill overflow-hidden border border-primary border-2">
+                                    <span class="input-group-text bg-primary text-white border-0">
+                                        <i class="fa-solid fa-magnifying-glass"></i>
+                                    </span>
+                                    <input type="text" id="search4M"
+                                           class="form-control border-0 fw-semibold"
+                                           placeholder="Type keyword and hit Enter"
+                                           style="background-color: #e7f1ff; color: #0d6efd;">
+                                </div>
+                            </div>
+                        </div>
+
+                       
+
+                        <!-- Container for partial view -->
+                        <div id="formUpdateContainer">
+                            @* initial load (optional) *@
+                            @await Html.PartialAsync("_FormUpdate", Model.FormUpdateList)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="form-approval" role="tabpanel">
+                    <div class="p-3 bg-light rounded-3">
+                        <h6 class="fw-semibold mb-2">4M System Approval</h6>
+                        <!-- Approval Content -->
+
+
+                        <div class="tab-pane fade show active" id="form-approval" role="tabpanel">
+                             <div id="formApprovalContainer">
+                                @await Html.PartialAsync("_FormApproval", Model.ApprovalList)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="form-sending" role="tabpanel">
+                    <div class="p-3 bg-light rounded-3">
+                        <h6 class="fw-semibold mb-2">4M Sending</h6>
+                        <!-- Approval Content -->
+                       
+                        <div class="tab-pane fade show active" id="form-approval" role="tabpanel">
+                            <div id="formSendingContainer">
+                                @await Html.PartialAsync("_FormSending", Model.SendingList)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+@section Scripts {
+
+    @* <--- MAIN FORM SCRIPT START HERE ---> *@
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById("_4mForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Submit 4M Form?',
+                text: 'Please confirm before submitting.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Submit',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#0d6efd'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    const form = document.getElementById("_4mForm");
+                    const submitBtn = document.getElementById("submitBtn");
+
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
+
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'RequestVerificationToken': form.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Submitted!',
+                                html: `Control No:<br><b>${data.controlNumber}</b>`,
+                                confirmButtonColor: '#0d6efd'
+                            }).then(() => {
+                                form.reset();
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Submit';
+                                document.getElementById("previewRow").style.display = "none";
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message,
+                                confirmButtonColor: '#dc3545'
+                            });
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Submit';
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Unexpected Error',
+                            text: err.toString(),
+                            confirmButtonColor: '#dc3545'
+                        });
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="bi bi-check-lg me-2"></i> Submit';
+                    });
+                }
+            });
+        });
+
+        // PDF preview
+        document.getElementById("attachment").addEventListener("change", function() {
+            const file = this.files[0];
+            if (file && file.type === "application/pdf") {
+                const url = URL.createObjectURL(file);
+                document.getElementById("pdfPreview").src = url;
+                document.getElementById("previewRow").style.display = "";
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            $('#batchUploadForm').submit(function (e) {
+                e.preventDefault(); // prevent normal POST
+
+                var formData = new FormData(this); // grab form data including files
+
+                // Disable upload button to prevent double submit
+                var $submitBtn = $(this).find('button[type="submit"]');
+                $submitBtn.prop('disabled', true);
+
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (res.success) {
+                            // Show success alert
+                            Swal.fire({
+                                title: 'Success!',
+                                html: res.message, // shows Control Number + inserted/skipped rows
+                                icon: 'success'
+                            }).then(() => {
+                                // Close modal
+                                $('#batchEntryModal').modal('hide');
+
+                                // Reset form
+                                $('#batchUploadForm')[0].reset();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error!',
+                                html: res.message,
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            title: 'Error!',
+                            text: 'An unexpected error occurred.',
+                            icon: 'error'
+                        });
+                    },
+                    complete: function () {
+                        // Re-enable upload button
+                        $submitBtn.prop('disabled', false);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
+        function confirmDownload() {
+            Swal.fire({
+                title: 'Download Excel Template?',
+                text: 'This will download the official 4M Form Excel template.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, download',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '@Url.Action("Download4MTemplate", "_4mForm")';
+                }
+            });
+        }
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById("search4M");
+            const container = document.getElementById("formUpdateContainer");
+
+            function loadTable(keyword = "") {
+                fetch(`@Url.Action("LoadFormUpdatePartial", "_4mForm")?keyword=${encodeURIComponent(keyword)}`)
+                    .then(response => response.text())
+                    .then(html => {
+                   
+                        container.innerHTML = html;
+                    })
+                    .catch(err => console.error("Error loading table:", err));
+            }
+
+            searchInput.addEventListener("keydown", function(e) {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    loadTable(searchInput.value.trim());
+                }
+            });
+
+            // load initial table
+            loadTable();
+        });
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get query params
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabToShow = urlParams.get('tab');
+
+            if(tabToShow){
+                // Use Bootstrap 5 Tab API to show the requested tab
+                const tabTriggerEl = document.querySelector(`#${tabToShow}-tab`);
+                if(tabTriggerEl){
+                    const tab = new bootstrap.Tab(tabTriggerEl);
+                    tab.show();
+                }
+            }
+        });
+    </script>
+
+
+    @* <--- MAIN FORM SCRIPT END HERE ---> *@
+
+    @* <--- _FORMUPDATE FORM SCRIPT START HERE ---> *@
+
+    @* For updating of 4M form in _FormUpdate*@
+    <script>
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.upload-btn')) {
+                const btn = e.target.closest('.upload-btn');
+                const controlNumber = btn.getAttribute('data-control');
+                submitUpdate(controlNumber);
+            }
+        });
+
+        function submitUpdate(controlNumber) {
+            const form = document.getElementById(`updateForm-${controlNumber}`);
+            const fileInput = form.querySelector('input[name="UpdatedPdf"]');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                Swal.fire({ icon: 'warning', title: 'No file selected', text: 'Please select a 4M Form file before uploading.', confirmButtonColor: '#ffc107' });
+                return;
+            }
+
+            const uploadBtn = form.closest('.modal-content').querySelector('button.btn-primary');
+            uploadBtn.disabled = true;
+            uploadBtn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Uploading...`;
+
+            const formData = new FormData(form);
+
+            fetch('@Url.Action("Update4mFormPdf", "_4mForm")', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'RequestVerificationToken': form.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up me-2"></i> Upload`;
+
+                if (data.success) {
+                    Swal.fire({ icon: 'success', title: 'Form updated!', text: data.message || '', confirmButtonColor: '#0d6efd' })
+                    .then(() => {
+                        const modalEl = document.getElementById(`updateModal-${controlNumber}`);
+                        bootstrap.Modal.getInstance(modalEl)?.hide();
+                        fileInput.value = "";
+                        refreshFormUpdateTable(document.getElementById('search4M')?.value.trim() || '');
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Upload failed', text: data.message || 'Something went wrong', confirmButtonColor: '#dc3545' });
+                }
+            })
+            .catch(err => {
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up me-2"></i> Upload`;
+                Swal.fire({ icon: 'error', title: 'Unexpected error', text: err.toString(), confirmButtonColor: '#dc3545' });
+            });
+        }
+
+        // Refresh partial table
+        function refreshFormUpdateTable(keyword = '') {
+            fetch(`@Url.Action("LoadFormUpdatePartial", "_4mForm")?keyword=${encodeURIComponent(keyword)}`)
+                .then(r => r.text())
+                .then(html => document.getElementById("formUpdateContainer").innerHTML = html)
+                .catch(err => console.error('Error loading Form Update:', err));
+
+            // Optional: refresh other tables
+            fetch('@Url.Action("LoadFormApprovalPartial", "_4mForm")')
+                .then(r => r.text())
+                .then(html => document.getElementById("formApprovalContainer").innerHTML = html);
+
+            fetch('@Url.Action("LoadFormSendingPartial", "_4mForm")')
+                .then(r => r.text())
+                .then(html => document.getElementById("formSendingContainer").innerHTML = html);
+        }
+
+        // Chevron rotation
+        document.querySelectorAll('tr[data-bs-toggle="collapse"]').forEach(tr => {
+            tr.addEventListener('click', function() {
+                const icon = this.querySelector('.fa-chevron-down');
+                const targetId = this.getAttribute('data-bs-target');
+                const collapseEl = document.querySelector(targetId);
+                if (collapseEl.classList.contains('show')) {
+                    icon.style.transform = 'rotate(0deg)';
+                } else {
+                    icon.style.transform = 'rotate(180deg)';
+                }
+            });
+        });
+    </script>
+
+    <script>
+
+        // Refresh the partial view of the table
+        function refreshFormUpdateTable(keyword = '') {
+            fetch(`@Url.Action("LoadFormUpdatePartial", "_4mForm")?keyword=${encodeURIComponent(keyword)}`)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById("formUpdateContainer").innerHTML = html;
+                })
+                .catch(err => console.error('Error loading Form Update:', err));
+
+            // _FormApproval table update
+            fetch('@Url.Action("LoadFormApprovalPartial", "_4mForm")')
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById("formApprovalContainer").innerHTML = html;
+                });
+
+            // _FormSending table update
+            fetch('@Url.Action("LoadFormSendingPartial", "_4mForm")')
+                .then(r => r.text())
+                .then(html => {
+                    document.getElementById("formSendingContainer").innerHTML = html;
+                });
+        }
+
+        // Optional: refresh when tab is shown
+        document.getElementById("form-update-tab")?.addEventListener("shown.bs.tab", function () {
+            refreshFormUpdateTable();
+        });
+    </script>
+
+    @* <--- _FORMUPDATE FORM SCRIPT END HERE ---> *@
+
+    @* <--- _FORMAPPROVAL FORM SCRIPT END HERE ---> *@
+
+    <script>
+         // APPROVE
+        document.addEventListener("click", function (e) {
+            if (e.target.closest(".approve-btn")) {
+                const btn = e.target.closest(".approve-btn");
+                const id = btn.dataset.id;
+                const control = btn.dataset.control; // new: get control number
+
+                Swal.fire({
+                    title: 'Approve this request?',
+                    html: `Control Number: <strong>${control}</strong><br>This action will mark the form as <strong>APPROVED</strong>.`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fa-solid fa-check"></i> Yes, Approve',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        approveForm(id);
+                    }
+                });
+            }
+        });
+
+        // REJECT
+        document.addEventListener("click", function (e) {
+            if (e.target.closest(".reject-btn")) {
+                const btn = e.target.closest(".reject-btn");
+                const id = btn.dataset.id;
+                const control = btn.dataset.control; // new: get control number
+
+                Swal.fire({
+                    title: 'Reject this request?',
+                    html: `Control Number: <strong>${control}</strong><br>This action will mark the form as <strong>REJECTED</strong>.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="fa-solid fa-xmark"></i> Yes, Reject',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        rejectForm(id);
+                    }
+                });
+            }
+        });
+
+
+        // ================= AJAX FUNCTIONS =================
+
+        function approveForm(id) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("__RequestVerificationToken", token);
+
+                    fetch('@Url.Action("_4mFormApproval", "_4mForm")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Approved!',
+                        text: data.message
+                    });
+
+                    refreshFormUpdateTable();
+
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', err.toString(), 'error');
+            });
+        }           
+
+        function rejectForm(id) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("__RequestVerificationToken", token);
+
+            fetch('@Url.Action("Reject", "_4mForm")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Rejected!',
+                        text: data.message
+                    });
+
+                     refreshFormUpdateTable();
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                Swal.fire('Error', err.toString(), 'error');
+            });
+        }
+    </script>
+
+    <script>
+        // Handle click for send button
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".send-btn").forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const id = this.dataset.id;
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                    const formData = new FormData();
+                    formData.append("id", id);
+                    formData.append("__RequestVerificationToken", token);
+
+                    try {
+                        const res = await fetch('@Url.Action("SendEmail", "_4mForm")', {
+                            method: "POST",
+                            body: formData
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: "success",
+                                title: "Email Sent!",
+                                text: data.message
+                            });
+
+                            // Reload table or hide sent row
+                            refreshFormUpdateTable();
+                        } else {
+                            Swal.fire("Error", data.message, "error");
+                        }
+                    } catch (err) {
+                        Swal.fire("Error", err.toString(), "error");
+                    }
+                });
+            });
+        });
+    </script>
+
+}
+
+

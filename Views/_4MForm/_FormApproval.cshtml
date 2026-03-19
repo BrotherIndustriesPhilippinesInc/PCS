@@ -1,0 +1,103 @@
+﻿@model List<PartsControlSystem.Models._4mForm>
+
+
+<div class="table-responsive" style="max-height:600px; overflow:auto;">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>Date</th>
+                <th>4M Control No</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int index = 0; // Use this for unique IDs
+                foreach (var form in Model)
+                {
+                    <tr>
+                        <td class="text-center">@form.SupplierSubmissionDate.ToString("yyyy-MM-dd")</td>
+
+                        <td class="text-center">
+                            @if (!string.IsNullOrEmpty(form.AttachmentPath))
+                            {
+                                var fileName = System.IO.Path.GetFileName(form.AttachmentPath);
+
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary excel-preview-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#excelPreviewModal-@index"
+                                        data-file="@fileName"
+                                        data-container="excelPreviewContainer-@index">
+                                    @form.ControlNumber
+                                </button>
+
+                                <div class="modal fade" id="excelPreviewModal-@index" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                                        <div class="modal-content rounded-4 shadow">
+                                            <div class="modal-header bg-success text-white rounded-top-4">
+                                                <h5 class="modal-title">
+                                                    <i class="fa-solid fa-file-excel me-2"></i>
+                                                    Preview: @form.ControlNumber
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="border rounded-3 shadow-sm p-3 bg-light text-center"
+                                                     id="excelPreviewContainer-@index">
+                                                    <i class="fa-solid fa-file-excel fa-3x text-success mb-2"></i>
+                                                    <p class="mb-2 fw-semibold text-secondary">Attached Excel Form</p>
+                                                    <p class="text-muted">
+                                                        To view the attached form, please click the download button below.
+                                                    </p>
+                                                    <a class="btn btn-sm btn-outline-primary"
+                                                       href="@Url.Action("DownloadAttachmentExcel", "_4mForm", new { id = form.Id })"
+                                                       role="button">
+                                                        <i class="fa-solid fa-download me-1"></i> Download Form
+                                                    </a>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-0 px-4 pb-4">
+                                                <button type="button" class="btn btn-outline-secondary rounded-pill" data-bs-dismiss="modal">
+                                                    Close
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="text-muted">No attachment</span>
+                            }
+                        </td>
+
+                        <td class="text-center">
+                            <span class="badge bg-warning text-dark">@form.Status</span>
+                        </td>
+
+                        <td class="text-center">
+                            <button class="btn btn-success btn-sm approve-btn me-1" data-id="@form.Id" data-control="@form.ControlNumber">
+                                <i class="fa-solid fa-check"></i> Approve
+                            </button>
+
+                            <button class="btn btn-outline-danger btn-sm reject-btn" data-id="@form.Id" data-control="@form.ControlNumber">
+                                <i class="fa-solid fa-xmark"></i> Reject
+                            </button>
+                        </td>
+                    </tr>
+                    index++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center text-muted">No forms for approval</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>        
+</div>

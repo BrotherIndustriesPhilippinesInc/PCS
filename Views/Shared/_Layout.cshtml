@@ -1,0 +1,323 @@
+﻿@using System.Security.Claims;
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PartsControlSystem</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/PartsControlSystem.styles.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
+    <link href="~/assets/css/styles.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/4mStyle.css" asp-append-version="true" />
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+    <!-- Toastr CSS + JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+
+
+
+<body class="sb-nav-fixed">
+
+    @{
+
+        bool hideFullLayout = ViewData["HideFullLayout"] as bool? ?? false;
+    }
+
+    @if (!hideFullLayout)
+    {
+        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+            <!-- Navbar Brand-->
+            <a class="navbar-brand ps-3" asp-controller="Home" asp-action="Index">
+                <img class="system-logo" src="~/images/PCS-logo.png" alt="Parts Control System" />    
+            </a>
+
+            <!-- Sidebar Toggle-->
+            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
+                <i class="fas fa-bars"></i>
+            </button>
+
+            <h4 class="system-name text-center">Welcome to Parts Control System</h4>
+
+            <!-- Logout-->
+            <button class="btnLogout d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+                <form method="post" asp-controller="" asp-action="">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </form>
+            </button>
+        </nav>
+
+        @if (!(ViewData["HideSidebar"] as bool? ?? false))
+        {
+            <div id="layoutSidenav">
+                <div id="layoutSidenav_nav">
+                    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                        <div class="sb-sidenav-menu">
+                            <div class="nav">
+                                <div class="sb-sidenav-menu-heading">Module</div>
+
+                                <a class="nav-link"  asp-controller="Home" asp-action="Index">
+                                    <div class="sb-nav-link-icon text-light"><i class="fas fa-tachometer-alt"></i></div>
+                                    Dashboard
+                                </a>
+
+                                <a class="nav-link" asp-controller="ImportData" asp-action="DataEntry">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-import"></i></div>
+                                    Import File
+                                </a>
+
+                                <a class="nav-link" asp-controller="PartsDownload" asp-action="DownloadPartsData">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-arrow-down"></i></div>
+                                    Parts Download
+                                </a>
+
+                                <li class="nav-item">
+                                    <a class="nav-link  d-flex justify-content-between align-items-center"
+                                    href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                        <span>
+                                            <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
+                                            Update Per Activity
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down small"></i>
+                                    </a>
+                                    <div class="collapse ps-3" id="updatePerActiviyDropdown">
+                                        <ul class="nav flex-column">
+                                            <li class="nav-item">
+                                                <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="UpdateActivity">
+                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                    Update Activity
+                                                </a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="ActivityMonitoring">
+                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                    Activity Monitoring
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <a class="nav-link" href="#">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-desktop"></i></div>
+                                    IQC Monitoring
+                                </a>
+
+                                <a class="nav-link" href="#">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
+                                    Transaction Logs
+                                </a>
+
+                                <a class="nav-link" href="#">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
+                                    All Parts Data
+                                </a>
+
+                                @*   <a class="nav-link" asp-controller="_4mForm" asp-action="FourMForm">
+                                <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-arrow-down"></i></div>
+                                4M Form
+                            </a> *@
+
+                                <li class="nav-item">
+                                    <a class="nav-link  justify-content-between align-items-center"
+                                    href="#fourMFormDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                        <span>
+                                            <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
+                                            4M Form
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down small"></i>
+                                    </a>
+                                    <div class="collapse ps-3" id="fourMFormDropdown">
+                                        <ul class="nav flex-column">
+                                            <li class="nav-item">
+                                                <a class="nav-link" asp-controller="_4mForm" asp-action="FourMForm">
+                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                    4M Form
+                                                </a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" asp-controller="_4mForm" asp-action="ApprovalMonitoring">
+                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                    Approval Monitoring
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+
+                                <a class="nav-link" href="#">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-excel"></i></div>
+                                    Reports
+                                </a>
+
+                                @if (User.HasClaim("UserRole", "Admin"))
+                                {
+                                    <li class="nav-item">
+                                        <a class="nav-link  d-flex justify-content-between align-items-center "
+                                        href="#AdminDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                            <span>
+                                                <i class="fa-solid fa-user-lock text-light"></i>
+                                                Admin Access
+                                            </span>
+                                            <i class="fa-solid fa-chevron-down small"></i>
+                                        </a>
+                                        <div class="collapse ps-3" id="AdminDropdown">
+                                            <ul class="nav flex-column">
+                                                <li class="nav-item">
+                                                    <a class="nav-link" asp-controller="Admin" asp-action="AdminAccess">
+                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                        User Setting
+                                                    </a>
+                                                </li>
+
+                                                <li class="nav-item">
+                                                    <a class="nav-link" asp-controller="Supplier" asp-action="SupplierSetting">
+                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                        Supplier Setting
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                }
+
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                                        Authentication
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                            <a class="nav-link" href="login.html">Login</a> 
+                                            <a class="nav-link" href="register.html">Register</a>
+                                            <a class="nav-link" href="password.html">Forgot Password</a>
+                                        </nav>
+                                    </div>
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                        Error
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                            <a class="nav-link" href="401.html">401 Page</a>
+                                            <a class="nav-link" href="404.html">404 Page</a>
+                                            <a class="nav-link" href="500.html">500 Page</a>
+                                        </nav>
+                                    </div>
+                                </nav>
+                            </div>
+                
+                 @*            <div class="sb-sidenav-menu-heading">Addons</div> *@
+
+                            <a class="nav-link" href="charts.html">
+                                <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-folder-minus"></i></div>
+                                Parts Deletion
+                            </a>
+                            <a class="nav-link" href="tables.html">
+                                <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
+                                Updating of Dates
+                            </a>
+                        </div>
+                    </div>
+
+
+                    <div class="sb-sidenav-footer">
+                        <div class="small">Date: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
+
+                        @* Display logged-in user *@
+                        @{
+                            string userName = User.Identity.IsAuthenticated
+                                ? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown"
+                                : "Guest";
+
+                            string userSection = User.Identity.IsAuthenticated
+                                ? User.FindFirst("Section")?.Value ?? ""
+                                : "";
+                        }
+
+                        <div>User: @userName - @userSection</div>
+                    </div>
+                </nav>
+            </div>
+            }
+            
+            <div id="layoutSidenav_content" style="background-color: #FFF;">
+                <main class="mb-4">
+                    <div class="container-fluid px-4">
+                        <h5 class="mt-4 mb-4">@ViewData["Title"]</h5>
+                        @* <ol class="breadcrumb mb-4"> *@
+                        @*     <li class="breadcrumb-item active">@ViewData["Title"]</li> *@
+                        @* </ol> *@
+
+                        <div class="container-fluid">
+                            <main role="main" class="pb-3">
+                                @RenderBody()
+                            </main>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+        }
+        else
+        {
+            <div id="layoutSidenav_content">
+                <main class="mb-4">
+                    @RenderBody()
+                </main>
+            </div>
+        }
+    }
+    else
+    {
+        <!--  NO SIDEBAR, BODY ONLY -->
+        @RenderBody()
+    }
+    
+    <footer class="d-flex align-items-center justify-content-end pt-3 bg-light footer-fix">
+            <p class="small"><i>&copy; 2026 Brother Industries (Philippines) Inc. | Developed by: BPS Developer</i></p>
+    </footer>
+
+    
+ @*    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - PartsControlSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer> *@
+
+    @* built in script *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+@*     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script> *@
+    <script src="~/assets/js/scripts.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+    @* <script src="~/assets/demo/chart-area-demo.js"></script> *@
+    @* <script src="~/assets/demo/chart-bar-demo.js"></script> *@
+    <script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+    <script src="~/assets/js/datatables-simple-demo.js"></script>
+    <!-- Toastr CSS + JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
