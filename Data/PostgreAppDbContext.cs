@@ -32,6 +32,7 @@ namespace PartsControlSystem.Data
 
         public DbSet<ViewActivityMonitoring> ViewActivityMonitoring { get; set; }
         public DbSet<MP2_Capa_PDC> MP2_Capa_PDCs { get; set; }  
+        public DbSet<TransactionLogs> TransactionLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -42,6 +43,7 @@ namespace PartsControlSystem.Data
                 entity.HasNoKey(); // because it is a VIEW
                 entity.ToView("view_activity_monitoring", "public");
             });
+
 
         }
     } 

@@ -24,6 +24,7 @@
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    
 </head>
 
 
@@ -114,10 +115,13 @@
                                     IQC Monitoring
                                 </a>
 
-                                <a class="nav-link" href="#">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
-                                    Transaction Logs
-                                </a>
+                                @if (User.HasClaim("UserRole", "Admin"))
+                                {
+                                    <a class="nav-link" asp-controller="TransactionLogs" asp-action="TransactionLogs">
+                                        <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
+                                        Transaction Logs
+                                    </a>
+                                }
 
                                 <a class="nav-link" href="#">
                                     <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
@@ -317,6 +321,8 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- DataTables JS -->
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <!-- JSheet JS -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

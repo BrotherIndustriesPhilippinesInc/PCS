@@ -1,0 +1,1042 @@
+﻿@model List<PartsControlSystem.ViewModels.TransactionLogViewModel>
+@{
+    ViewData["Title"] = "Transaction Logs";
+}
+
+@* ── Search / Filter Bar ── *@
+<div class="filter-card">
+    <div class="filter-row">
+        <span class="filter-label">Search</span>
+        <select class="filter-select" id="searchField">
+            <option selected disabled>-- Select --</option>
+            <option value="0">Transaction No</option>
+            <option value="1">Part Name</option>
+            <option value="2">Supplier</option>
+            <option value="3">Model</option>
+            <option value="4">Activity</option>
+            <option value="6">PIC</option>
+        </select>
+        <div class="search-wrap">
+            <span class="search-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+            </span>
+            <input class="search-input" type="text" id="searchValue" placeholder="Type to search..." autocomplete="off" />
+        </div>
+        <div class="date-group">
+            <span class="date-label">Start Date</span>
+            <input class="date-input" type="date" id="filterStartDate" />
+            <span class="date-label">End Date</span>
+            <input class="date-input" type="date" id="filterEndDate" />
+        </div>
+        <button class="dl-btn" id="btnDownload" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download
+        </button>
+    </div>
+</div>
+
+@* ── Table Card ── *@
+<div class="tlog-card">
+    <div class="tlog-header">
+        <div class="tlog-title">All Logs</div>
+    </div>
+
+    <div class="tlog-table-wrap">
+        <table id="transactionTable" class="table table-sm mb-0">
+            <thead>
+                <tr>
+                    <th>Transaction No</th>
+                    <th>Part Name</th>
+                    <th>Supplier</th>
+                    <th>Model</th>
+                    <th>Activity</th>
+                    <th>Source</th>
+                    <th>PIC</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Received Date</th>
+                    <th>Input Date</th>
+                    <th>Current Process</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>History</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model ?? new List<PartsControlSystem.ViewModels.TransactionLogViewModel>())
+                {
+                    <tr>
+                        <td class="tlog-mono">@log.TransactionNumber</td>
+                        <td>@log.PartName</td>
+                        <td>@log.Supplier</td>
+                        <td>@log.Model</td>
+                        <td><span class="tlog-badge-activity">@log.Activity</span></td>
+                        <td>
+                            @if (log.Source == "Import File")
+                            {
+                                <span class="tlog-source-import">Import File</span>
+                            }
+                            else
+                            {
+                                <span class="tlog-source-activity">Update Activity</span>
+                            }
+                        </td>
+                        <td>@log.PIC</td>
+                        <td class="col-date">@(log.StartDate.HasValue ? log.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—")</td>
+                        <td class="col-date">@(log.EndDate.HasValue ? log.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—")</td>
+                        <td class="col-date">@(log.ReceivedDate.HasValue ? log.ReceivedDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—")</td>
+                        <td class="col-date">@(log.InputDate.HasValue ? log.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm") : "—")</td>
+                        <td class="col-process"><small>@log.CurrentProcess</small></td>
+                        <td>
+                            @if (log.Status == "Completed")
+                            {
+                                <span class="tlog-badge-completed">Completed</span>
+                            }
+                            else
+                            {
+                                <span class="tlog-badge-inprogress">In Progress</span>
+                            }
+                        </td>
+                        <td class="col-remarks">@(string.IsNullOrEmpty(log.Remarks) ? "—" : log.Remarks)</td>
+                        <td class="col-action">
+                            <button class="btn-history" onclick="openHistory('@log.TransactionNumber')">
+                                View
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ── Custom pagination — outside scroll wrapper so it never scrolls ── *@
+    <div class="tlog-dt-bottom">
+        <span id="customInfo" class="tlog-dt-info-text"></span>
+        <div id="customPaginate" class="tlog-custom-paginate"></div>
+    </div>
+
+</div>
+
+@* ── History Modal ── *@
+<div id="historyModalBackdrop" class="history-backdrop" style="display:none;">
+    <div class="history-modal">
+        <div class="history-modal-header">
+            <span id="historyModalTitle">History</span>
+            <button onclick="closeHistory()" class="history-close">✕</button>
+        </div>
+        <div class="history-modal-body">
+            <div class="history-table-wrap">
+                <table id="historyTable" class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Part Name</th>
+                            <th>Supplier</th>
+                            <th>Model</th>
+                            <th>Activity</th>
+                            <th>Source</th>
+                            <th>PIC</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Input Date</th>
+                            <th>Current Process</th>
+                            <th>Status</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        /* ── Filter card ── */
+        .filter-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+            min-width: 44px;
+        }
+
+        .filter-select {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 14px;
+            color: #374151;
+            background: #f9fafb;
+            min-width: 160px;
+            cursor: pointer;
+            outline: none;
+            appearance: auto;
+        }
+
+            .filter-select:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+            }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 160px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            height: 38px;
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0 10px 0 34px;
+            font-size: 14px;
+            color: #374151;
+            background: #ffffff;
+            outline: none;
+        }
+
+            .search-input:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+            }
+
+        .date-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .date-label {
+            font-size: 13px;
+            color: #6b7280;
+            white-space: nowrap;
+        }
+
+        .date-input {
+            height: 38px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 0 10px;
+            font-size: 13px;
+            color: #374151;
+            background: #ffffff;
+            width: 130px;
+            outline: none;
+        }
+
+            .date-input:focus {
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+            }
+
+        .dl-btn {
+            height: 38px;
+            background: #1565c0;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            padding: 0 16px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: background 0.15s;
+        }
+
+            .dl-btn:hover {
+                background: #1251a3;
+            }
+
+        /* ── Table card ── */
+        .tlog-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            overflow: visible; /* ← changed from hidden to visible */
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tlog-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8f9fa;
+        }
+
+        .tlog-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1d23;
+        }
+
+        /* ── Horizontal scroll wrapper ── */
+        .tlog-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 0; /* remove radius here, card handles it */
+        }
+
+        /* ── Force equal column widths ── */
+        #transactionTable {
+            width: 100%;
+            min-width: 1400px; /* ensures scroll kicks in before columns squeeze */
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+            #transactionTable thead th,
+            #transactionTable tbody td {
+                width: 110px; /* base equal width for all columns */
+                min-width: 110px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            /* ── Column-specific widths ── */
+            #transactionTable th:nth-child(1),
+            #transactionTable td:nth-child(1) {
+                width: 160px;
+                min-width: 160px;
+            }
+            /* Transaction No */
+
+            #transactionTable th:nth-child(5),
+            #transactionTable td:nth-child(5) {
+                width: 160px;
+                min-width: 160px;
+            }
+            /* Activity */
+
+            #transactionTable th:nth-child(12),
+            #transactionTable td:nth-child(12) {
+                width: 180px;
+                min-width: 180px;
+            }
+            /* Current Process */
+
+            #transactionTable th:nth-child(14),
+            #transactionTable td:nth-child(14) {
+                width: 140px;
+                min-width: 140px;
+            }
+            /* Remarks */
+
+            #transactionTable th:nth-child(15),
+            #transactionTable td:nth-child(15) {
+                width: 80px;
+                min-width: 80px;
+            }
+            /* History */
+
+            /* ── Table styles ── */
+            #transactionTable thead th {
+                font-size: 11px;
+                font-weight: 600;
+                color: #6b7280;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+                vertical-align: middle;
+                background: #f8f9fa;
+                border-bottom: 1px solid #e5e7eb;
+                padding: 10px 12px;
+            }
+
+            #transactionTable tbody td {
+                font-size: 12px;
+                padding: 10px 12px;
+                color: #374151;
+                vertical-align: middle;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            #transactionTable tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            #transactionTable tbody tr:hover td {
+                background: #f8f9ff;
+            }
+
+        .tlog-mono {
+            font-family: monospace;
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        /* ── DataTables overrides ── */
+        .dataTables_wrapper .dataTables_filter {
+            display: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            display: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            display: none !important;
+        }
+
+
+        /* Top bar */
+        .tlog-dt-top {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* ── Custom bottom bar — sibling of tlog-table-wrap, never scrolls ── */
+        .tlog-dt-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+            border-radius: 0 0 16px 16px; /* match card bottom radius */
+            flex-shrink: 0;
+        }
+
+        .tlog-dt-info-text {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* ── Custom paginate buttons ── */
+        .tlog-custom-paginate .paginate_button {
+            display: inline-block !important;
+            border-radius: 6px;
+            font-size: 11px;
+            padding: 3px 10px;
+            margin: 0 2px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #374151;
+            cursor: pointer;
+            user-select: none;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+            .tlog-custom-paginate .paginate_button.current {
+                background: #1565c0;
+                color: #fff;
+                border-color: #1565c0;
+            }
+
+            .tlog-custom-paginate .paginate_button.disabled {
+                color: #d1d5db;
+                cursor: default;
+                pointer-events: none;
+            }
+
+            .tlog-custom-paginate .paginate_button:hover:not(.current):not(.disabled) {
+                background: #f3f4f6;
+            }
+
+        /* .dataTables_wrapper .dataTables_info {
+            font-size: 12px;
+            color: #6b7280;
+            padding: 0;
+            margin-right: auto; 
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            padding: 0;
+            flex-shrink: 0;
+        }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                border-radius: 6px !important;
+                font-size: 11px !important;
+                padding: 2px 8px !important;
+                margin: 0 2px !important;
+                border: 1px solid #d1d5db !important;
+                background: #fff !important;
+                color: #374151 !important;
+                box-shadow: none !important;
+            }
+
+                .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+                .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+                    background: #1565c0 !important;
+                    color: #fff !important;
+                    border-color: #1565c0 !important;
+                }
+
+                .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+                    background: #f3f4f6 !important;
+                    color: #374151 !important;
+                } */
+
+        /* ── Badges ── */
+        .tlog-badge-activity {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 10px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tlog-badge-completed {
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 10px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tlog-badge-inprogress {
+            background: #fef9c3;
+            color: #92400e;
+            border-radius: 10px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tlog-source-import {
+            background: #ede9fe;
+            color: #5b21b6;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tlog-source-activity {
+            background: #e0f2fe;
+            color: #0369a1;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* ── History button ── */
+        .btn-history {
+            height: 26px;
+            background: #1565c0;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 0 10px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: background 0.15s;
+            white-space: nowrap;
+        }
+
+            .btn-history:hover {
+                background: #1251a3;
+            }
+
+        /* ── History modal ── */
+        .history-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .history-modal {
+            background: #fff;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 1500px; /* ← wider to fit 12 columns */
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .history-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-bottom: 1px solid #e5e7eb;
+            background: #f8f9fa;
+            flex-shrink: 0;
+        }
+
+            .history-modal-header span {
+                font-size: 14px;
+                font-weight: 600;
+                color: #1a1d23;
+            }
+
+        .history-close {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #6b7280;
+            line-height: 1;
+        }
+
+            .history-close:hover {
+                color: #111;
+            }
+
+        .history-modal-body {
+            overflow-y: auto;
+            padding: 16px 20px;
+            flex: 1;
+        }
+
+        .history-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #historyTable {
+            width: 100%;
+            min-width: 900px; /* ← wider min-width */
+            table-layout: fixed;
+        }
+
+            #historyTable thead th {
+                font-size: 11px;
+                font-weight: 600;
+                color: #6b7280;
+                text-transform: uppercase;
+                background: #f8f9fa;
+                padding: 8px 10px;
+                border-bottom: 1px solid #e5e7eb;
+                white-space: nowrap;
+                width: 8.33%; /* ← 100% / 12 columns */
+            }
+
+            #historyTable tbody td {
+                font-size: 12px;
+                padding: 8px 10px;
+                color: #374151;
+                border-bottom: 1px solid #f3f4f6;
+                vertical-align: middle;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            #historyTable tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+        /*     #historyTable th:nth-child(1),
+            #historyTable td:nth-child(1) {
+                width: 100px;
+                min-width: 150px;
+            }
+
+            #historyTable th:nth-child(2),
+            #historyTable td:nth-child(2) {
+                width: 80px;
+                min-width: 150px;
+            }
+
+            #historyTable th:nth-child(3),
+            #historyTable td:nth-child(3) {
+                width: 80px;
+                min-width: 150px;
+            }
+
+            #historyTable th:nth-child(4),
+            #historyTable td:nth-child(4) {
+                width: 150px;
+                min-width: 150px;
+            }
+            #historyTable th:nth-child(5),
+            #historyTable td:nth-child(5) {
+                width: 120px;
+                min-width: 150px;
+            }
+
+            #historyTable th:nth-child(6),
+            #historyTable td:nth-child(6) {
+                width: 120px;
+                min-width: 150px;
+            }
+            #historyTable th:nth-child(10),
+            #historyTable td:nth-child(10) {
+                width: 180px;
+                min-width: 150px;
+            }
+ */
+        /* ── Responsive breakpoints ── */
+        @@media (max-width: 768px) {
+            .filter-row
+
+        {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .filter-select, .search-wrap, .date-group, .dl-btn {
+            width: 100%;
+        }
+
+        .date-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .date-input {
+            width: 100%;
+        }
+
+        .dl-btn {
+            justify-content: center;
+        }
+
+        }
+    </style>
+
+    @* Store server-generated URL for JS to use *@
+    <span id="getHistoryUrl" data-url="@Url.Action("GetHistory", "TransactionLogs")" style="display:none;"></span>
+
+    <script>
+                // ── Declare table variable OUTSIDE so functions can access it ──
+        var table;
+
+        // ── These functions must be OUTSIDE $(document).ready ──
+        function updateCount() {
+            if (!table || !table.page) return;
+            var info = table.page.info();
+            $('#recordCount').text(info.recordsDisplay + ' records');
+        }
+
+        function updateCustomInfo() {
+            if (!table || !table.page) return;
+            var info = table.page.info();
+            var text = 'Showing ' + (info.recordsDisplay === 0 ? 0 : info.start + 1)
+                + ' to ' + info.end
+                + ' of ' + info.recordsDisplay + ' records';
+            if (info.recordsDisplay !== info.recordsTotal) {
+                text += ' (filtered from ' + info.recordsTotal + ' total entries)';
+            }
+            $('#customInfo').text(text);
+        }
+
+        function renderCustomPaginate() {
+            if (!table || !table.page) return;
+            var info        = table.page.info();
+            var totalPages  = info.pages;
+            var currentPage = info.page;
+            var html        = '';
+
+            html += '<span class="paginate_button ' + (currentPage === 0 ? 'disabled' : '') + '" id="pgPrev">Previous</span>';
+
+            for (var i = 0; i < totalPages; i++) {
+                if (
+                    i === 0 ||
+                    i === totalPages - 1 ||
+                    (i >= currentPage - 1 && i <= currentPage + 1)
+                ) {
+                    html += '<span class="paginate_button ' + (i === currentPage ? 'current' : '') + '" data-page="' + i + '">' + (i + 1) + '</span>';
+                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                    html += '<span class="paginate_button disabled">…</span>';
+                }
+            }
+
+            html += '<span class="paginate_button ' + (currentPage >= totalPages - 1 ? 'disabled' : '') + '" id="pgNext">Next</span>';
+
+            var $p = $('#customPaginate');
+            $p.html(html);
+
+            $p.find('[data-page]').on('click', function () {
+                table.page(parseInt($(this).data('page'))).draw('page');
+            });
+            $p.find('#pgPrev').on('click', function () {
+                if (currentPage > 0) table.page('previous').draw('page');
+            });
+            $p.find('#pgNext').on('click', function () {
+                if (currentPage < totalPages - 1) table.page('next').draw('page');
+            });
+        }
+
+           $(document).ready(function () {
+
+        table = $('#transactionTable').DataTable({
+            paging:      true,
+            pageLength:  10,
+            lengthMenu:  [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+            ordering:    true,
+            info:        true,
+            scrollX:     false,
+            autoWidth:   false,
+            dom:         '<"tlog-dt-top"l>t',
+            columnDefs:  [{ targets: 14, orderable: false, searchable: false }],
+            language: {
+                emptyTable:  'No records found.',
+                zeroRecords: 'No matching records found.',
+                info:        'Showing _START_ to _END_ of _TOTAL_ records',
+                infoEmpty:   'Showing 0 to 0 of 0 records',
+                lengthMenu:  'Show _MENU_ entries'
+            },
+                    initComplete: function () {
+            setTimeout(function () {
+                updateCount();
+                updateCustomInfo();
+                renderCustomPaginate();
+            }, 100);
+        },
+        drawCallback: function () {
+            updateCount();
+            updateCustomInfo();
+            renderCustomPaginate();
+        }
+        });
+
+
+            // ── Search ──
+            function applySearch() {
+                var col   = $('#searchField').val();
+                var value = $('#searchValue').val();
+                table.columns().search('');
+                if (value) {
+                    col !== null && col !== ''
+                        ? table.column(parseInt(col)).search(value)
+                        : table.search(value);
+                } else {
+                    table.search('');
+                }
+                table.draw();
+            }
+            $('#searchValue').on('input', applySearch);
+            $('#searchField').on('change', applySearch);
+
+            // ── Date helpers ──
+            function parseCellDate(str) {
+                if (!str || str.trim() === '—') return null;
+                var parts = str.trim().split('/');
+                if (parts.length !== 3) return null;
+                var month = parseInt(parts[0]), day = parseInt(parts[1]), year = parseInt(parts[2]);
+                if (isNaN(month) || isNaN(day) || isNaN(year)) return null;
+                return new Date(year, month - 1, day, 0, 0, 0, 0);
+            }
+            function parseInputDate(str) {
+                if (!str) return null;
+                var parts = str.split('-');
+                if (parts.length !== 3) return null;
+                var year = parseInt(parts[0]), month = parseInt(parts[1]), day = parseInt(parts[2]);
+                if (isNaN(year) || isNaN(month) || isNaN(day)) return null;
+                return new Date(year, month - 1, day, 0, 0, 0, 0);
+            }
+
+            // ── Date filter ──
+            $.fn.dataTable.ext.search.push(function (settings, data) {
+                var startInput = $('#filterStartDate').val();
+                var endInput   = $('#filterEndDate').val();
+                if (!startInput && !endInput) return true;
+
+                var rowStartDate = parseCellDate(data[7]);
+                if (!rowStartDate) return false;
+
+                var filterStart = parseInputDate(startInput);
+                var filterEnd   = parseInputDate(endInput);
+
+                if (filterStart && filterEnd)
+                    return rowStartDate >= filterStart && rowStartDate <= filterEnd;
+                if (filterStart && !filterEnd)
+                    return rowStartDate >= filterStart;
+                if (!filterStart && filterEnd)
+                    return rowStartDate <= filterEnd;
+
+                return true;
+            });
+            $('#filterStartDate, #filterEndDate').on('change', function () { table.draw(); });
+
+            // ── Download ──
+            $('#btnDownload').on('click', function () {
+                var headers = [];
+                $('#transactionTable thead tr th').each(function (i) {
+                    if (i < 14) headers.push($(this).text().trim());
+                });
+                var rows = [];
+                table.rows({ search: 'applied', page: 'all' }).every(function () {
+                    var $row = $(this.node());
+                    var rowValues = [];
+                    $row.find('td').each(function (i) {
+                        if (i < 14) rowValues.push($(this).text().trim());
+                    });
+                    rows.push(rowValues);
+                });
+                var wsData    = [headers].concat(rows);
+                var ws        = XLSX.utils.aoa_to_sheet(wsData);
+                var colWidths = headers.map(function (h, i) {
+                    var maxLen = h.length;
+                    rows.forEach(function (row) {
+                        var cellLen = (row[i] || '').toString().length;
+                        if (cellLen > maxLen) maxLen = cellLen;
+                    });
+                    return { wch: Math.min(maxLen + 4, 50) };
+                });
+                ws['!cols'] = colWidths;
+                var wb      = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Transaction Logs');
+                var today   = new Date();
+                var dateStr = today.getFullYear()
+                    + ('0' + (today.getMonth() + 1)).slice(-2)
+                    + ('0' + today.getDate()).slice(-2);
+                XLSX.writeFile(wb, 'TransactionLogs_' + dateStr + '.xlsx');
+            });
+        });
+
+        // ── History modal ──
+        //         function openHistory(transactionNumber) {
+        //     document.getElementById('historyModalTitle').textContent = 'History — ' + transactionNumber;
+        //     document.getElementById('historyTableBody').innerHTML =
+        //         '<tr><td colspan="12" class="text-center text-muted py-3">Loading...</td></tr>';
+        //     document.getElementById('historyModalBackdrop').style.display = 'flex';
+
+        //     fetch('/TransactionLogs/GetHistory?transactionNumber=' + encodeURIComponent(transactionNumber))
+        //         .then(function (res) { return res.json(); })
+        //         .then(function (data) {
+        //             var tbody = document.getElementById('historyTableBody');
+        //             if (!data || data.length === 0) {
+        //                 tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-3">No history found.</td></tr>';
+        //                 return;
+        //             }
+        //             tbody.innerHTML = data.map(function (row) {
+        //                 var sourceBadge = row.source === 'Import File'
+        //                     ? '<span class="tlog-source-import">Import File</span>'
+        //                     : '<span class="tlog-source-activity">Update Activity</span>';
+        //                 var statusBadge = row.status === 'Completed'
+        //                     ? '<span class="tlog-badge-completed">Completed</span>'
+        //                     : '<span class="tlog-badge-inprogress">In Progress</span>';
+        //                 return '<tr>'
+        //                     + '<td>' + (row.partName       || '—') + '</td>'
+        //                     + '<td>' + (row.supplier       || '—') + '</td>'
+        //                     + '<td>' + (row.model          || '—') + '</td>'
+        //                     + '<td><span class="tlog-badge-activity">' + (row.activity || '—') + '</span></td>'
+        //                     + '<td>' + sourceBadge + '</td>'
+        //                     + '<td>' + (row.pic            || '—') + '</td>'
+        //                     + '<td>' + (row.startDate      || '—') + '</td>'
+        //                     + '<td>' + (row.endDate        || '—') + '</td>'
+        //                     + '<td>' + (row.inputDate      || '—') + '</td>'
+        //                     + '<td><small>' + (row.currentProcess || '—') + '</small></td>'
+        //                     + '<td>' + statusBadge + '</td>'
+        //                     + '<td>' + (row.remarks        || '—') + '</td>'
+        //                     + '</tr>';
+        //             }).join('');
+        //         })
+        //         .catch(function () {
+        //             document.getElementById('historyTableBody').innerHTML =
+        //                 '<tr><td colspan="12" class="text-center text-danger py-3">Failed to load history.</td></tr>';
+        //         });
+        // }
+                function openHistory(transactionNumber) {
+            document.getElementById('historyModalTitle').textContent = 'History — ' + transactionNumber;
+            document.getElementById('historyTableBody').innerHTML =
+                '<tr><td colspan="12" class="text-center text-muted py-3">Loading...</td></tr>';
+            document.getElementById('historyModalBackdrop').style.display = 'flex';
+
+            // ── Use Razor-generated URL instead of hardcoded path ──
+            var baseUrl = document.getElementById('getHistoryUrl').dataset.url;
+            var url     = baseUrl + '?transactionNumber=' + encodeURIComponent(transactionNumber);
+
+            fetch(url)
+                .then(function (res) {
+                    if (!res.ok) throw new Error('Server returned ' + res.status);
+                    return res.json();
+                })
+                .then(function (data) {
+                    var tbody = document.getElementById('historyTableBody');
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-3">No history found.</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.map(function (row) {
+                        var sourceBadge = row.source === 'Import File'
+                            ? '<span class="tlog-source-import">Import File</span>'
+                            : '<span class="tlog-source-activity">Update Activity</span>';
+                        var statusBadge = row.status === 'Completed'
+                            ? '<span class="tlog-badge-completed">Completed</span>'
+                            : '<span class="tlog-badge-inprogress">In Progress</span>';
+                        return '<tr>'
+                            + '<td>' + (row.partName       || '—') + '</td>'
+                            + '<td>' + (row.supplier       || '—') + '</td>'
+                            + '<td>' + (row.model          || '—') + '</td>'
+                            + '<td><span class="tlog-badge-activity">' + (row.activity || '—') + '</span></td>'
+                            + '<td>' + sourceBadge + '</td>'
+                            + '<td>' + (row.pic            || '—') + '</td>'
+                            + '<td>' + (row.startDate      || '—') + '</td>'
+                            + '<td>' + (row.endDate        || '—') + '</td>'
+                            + '<td>' + (row.inputDate      || '—') + '</td>'
+                            + '<td><small>' + (row.currentProcess || '—') + '</small></td>'
+                            + '<td>' + statusBadge + '</td>'
+                            + '<td>' + (row.remarks        || '—') + '</td>'
+                            + '</tr>';
+                    }).join('');
+                })
+                .catch(function (err) {
+                    console.error('History fetch error:', err);
+                    document.getElementById('historyTableBody').innerHTML =
+                        '<tr><td colspan="12" class="text-center text-danger py-3">Failed to load history: ' + err.message + '</td></tr>';
+                });
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModalBackdrop').style.display = 'none';
+        }
+
+        document.getElementById('historyModalBackdrop').addEventListener('click', function (e) {
+            if (e.target === this) closeHistory();
+        });
+    </script>
+}

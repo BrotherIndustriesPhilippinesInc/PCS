@@ -89,6 +89,11 @@ namespace PartsControlSystem.Controllers
 
                 _dbContext.ActivityCurrentProcesses.Add(activityProcess);
 
+                //FOR TRANSACTION LOGS
+                var logRows = BuildTransactionLogRows(importData, currentProcessValue);
+                if (logRows.Any())
+                    _dbContext.TransactionLogs.AddRange(logRows);
+                //END FOR TRANSACTION LOGS
                 _dbContext.ImportDatas.Add(importData);
                 await _dbContext.SaveChangesAsync();
 
@@ -141,6 +146,50 @@ namespace PartsControlSystem.Controllers
                 : 1;
         }
 
+        //FOR TRANSACTION LOGS
+        private List<TransactionLogs> BuildTransactionLogRows(ImportData data, string currentProcess)
+        {
+            var activityMap = new Dictionary<string, Func<ImportData, string>>
+            {
+                ["Renewal / Additional Mold"] = x => x.RenewalAdditionalMold,
+                ["New Tooling / Localization"] = x => x.NewToolingLocalization,
+                ["Transfer Tooling"] = x => x.TransferTooling,
+                ["Change Material"] = x => x.ChangeMaterial,
+                ["New Model"] = x => x.NewModel,
+                ["Non-Concurrent"] = x => x.NonConcurrent,
+                ["Supplier Change / Localization"] = x => x.SupplierChangeLocalization,
+                ["Other 4M"] = x => x.Other4M,
+            };
+
+            var rows = new List<TransactionLogs>();
+
+            foreach (var (activityName, selector) in activityMap)
+            {
+                if (!selector(data).Equals("YES", StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                rows.Add(new TransactionLogs
+                {
+                    TransactionNumber = data.ControlNo,
+                    PartName = data.PartName,
+                    Supplier = data.Supplier,
+                    Model = data.Model,
+                    Activity = activityName,
+                    Source = "Import File",
+                    PIC = data.Section ?? "SYSTEM",
+                    StartDate = data.DateImported,
+                    EndDate = null,
+                    ReceivedDate = null,
+                    InputDate = data.DateImported,
+                    CurrentProcess = currentProcess,
+                    Status = "In Progress",
+                    Remarks = string.Empty
+                });
+            }
+
+            return rows;
+        }
+        //END FOR TRANSACTION LOGS
 
         [HttpPost]
         public async Task<IActionResult> PreviewExcelTemplate(IFormFile excelFile)
@@ -285,6 +334,12 @@ namespace PartsControlSystem.Controllers
 
                     // Optional: ensure date consistency
                     item.DateImported = DateTime.UtcNow;
+
+                    //FOR TRANSACTION LOGS
+                    var logRows = BuildTransactionLogRows(item, "Tooling Quotation Request~Approval");
+                    if (logRows.Any())
+                        _dbContext.TransactionLogs.AddRange(logRows);
+                    //END FOR TRANSACTION LOGS
                 }
 
                 // ================= DUPLICATE CHECK =================
