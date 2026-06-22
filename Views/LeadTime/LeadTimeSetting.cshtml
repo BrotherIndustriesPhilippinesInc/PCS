@@ -1,0 +1,861 @@
+﻿@model PartsControlSystem.ViewModels.LeadTimeSettingViewModel
+@{
+    // ViewData["Title"] = "Lead Time Setting";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --lt-primary: #1a3c5e;
+        --lt-accent: #e8a020;
+        --lt-surface: #ffffff;
+        --lt-bg: #f0f4f8;
+        --lt-border: #d0dce8;
+        --lt-text: #1e2d3d;
+        --lt-muted: #6b7f93;
+        --lt-success: #198754;
+        --lt-danger: #dc3545;
+        --lt-radius: 8px;
+        --lt-shadow: 0 2px 12px rgba(26,60,94,.10);
+    }
+
+    /* ── Page shell ── */
+    .lt-page {
+        padding: 24px 28px;
+        background: var(--lt-bg);
+        min-height: 100vh;
+    }
+
+    .lt-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .lt-header-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: var(--lt-radius);
+        background: var(--lt-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--lt-accent);
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .lt-header h4 {
+        margin: 0;
+        color: var(--lt-primary);
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .lt-header p {
+        margin: 0;
+        color: var(--lt-muted);
+        font-size: .85rem;
+    }
+
+    /* ── Tab nav ── */
+    .lt-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 0;
+        border-bottom: 2px solid var(--lt-border);
+    }
+
+    .lt-tab-btn {
+        padding: 10px 20px;
+        border: none;
+        background: transparent;
+        color: var(--lt-muted);
+        font-weight: 600;
+        font-size: .875rem;
+        border-radius: var(--lt-radius) var(--lt-radius) 0 0;
+        cursor: pointer;
+        transition: all .2s;
+        position: relative;
+        bottom: -2px;
+        border-bottom: 2px solid transparent;
+    }
+
+        .lt-tab-btn:hover {
+            color: var(--lt-primary);
+            background: rgba(26,60,94,.05);
+        }
+
+        .lt-tab-btn.active {
+            color: var(--lt-primary);
+            background: var(--lt-surface);
+            border-color: var(--lt-border) var(--lt-border) var(--lt-surface) var(--lt-border);
+            border-width: 2px 2px 2px 2px;
+            border-style: solid;
+            border-bottom-color: var(--lt-surface);
+        }
+
+        .lt-tab-btn i {
+            margin-right: 6px;
+        }
+
+    /* ── Card panels ── */
+    .lt-card {
+        background: var(--lt-surface);
+        border: 1px solid var(--lt-border);
+        border-radius: 0 var(--lt-radius) var(--lt-radius) var(--lt-radius);
+        box-shadow: var(--lt-shadow);
+        padding: 24px;
+    }
+
+    .lt-tab-pane {
+        display: none;
+    }
+
+        .lt-tab-pane.active {
+            display: block;
+        }
+
+    /* ── Toolbar ── */
+    .lt-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .lt-toolbar-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .lt-count-badge {
+        background: var(--lt-bg);
+        border: 1px solid var(--lt-border);
+        border-radius: 20px;
+        padding: 3px 12px;
+        font-size: .8rem;
+        color: var(--lt-muted);
+        font-weight: 500;
+    }
+
+    .lt-search {
+        border: 1px solid var(--lt-border);
+        border-radius: var(--lt-radius);
+        padding: 7px 12px 7px 34px;
+        font-size: .875rem;
+        color: var(--lt-text);
+        background: var(--lt-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b7f93' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;
+        outline: none;
+        width: 220px;
+        transition: border-color .2s;
+    }
+
+        .lt-search:focus {
+            border-color: var(--lt-primary);
+            background-color: white;
+        }
+
+    /* ── Table ── */
+    .lt-table-wrap {
+        overflow-x: auto;
+    }
+
+    .lt-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .875rem;
+    }
+
+        .lt-table thead tr {
+            background: var(--lt-primary);
+            color: #fff;
+        }
+
+        .lt-table thead th {
+            padding: 11px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            white-space: nowrap;
+        }
+
+            .lt-table thead th:last-child {
+                text-align: center;
+            }
+
+        .lt-table tbody tr {
+            border-bottom: 1px solid var(--lt-border);
+            transition: background .15s;
+        }
+
+            .lt-table tbody tr:hover {
+                background: #f5f8fc;
+            }
+
+            .lt-table tbody tr.filtered-out {
+                display: none;
+            }
+
+        .lt-table td {
+            padding: 10px 14px;
+            color: var(--lt-text);
+            vertical-align: middle;
+        }
+
+    .step-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: var(--lt-primary);
+        color: #fff;
+        font-size: .75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .section-pill {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 20px;
+        background: rgba(26,60,94,.1);
+        color: var(--lt-primary);
+        font-size: .75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    /* ── Lead time input ── */
+    .lt-input-wrap {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: center;
+    }
+
+    .lt-input {
+        width: 90px;
+        text-align: center;
+        border: 1px solid var(--lt-border);
+        border-radius: var(--lt-radius);
+        padding: 6px 8px;
+        font-size: .875rem;
+        color: var(--lt-text);
+        font-weight: 600;
+        transition: border-color .2s, box-shadow .2s;
+        -moz-appearance: textfield;
+    }
+
+        .lt-input::-webkit-inner-spin-button,
+        .lt-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .lt-input:focus {
+            border-color: var(--lt-accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(232,160,32,.18);
+        }
+
+        .lt-input.dirty {
+            border-color: var(--lt-accent);
+            background: #fffbf2;
+        }
+
+    .lt-unit {
+        font-size: .75rem;
+        color: var(--lt-muted);
+        white-space: nowrap;
+    }
+
+    /* ── Buttons ── */
+    .btn-lt-save {
+        background: var(--lt-primary);
+        color: #fff;
+        border: none;
+        border-radius: var(--lt-radius);
+        padding: 8px 20px;
+        font-size: .875rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: background .2s, transform .1s;
+    }
+
+        .btn-lt-save:hover {
+            background: #15304d;
+        }
+
+        .btn-lt-save:active {
+            transform: scale(.97);
+        }
+
+        .btn-lt-save:disabled {
+            background: var(--lt-muted);
+            cursor: not-allowed;
+        }
+
+    .btn-lt-reset {
+        background: transparent;
+        color: var(--lt-muted);
+        border: 1px solid var(--lt-border);
+        border-radius: var(--lt-radius);
+        padding: 8px 16px;
+        font-size: .875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .2s;
+    }
+
+        .btn-lt-reset:hover {
+            border-color: var(--lt-danger);
+            color: var(--lt-danger);
+        }
+
+    /* ── Toast ── */
+    .lt-toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .lt-toast {
+        background: white;
+        border-radius: var(--lt-radius);
+        padding: 12px 18px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.18);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 280px;
+        font-size: .875rem;
+        font-weight: 500;
+        border-left: 4px solid var(--lt-success);
+        animation: slideIn .25s ease;
+        color: var(--lt-text);
+    }
+
+        .lt-toast.error {
+            border-left-color: var(--lt-danger);
+        }
+
+        .lt-toast i {
+            font-size: 1rem;
+        }
+
+        .lt-toast.success i {
+            color: var(--lt-success);
+        }
+
+        .lt-toast.error i {
+            color: var(--lt-danger);
+        }
+
+    @@keyframes slideIn {
+        from {
+            transform: translateX(60px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    /* ── Changed row highlight ── */
+    @@keyframes rowFlash {
+        0% {
+            background: #fff8e6;
+        }
+
+        100% {
+            background: transparent;
+        }
+    }
+
+    .row-saved {
+        animation: rowFlash 1.2s ease forwards;
+    }
+
+    /* ── Empty state ── */
+    .lt-empty {
+        text-align: center;
+        padding: 48px 20px;
+        color: var(--lt-muted);
+    }
+
+        .lt-empty i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            display: block;
+            opacity: .4;
+        }
+</style>
+
+<div class="lt-page">
+    <!-- Header -->
+    <div class="lt-header">
+        <div class="lt-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div>
+            <h4>Lead Time Setting</h4>
+            <p>Configure lead time (days) for each process step across all categories</p>
+        </div>
+    </div>
+
+    <!-- Tab Nav -->
+    <div class="lt-tabs">
+        <button class="lt-tab-btn active" onclick="switchTab('renewal', this)">
+            <i class="fa-solid fa-rotate"></i> Renewal
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.RenewalLeadTimes.Count</span>
+        </button>
+        <button class="lt-tab-btn" onclick="switchTab('mp', this)">
+            <i class="fa-solid fa-rotate"></i> Multiple Procurement
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.MultipleProcurementSteps.Count</span>
+        </button>
+        <button class="lt-tab-btn" onclick="switchTab('sc', this)">
+            <i class="fa-solid fa-rotate"></i> Supplier Change
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.SupplierChangeSteps.Count</span>
+        </button>
+        <button class="lt-tab-btn" onclick="switchTab('loc', this)">
+            <i class="fa-solid fa-rotate"></i> Localization
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.LocalizationSteps.Count</span>
+        </button>
+        <button class="lt-tab-btn" onclick="switchTab('cm', this)">
+            <i class="fa-solid fa-rotate"></i> Change Material
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.ChangeMaterialSteps.Count</span>
+        </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TAB 1 — RENEWAL
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-renewal" class="lt-tab-pane active">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="renewal-count">@Model.RenewalLeadTimes.Count activities</span>
+                    <input type="text" class="lt-search" placeholder="Search activity or section…"
+                           oninput="filterTable('renewal-tbody', this.value, 'renewal-count', @Model.RenewalLeadTimes.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('renewal-tbody', 'renewal')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-renewal" onclick="saveAll('renewal')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Activity</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="renewal-tbody">
+                        @if (!Model.RenewalLeadTimes.Any())
+                        {
+                            <tr><td colspan="4"><div class="lt-empty"><i class="fa-solid fa-inbox"></i>No records found.</div></td></tr>
+                        }
+                        @foreach (var (item, idx) in Model.RenewalLeadTimes.Select((x, i) => (x, i + 1)))
+                        {
+                            <tr data-id="@item.Id" data-original="@item.LeadTimeValue" data-type="renewal">
+                                <td style="color:var(--lt-muted);font-size:.8rem">@idx</td>
+                                <td>@item.Activity</td>
+                                <td><span class="section-pill">@item.Section</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@item.LeadTimeValue"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TAB 2 — MULTIPLE PROCUREMENT
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-mp" class="lt-tab-pane">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="mp-count">@Model.MultipleProcurementSteps.Count steps</span>
+                    <input type="text" class="lt-search" placeholder="Search step or section…"
+                           oninput="filterTable('mp-tbody', this.value, 'mp-count', @Model.MultipleProcurementSteps.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('mp-tbody', 'mp')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-mp" onclick="saveAll('mp')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process Step</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mp-tbody">
+                        @foreach (var item in Model.MultipleProcurementSteps)
+                        {
+                            <tr data-id="@item.Id" data-original="@item.LeadTimeDays" data-type="tooling">
+                                <td><span class="step-badge">@item.StepOrder</span></td>
+                                <td>@item.ProcessStep</td>
+                                <td><span class="section-pill">@item.Section</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@item.LeadTimeDays"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TAB 3 — SUPPLIER CHANGE
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-sc" class="lt-tab-pane">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="sc-count">@Model.SupplierChangeSteps.Count steps</span>
+                    <input type="text" class="lt-search" placeholder="Search step or section…"
+                           oninput="filterTable('sc-tbody', this.value, 'sc-count', @Model.SupplierChangeSteps.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('sc-tbody', 'sc')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-sc" onclick="saveAll('sc')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process Step</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sc-tbody">
+                        @foreach (var item in Model.SupplierChangeSteps)
+                        {
+                            <tr data-id="@item.Id" data-original="@item.LeadTimeDays" data-type="tooling">
+                                <td><span class="step-badge">@item.StepOrder</span></td>
+                                <td>@item.ProcessStep</td>
+                                <td><span class="section-pill">@item.Section</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@item.LeadTimeDays"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         TAB 4 — LOCALIZATION
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-loc" class="lt-tab-pane">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="loc-count">@Model.LocalizationSteps.Count steps</span>
+                    <input type="text" class="lt-search" placeholder="Search step or section…"
+                           oninput="filterTable('loc-tbody', this.value, 'loc-count', @Model.LocalizationSteps.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('loc-tbody', 'loc')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-loc" onclick="saveAll('loc')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process Step</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loc-tbody">
+                        @foreach (var item in Model.LocalizationSteps)
+                        {
+                            <tr data-id="@item.Id" data-original="@item.LeadTimeDays" data-type="tooling">
+                                <td><span class="step-badge">@item.StepOrder</span></td>
+                                <td>@item.ProcessStep</td>
+                                <td><span class="section-pill">@item.Section</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@item.LeadTimeDays"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- ═══════════════════════════════════════════════════════════
+         TAB 5 — CHANGE MATERIAL
+    ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-cm" class="lt-tab-pane">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="cm-count">@Model.ChangeMaterialSteps.Count steps</span>
+                    <input type="text" class="lt-search" placeholder="Search step or section…"
+                           oninput="filterTable('cm-tbody', this.value, 'cm-count', @Model.ChangeMaterialSteps.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('cm-tbody', 'cm')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-cm" onclick="saveAll('cm')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process Step</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cm-tbody">
+                        @foreach (var item in Model.ChangeMaterialSteps)
+                        {
+                            <tr data-id="@item.Id" data-original="@item.LeadTime" data-type="changematerial">
+                                <td><span class="step-badge">@item.StepOrder</span></td>
+                                <td>@item.ProcessStep</td>
+                                <td><span class="section-pill">@item.Section</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@item.LeadTime"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast container -->
+<div class="lt-toast-container" id="toastContainer"></div>
+
+
+    <script>
+        // ── Tab switching ──────────────────────────────────────────────
+        function switchTab(name, btn) {
+            document.querySelectorAll('.lt-tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.lt-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // ── Mark row as dirty (edited) ─────────────────────────────────
+        function markDirty(input) {
+            const original = parseFloat(input.closest('tr').dataset.original);
+            const current  = parseFloat(input.value);
+            if (current !== original) {
+                input.classList.add('dirty');
+            } else {
+                input.classList.remove('dirty');
+            }
+        }
+
+        // ── Reset all dirty fields in a tab ───────────────────────────
+        function resetDirty(tbodyId, tabKey) {
+            const rows = document.querySelectorAll(`#${tbodyId} tr[data-id]`);
+            rows.forEach(row => {
+                const input = row.querySelector('.lt-val');
+                if (!input) return;
+                input.value = row.dataset.original;
+                input.classList.remove('dirty');
+            });
+            showToast('Changes discarded.', false, 'info');
+        }
+
+        // ── Search/filter ──────────────────────────────────────────────
+        function filterTable(tbodyId, term, countId, total) {
+            const q = term.toLowerCase().trim();
+            const rows = document.querySelectorAll(`#${tbodyId} tr[data-id]`);
+            let visible = 0;
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const show = !q || text.includes(q);
+                row.classList.toggle('filtered-out', !show);
+                if (show) visible++;
+            });
+            const badge = document.getElementById(countId);
+            if (badge) badge.textContent = q ? `${visible} of ${total}` : `${total} activities`;
+        }
+
+        // ── Bulk save ──────────────────────────────────────────────────
+        async function saveAll(tabKey) {
+            const tbodyMap = { renewal: 'renewal-tbody', mp: 'mp-tbody', sc: 'sc-tbody', loc: 'loc-tbody', cm: 'cm-tbody' };
+            const tbody = document.getElementById(tbodyMap[tabKey]);
+            const rows  = tbody.querySelectorAll('tr[data-id]');
+
+            // Collect ALL rows (send even unchanged so backend has full picture — or filter dirty only)
+            const updates = [];
+            rows.forEach(row => {
+                const input = row.querySelector('.lt-val');
+                if (!input) return;
+                const val = parseFloat(input.value);
+                if (!isNaN(val)) {
+                    updates.push({ id: parseInt(row.dataset.id), value: val });
+                }
+            });
+
+            if (!updates.length) {
+                showToast('Nothing to save.', false, 'info');
+                return;
+            }
+
+            // Determine endpoint
+            let endpoint;
+                if (tabKey === 'renewal') {
+                    endpoint = '/LeadTime/SaveAllRenewal';
+                } else if (tabKey === 'cm') {
+                    endpoint = '/LeadTime/SaveAllChangeMaterial';
+                } else {
+                    endpoint = '/LeadTime/SaveAllTooling';
+                }
+            const saveBtn    = document.getElementById(`btn-save-${tabKey}`);
+
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+                const res   = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(updates)
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    // Update originals so dirty detection resets
+                    rows.forEach(row => {
+                        const input = row.querySelector('.lt-val');
+                        if (!input) return;
+                        row.dataset.original = input.value;
+                        input.classList.remove('dirty');
+                        row.classList.add('row-saved');
+                        setTimeout(() => row.classList.remove('row-saved'), 1300);
+                    });
+                    showToast(data.message, true);
+                } else {
+                    showToast(data.message || 'Save failed.', false);
+                }
+            } catch (err) {
+                showToast('Network error. Please try again.', false);
+                console.error(err);
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+            }
+        }
+
+        // ── Toast helper ───────────────────────────────────────────────
+        function showToast(message, success = true, type = null) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const isSuccess = type === 'info' ? null : success;
+
+            toast.className = `lt-toast ${type === 'info' ? '' : (success ? 'success' : 'error')}`;
+
+            let icon = success
+                ? '<i class="fa-solid fa-circle-check"></i>'
+                : '<i class="fa-solid fa-circle-xmark"></i>';
+            if (type === 'info') icon = '<i class="fa-solid fa-circle-info" style="color:var(--lt-primary)"></i>';
+
+            toast.innerHTML = `${icon} <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+    </script>
+

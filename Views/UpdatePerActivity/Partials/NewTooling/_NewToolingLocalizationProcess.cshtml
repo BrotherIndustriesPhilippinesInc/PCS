@@ -1,0 +1,1095 @@
+﻿@model IEnumerable<PartsControlSystem.ViewModels.NewToolingLocalizationProcessVM>
+
+@foreach (var item in Model)
+{
+    var stepOrder = item.StepOrder;
+    var activityName = item.ActivityName;
+    var isSC = activityName == "Supplier Change / Localization";
+    var isMP = activityName == "Multiple Procurement / Localization";
+    var isLOC = activityName == "New Tooling / Localization";
+
+    <div class="card shadow-sm border-0 mb-4 process-card"
+         data-endpoint="@Url.Action("SaveNewToolingLocalizationProcess", "UpdatePerActivity")"
+         data-controlno="@item.ControlNumber"
+         data-activityname="@item.ActivityName"
+         data-category="@item.Category"
+         data-processstep="@item.ProcessStep"
+         data-steporder="@item.StepOrder"
+         data-fields="@GetFields(stepOrder, isSC, isLOC)">
+
+        <div class="card-header d-flex justify-content-between align-items-center"
+             style="background:#4a5568; border-radius:12px 12px 0 0;">
+            <span class="text-white fw-semibold">
+                @item.ActivityName &mdash; @item.ProcessStep
+            </span>
+            <span class="badge bg-light text-dark">
+                @item.Category &nbsp;|&nbsp; Step @item.StepOrder
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Control No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ControlNumber" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Section</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Section" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tooling Type</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingType" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Category</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingCategory" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Model</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Model" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Code</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ChildPartcode" readonly />
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Name</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.PartName" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tooling Mgt. No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingManagement" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Supplier" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">BIPH Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.BIPHMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.SupplierMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Mold Maker</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.MoldMaker" readonly />
+                </div>
+            </div>
+
+            <hr class="my-2" />
+
+            <div class="row g-3 mb-2">
+
+                @* ══════════════════════════════════════════
+                   STEP 1
+                   MP/SC → Target + BIPH to New Supplier + Old Supplier to BIPH dropdowns
+                   LOC   → Target only (Tooling PO Issued Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 1 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">BIPH to New Supplier</label>
+                        <select name="Result" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Completed" @@(item.Result= ="Completed" ? "selected" : "" )>Completed</option>
+                            <option value="Not Yet" @@(item.Result= ="Not Yet" ? "selected" : "" )>Not Yet</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Old Supplier to BIPH</label>
+                        <select name="ReferenceNo" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Completed" @@(item.ReferenceNo= ="Completed" ? "selected" : "" )>Completed</option>
+                            <option value="Not Yet" @@(item.ReferenceNo= ="Not Yet" ? "selected" : "" )>Not Yet</option>
+                        </select>
+                    </div>
+                }
+                @if (stepOrder == 1 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 2
+                   MP/SC → Target + Status dropdown (Material LOA)
+                   LOC   → Date + Revision text (Drawing Issuance to Supplier)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 2 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="Result" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Completed" @@(item.Result= ="Completed" ? "selected" : "" )>Completed</option>
+                            <option value="Not Yet" @@(item.Result= ="Not Yet" ? "selected" : "" )>Not Yet</option>
+                        </select>
+                    </div>
+                }
+                @if (stepOrder == 2 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Revision</label>
+                        <input type="text" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="e.g. A, B, Rev1..."
+                               value="@item.ReferenceNo" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 3
+                   MP  → Target only (Manual FC)
+                   SC  → Actual only (Manual FC)
+                   LOC → Target only (Tooling Transfer Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 3 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 3 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 3 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 4 — Target only (all activities)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 4)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 5
+                   MP/SC → Target only (Tooling Transfer Date)
+                   LOC   → Target + Actual (PH Sample Submission)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 5 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 5 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 6
+                   MP/SC → Target only (4M Application Date)
+                   LOC   → Target + Actual (PH Sample Approval)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 6 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 6 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 7
+                   MP/SC → Target + Actual (Kataken Submission)
+                   LOC   → Type Change text only (Procurement Type Change)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 7 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 7 && isLOC)
+                {
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Type Change <span class="text-danger">*</span></label>
+                        <input type="text" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="e.g. Localization, Special Proc..."
+                               value="@item.ReferenceNo" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 8
+                   MP/SC → Target + Actual (Kataken Approval)
+                   LOC   → Target only (Open Sourcelist Local)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 8 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 8 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 9
+                   MP  → Target + PPS Approval Date
+                   SC  → Actual only (DE Sample Received)
+                   LOC → Target only (Test Run PO Request Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 9 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">PPS Approval Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 9 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 9 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 10
+                   MP  → Target only (Open Sourcelist)
+                   SC  → Target + Actual (DE Sample Approval)
+                   LOC → Target only (Test Run PO Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 10 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 10 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 10 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 11
+                   MP  → Target + Type Change text
+                   SC  → Actual only (QA Sample Received)
+                   LOC → Actual only (Test Run Delivery Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 11 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Type Change</label>
+                        <input type="text" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="e.g. NEW MOLD, SPECIAL PROC..."
+                               value="@item.ReferenceNo" />
+                    </div>
+                }
+                @if (stepOrder == 11 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 11 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 12
+                   MP  → Target only (Test Run PO Request)
+                   SC  → Target + Actual (QA Sample Approval)
+                   LOC → Start Date only (Test Run Schedule)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 12 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 12 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 12 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 13
+                   MP  → Target + Need/No Need dropdown
+                   SC  → Target + PPS Approval Date
+                   LOC → Target + Actual (Test Run Approval Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 13 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Need / No Need</label>
+                        <select name="Result" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Need" @@(item.Result= ="Need" ? "selected" : "" )>Need</option>
+                            <option value="No Need" @@(item.Result= ="No Need" ? "selected" : "" )>No Need</option>
+                        </select>
+                    </div>
+                }
+                @if (stepOrder == 13 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">PPS Approval Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 13 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 14
+                   MP/SC → Target only
+                   LOC   → Target only (4M Approval Date)
+                   SAME fields all
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 14)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 15
+                   MP/SC → Target only
+                   LOC   → Target only (Request Simulation to MP2)
+                   SAME fields all
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 15)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 16
+                   MP  → Start Date (Test Run Schedule)
+                   SC  → Target only (Test Run PO Date)
+                   LOC → Target + Actual Stocks + Shortage Date + MRP Controller Transfer Date + Final PO Issued Date
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 16 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 16 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 16 && isLOC)
+                {
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Actual Stocks</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Shortage Date</label>
+                        <input type="date" name="Result" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(item.Result != null ? DateTime.Parse(item.Result).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">MRP Controller Transfer Date</label>
+                        <input type="date" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(!string.IsNullOrEmpty(item.ReferenceNo) ? DateTime.Parse(item.ReferenceNo).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Final PO Issued Date</label>
+                        <input type="date" name="FinalPOIssuedDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(item.FinalPOIssuedDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 17
+                   MP  → Target + Actual (Test Run Approval Date)
+                   SC  → Actual only (Test Run Delivery Date)
+                   LOC → Actual only (Final PO Delivery Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 17 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 17 && (isSC || isLOC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 18
+                   MP  → Target only (Confirmation of Parts Availability)
+                   SC  → Start Date (Test Run Schedule)
+                   LOC → Target + Actual (SAP Setting Change)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 18 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 18 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Start Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 18 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 19
+                   MP  → Target + Quotas + Input Date
+                   SC  → Target + Actual (Test Run Approval)
+                   LOC → Target + Actual + Status dropdown (BLK and FIX Supplier)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 19 && isMP)
+                {
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Current Supplier Quota</label>
+                        <input type="text" name="Result" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="e.g. 100%" value="@item.Result" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">New Supplier Quota</label>
+                        <input type="text" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="e.g. 15%" value="@item.ReferenceNo" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Input Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 19 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 19 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="Result" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Completed" @@(item.Result= ="Completed" ? "selected" : "" )>Completed</option>
+                            <option value="Not Yet" @@(item.Result= ="Not Yet" ? "selected" : "" )>Not Yet</option>
+                        </select>
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 20
+                   MP  → Target only (PO Issuance Date)
+                   SC  → Target only (4M Approval Date)
+                   LOC → Target + Actual + Status dropdown (Recosting Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 20 && (isMP || isSC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 20 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Status</label>
+                        <select name="Result" class="form-select form-select-sm" style="background-color:#fffbe6;">
+                            <option value="">-- Select --</option>
+                            <option value="Completed" @@(item.Result= ="Completed" ? "selected" : "" )>Completed</option>
+                            <option value="Not Yet" @@(item.Result= ="Not Yet" ? "selected" : "" )>Not Yet</option>
+                        </select>
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 21
+                   MP  → Parts Availability + PO Delivery + Actual Delivery
+                   SC  → Target only (Request Simulation to MP2)
+                   LOC → Actual only (PO Issuance Date New Supplier)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 21 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Parts Availability Date</label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">PO Delivery Date</label>
+                        <input type="date" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(!string.IsNullOrEmpty(item.ReferenceNo) ? DateTime.Parse(item.ReferenceNo).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Delivery Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 21 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 21 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 22
+                   MP  → Target only (Target Usage Date)
+                   SC  → Target + Actual Stocks + Shortage + Final PO
+                   LOC → Parts Availability + PO Delivery + Actual Delivery
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 22 && isMP)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 22 && isSC)
+                {
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Actual Stocks</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Shortage Date</label>
+                        <input type="text" name="Result" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="Shortage Date" value="@item.Result" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small fw-semibold">Final PO Issued Date</label>
+                        <input type="text" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" placeholder="Final PO Issued Date" value="@item.ReferenceNo" />
+                    </div>
+                }
+                @if (stepOrder == 22 && isLOC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Parts Availability Date</label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">PO Delivery Date</label>
+                        <input type="date" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(!string.IsNullOrEmpty(item.ReferenceNo) ? DateTime.Parse(item.ReferenceNo).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Delivery Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+
+                @* ══════════════════════════════════════════
+                   STEP 23
+                   SC  → Final PO Delivery (Actual only)
+                   LOC → Actual only (Target Usage Date)
+                ══════════════════════════════════════════ *@
+                @if (stepOrder == 23 && (isSC || isLOC))
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+                @* ══ SC ONLY STEPS 24-29 ══ *@
+                @if (stepOrder == 24 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 25 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 26 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Target Date <span class="text-danger">*</span></label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 27 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+                @if (stepOrder == 28 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Parts Availability Date</label>
+                        <input type="date" name="TargetDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.TargetDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">PO Delivery Date</label>
+                        <input type="date" name="ReferenceNo" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;"
+                               value="@(!string.IsNullOrEmpty(item.ReferenceNo) ? DateTime.Parse(item.ReferenceNo).ToString("yyyy-MM-dd") : "")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Delivery Date</label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" />
+                    </div>
+                }
+                @if (stepOrder == 29 && isSC)
+                {
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">Actual Date <span class="text-danger">*</span></label>
+                        <input type="date" name="ActualDate" class="form-control form-control-sm"
+                               style="background-color:#fffbe6;" value="@(item.ActualDate?.ToString("yyyy-MM-dd"))" required />
+                    </div>
+                }
+
+            </div>
+
+            <div class="row g-3 align-items-end mt-1">
+                <div class="col-md-10">
+                    <label class="form-label small fw-semibold">Remarks</label>
+                    <textarea name="Remarks" class="form-control form-control-sm" rows="2"
+                              placeholder="Remarks...">@item.Remarks</textarea>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-success btn-sm btn-save-approval">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(item.NextProcessStep))
+            {
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fa-solid fa-arrow-right me-1"></i>
+                        Next step after save: <strong>@item.NextProcessStep</strong>
+                    </small>
+                </div>
+            }
+
+        </div>
+    </div>
+}
+
+@functions {
+    string GetFields(int stepOrder, bool isSC, bool isLOC) => (stepOrder, isSC, isLOC) switch
+    {
+        // ── STEP 1 ──
+        (1, false, false) => "TargetDate,Result,ReferenceNo,Remarks",
+        (1, true, false) => "TargetDate,Result,ReferenceNo,Remarks",
+        (1, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 2 ──
+        (2, false, false) => "TargetDate,Result,Remarks",
+        (2, true, false) => "TargetDate,Result,Remarks",
+        (2, false, true) => "TargetDate,ReferenceNo,Remarks",
+
+        // ── STEP 3 ──
+        (3, false, false) => "TargetDate,Remarks",
+        (3, true, false) => "ActualDate,Remarks",
+        (3, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 4 ── Target only all
+        (4, _, _) => "TargetDate,Remarks",
+
+        // ── STEP 5 ──
+        (5, false, false) => "TargetDate,Remarks",
+        (5, true, false) => "TargetDate,Remarks",
+        (5, false, true) => "TargetDate,ActualDate,Remarks",
+
+        // ── STEP 6 ──
+        (6, false, false) => "TargetDate,Remarks",
+        (6, true, false) => "TargetDate,Remarks",
+        (6, false, true) => "TargetDate,ActualDate,Remarks",
+
+        // ── STEP 7 ──
+        (7, false, false) => "TargetDate,ActualDate,Remarks",
+        (7, true, false) => "TargetDate,ActualDate,Remarks",
+        (7, false, true) => "ReferenceNo,Remarks",
+
+        // ── STEP 8 ──
+        (8, false, false) => "TargetDate,ActualDate,Remarks",
+        (8, true, false) => "TargetDate,ActualDate,Remarks",
+        (8, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 9 ──
+        (9, false, false) => "TargetDate,ActualDate,Remarks",
+        (9, true, false) => "ActualDate,Remarks",
+        (9, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 10 ──
+        (10, false, false) => "TargetDate,Remarks",
+        (10, true, false) => "TargetDate,ActualDate,Remarks",
+        (10, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 11 ──
+        (11, false, false) => "TargetDate,ReferenceNo,Remarks",
+        (11, true, false) => "ActualDate,Remarks",
+        (11, false, true) => "ActualDate,Remarks",
+
+        // ── STEP 12 ──
+        (12, false, false) => "TargetDate,Remarks",
+        (12, true, false) => "TargetDate,ActualDate,Remarks",
+        (12, false, true) => "TargetDate,Remarks",
+
+        // ── STEP 13 ──
+        (13, false, false) => "TargetDate,Result,Remarks",
+        (13, true, false) => "TargetDate,ActualDate,Remarks",
+        (13, false, true) => "TargetDate,ActualDate,Remarks",
+
+        // ── STEPS 14, 15 ── Target only all
+        (14, _, _) => "TargetDate,Remarks",
+        (15, _, _) => "TargetDate,Remarks",
+
+        // ── STEP 16 ──
+        (16, false, false) => "TargetDate,Remarks",
+        (16, true, false) => "TargetDate,Remarks",
+        (16, false, true) => "TargetDate,ActualDate,Result,ReferenceNo,FinalPOIssuedDate,Remarks",
+
+        // ── STEP 17 ──
+        (17, false, false) => "TargetDate,ActualDate,Remarks",
+        (17, true, false) => "ActualDate,Remarks",
+        (17, false, true) => "ActualDate,Remarks",
+
+        // ── STEP 18 ──
+        (18, false, false) => "TargetDate,Remarks",
+        (18, true, false) => "TargetDate,Remarks",
+        (18, false, true) => "TargetDate,ActualDate,Remarks",
+
+        // ── STEP 19 ──
+        (19, false, false) => "TargetDate,Result,ReferenceNo,ActualDate,Remarks",
+        (19, true, false) => "TargetDate,ActualDate,Remarks",
+        (19, false, true) => "TargetDate,ActualDate,Result,Remarks",
+
+        // ── STEP 20 ──
+        (20, false, false) => "TargetDate,Remarks",
+        (20, true, false) => "TargetDate,Remarks",
+        (20, false, true) => "TargetDate,ActualDate,Result,Remarks",
+
+        // ── STEP 21 ──
+        (21, false, false) => "TargetDate,ReferenceNo,ActualDate,Remarks",
+        (21, true, false) => "TargetDate,Remarks",
+        (21, false, true) => "ActualDate,Remarks",
+
+        // ── STEP 22 ──
+        (22, false, false) => "TargetDate,Remarks",
+        (22, true, false) => "TargetDate,ActualDate,Result,ReferenceNo,Remarks",
+        (22, false, true) => "TargetDate,ReferenceNo,ActualDate,Remarks",
+
+        // ── STEP 23 ──
+        (23, true, false) => "ActualDate,Remarks",
+        (23, false, true) => "ActualDate,Remarks",
+
+        // ── SC ONLY 24-29 ──
+        (24, true, _) => "TargetDate,ActualDate,Remarks",
+        (25, true, _) => "TargetDate,ActualDate,Remarks",
+        (26, true, _) => "TargetDate,ActualDate,Remarks",
+        (27, true, _) => "ActualDate,Remarks",
+        (28, true, _) => "TargetDate,ReferenceNo,ActualDate,Remarks",
+        (29, true, _) => "ActualDate,Remarks",
+
+        _ => "TargetDate,Remarks"
+    };
+}

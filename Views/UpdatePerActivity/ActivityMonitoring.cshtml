@@ -1,328 +1,55 @@
 ﻿@model IEnumerable<PartsControlSystem.Models.ViewActivityMonitoring>
 
 @{
-	ViewData["Title"] = "Activity Monitoring";
+    ViewData["Title"] = "Activity Monitoring";
 }
 
-<div class="card shadow-sm">
-    <div class="card-body">
-
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped table-sm align-middle text-nowrap">
-
-                <thead class="table-light text-center">
-
-                    <tr>
-                        <th rowspan="5" class="sticky-col align-middle" style="background:#4C4C4C; color:white;">Control No</th>
-                        <th colspan="1" style="background:#E7941E;">MP2-Capa</th>
-                        <th colspan="1" style="background:#E7941E;">MP2-PDC</th>
-                        <th colspan="6" style="background:#450681; color:white;">IQC</th>
-                        <th colspan="7" style="background:#EE8FE3;">QA</th>
-                        <th colspan="7" style="background:#E02525; color:white;">DE</th>
-                        <th colspan="9" style="background:#2C5087; color: #ffffff;">IQC</th>
-                        <th colspan="11" style="background:#9BC0C8;">MP2</th>
-                        <th colspan="6" style="background:#67CC8E;">SQC</th>
-                        <th colspan="16" style="background:#9BC0C8;">MP2</th>
-                    </tr>
-
-                    <tr>
-                        <th colspan="1" rowspan="4" style="background:#E7941E; vertical-align: middle; text-align: center;">Target Mold Usage Date</th>
-                        <th colspan="1" rowspan="4" style="background:#E7941E; vertical-align: middle; text-align: center;">Parts Shortage Date</th>
-                        <th colspan="6" style="background: #450681; color: #ffffff;">Test Run</th>
-                        <th colspan="7" style="background: #EE8FE3;">QA Special Evaluation</th>
-                        <th colspan="7" style="background: #E02525;">DE Evaluation</th>
-
-                        <th colspan="5" style="background: #2C5087; color: #ffffff;">Kataken Finish (Local Trial)</th>
-                        <th colspan="4" style="background: #2C5087; color: #ffffff;">Kataken Submission (Local Trial)</th>
-                        <th colspan="6" style="background: #9BC0C8;">Tooling Transfer (Arrival in PH)</th>
-                        <th colspan="5" style="background: #9BC0C8;">Tooling Fabrication</th>
-                        <th colspan="6" style="background: #67CC8E;">DFM/QCD Approval</th>
-                        <th colspan="5" style="background: #9BC0C8;">Tooling PO Issuance</th>
-                        <th colspan="6" style="background: #9BC0C8;">Tooling Request~Order</th>
-                        <th colspan="5" style="background: #9BC0C8;">Tooling Quotation Request~Approval</th>
-                    </tr>
-
-                    <tr>
-                        <!-- Test Run -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background: #450681; color: #ffffff;">Result E-mail Date to Supplier</th>
-                        <th style="background: #450681; color: #ffffff;">Result Passed/Failed</th>
-                        <th style="background: #450681; color: #ffffff;">Remarks</th>
-
-                        <!-- QA -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background:#EE8FE3;">Need / No need?</th>
-                        <th style="background:#EE8FE3;">Lead Time (No. of days)</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background:#EE8FE3;">
-                            Result (OK/NG/No need)
-                        </th>
-                        <th style ="background:#EE8FE3;">Remarks</th>
-
-
-                        <!-- DE -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background:#E02525; color:white;">Need / No need?</th>
-                        <th style="background:#E02525; color:white;">Lead Time (No. of days)</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background: #E02525; color:white;">Result</th>
-                        <th style="background:#E02525; color:white;">Remarks</th>
-
-                        <!-- Kataken Finish -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background:#2C5087; color: #ffffff;">Result</th>
-                        <th style="background:#2C5087; color: #ffffff;">Remarks</th>
-
-                        <!-- Kataken Sub -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #49CEDF;">Actual Submission Date</th>
-                        <th style="background:#2C5087; color: #ffffff;">Remarks</th>
-
-                        <!-- Transfer -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #9BC0C8;">Transfer Lead Time (No. of days)</th>
-                        <th style="background: #49CEDF;">Target Arrival Date</th>
-                        <th style="background: #49CEDF;">Actual Arrival Date</th>
-                        <th style="background: #9BC0C8;">Remarks</th>
-
-                        <!-- Fabrication -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #9BC0C8;">Fabrication Lead Time (No. of days)</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background: #9BC0C8;">Remarks</th>
-
-                        <!-- SQC -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #67CC8E;">Need/No need QCD Mtg?</th>
-                        <th style="background: #67CC8E;">Approval Lead Time (No. of days)</th>
-                        <th style="background: #49CEDF;">Actual Finish Date</th>
-                        <th style="background: #67CC8E;">Remarks</th>
-
-                        <!-- PO -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #49CEDF;">Target PO Issue Date</th>
-                        <th style="background: #49CEDF;">Actual PO Issue Date</th>
-                        <th style="background: #9BC0C8;">Remarks</th>
-
-                        <!-- Request Order -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #9BC0C8;">TRF No.</th>
-                        <th style="background: #49CEDF;">Target Approval Date</th>
-                        <th style="background: #49CEDF;">Actual Approval Date</th>
-                        <th style="background: #9BC0C8;">Remarks</th>
-
-                        <!-- Quotation -->
-                        <th style="background: #FFEDA6;">Limit Date</th>
-                        <th style="background: #FFEDA6;">Remaining Days until Limit</th>
-                        <th style="background: #49CEDF;">Target Approval Date</th>
-                        <th style="background: #49CEDF;">Actual Approval Date</th>
-                        <th style="background: #9BC0C8;">Remarks</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach (var item in Model)
-                    {
-                        <tr>
-                            <td class="sticky-col fw-bold text-primary" style="background:#4C4C4C; color:white;">
-                                @item.ControlNumber
-                            </td>
-
-                            <!-- MP2-Capa -->
-                            <td>
-                                <input type="date"
-                                       class="form-control form-control-sm mp2-input"
-                                       data-type="TargetMoldUsageDate"
-                                       data-control="@item.ControlNumber"
-                                       value="@item.target_mold_usage_date?.ToString("yyy-MM-dd" ?? "")" />
-                            </td>
-
-                            <!-- MP2-PDC -->
-                            <td>
-                                <input type="date"
-                                       class="form-control form-control-sm mp2-input"
-                                       data-type="PartsShortageDate"
-                                       data-control="@item.ControlNumber"
-                                       value="@item.parts_shortage_date?.ToString("yyy-MM-dd" ?? "")" />
-                            </td>
-
-                            <!-- Test Run -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.test_run_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.test_run_email_date?.ToString("yyyy-MM-dd")</td>
-                            <td class="@(item.test_run_pass_fail == "Failed" ? "text-danger fw-bold" : "text-success")">
-                                @item.test_run_pass_fail
-                            </td>
-                            <td>@item.test_run_remarks</td>
-
-                            <!-- QA -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.qa_need</td>
-                            <td>@item.qa_lead_time</td>
-                            <td>@item.qa_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td class="@(item.qa_result == "Failed" ? "text-danger fw-bold" : "text-success")">
-                                @item.qa_result
-                            </td>
-                            <td>@item.qa_remarks</td>
-
-                            <!-- DE -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.de_need</td>
-                            <td>@item.de_lead_time</td>
-                            <td>@item.de_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td class="@(item.de_result == "Failed" ? "text-danger fw-bold" : "text-success")">
-                                @item.de_result
-                            </td>
-                            <td>@item.de_remarks</td>
-
-
-                            <!-- Kataken Finish -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.kataken_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td class="@(item.kataken_result == "Failed" ? "text-danger fw-bold" : "text-success")">
-                                @item.kataken_result
-                            </td>
-                            <td>@item.kataken_remarks</td>
-
-                            <!-- Kataken Submission -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.kataken_submission_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.kataken_submission_remarks</td>
-
-                            <!-- Transfer -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.transfer_lead_time</td>
-                            <td>@item.transfer_target_arrival?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.transfer_actual_arrival?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.transfer_remarks</td>
-
-                            <!-- Fabrication -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.fab_lead_time</td>
-                            <td>@item.fab_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.fab_remarks</td>
-
-                            <!-- SQC -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.sqc_need_qcd</td>
-                            <td>@item.sqc_lead_time</td>
-                            <td>@item.sqc_finish_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.sqc_remarks</td>
-
-                            <!-- PO -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.po_target_issue_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.po_actual_issue_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.po_remarks</td>
-
-                            <!-- Request Order -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.tro_trf_no</td>
-                            <td>@item.tro_target_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.tro_actual_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.tro_remarks</td>
-
-                            <!-- Quotation -->
-                            <td>-</td>
-                            <td>-</td>
-                            <td>@item.qr_target_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.qr_actual_date?.ToString("yyyy-MM-dd")</td>
-                            <td>@item.qr_remarks</td>
-                        </tr>
-                    }
-                </tbody>
-
-            </table>
+<div class="card shadow-sm mb-3 border-0">
+    <div class="card-body py-2">
+        <div class="row align-items-center g-2">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">Select Activity</label>
+                <select id="activitySelect" class="form-select form-select-sm">
+                    <option value="Renewal / Additional Mold">Renewal / Additional Mold</option>
+                    <option value="New Tooling / Localization">New Tooling / Localization</option>
+                    <option value="Supplier Change / Localization">Supplier Change / Localization</option>
+                    <option value="Multiple Procurement / Localization">Multiple Procurement / Localization</option>
+                    <option value="Transfer Tooling">Transfer Tooling</option>
+                    <option value="Change Material">Change Material</option>
+                    <option value="New Model">New Model</option>
+                    <option value="Non-Concurrent">Non-Concurrent</option>
+                    <option value="Other 4M">Other 4M</option>
+                </select>
+            </div>
         </div>
     </div>
 </div>
 
-    <style>
-        .sticky-col {
-            position: sticky;
-            left: 0;
-            background-color: white;
-            z-index: 3;
-            min-width: 150px;
-        }
+<!-- Monitoring table container — Renewal loads by default -->
+<div id="monitoringContainer">
+    <partial name="Partials/Monitoring/_RenewalMonitoring" model="Model" />
+</div>
 
-        thead .sticky-col {
-            background-color: #212529;
-            color: white;
-        }
-    </style>
+<script>
+    document.getElementById('activitySelect').addEventListener('change', function () {
+        const activity = this.value;
+        const container = document.getElementById('monitoringContainer');
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        container.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2 text-muted small">Loading monitoring data...</div>
+            </div>`;
 
-    <script>
-        document.addEventListener("change", function (e) {
-
-            if (!e.target.classList.contains("mp2-input")) return;
-
-            let row = e.target.closest("tr");
-
-            let controlNumber = e.target.dataset.control;
-
-            let targetMold = row.querySelector('[data-type="TargetMoldUsageDate"]')?.value;
-            let partsShortage = row.querySelector('[data-type="PartsShortageDate"]')?.value;
-
-            Swal.fire({
-                title: 'Save Changes?',
-                text: `Do you want to save MP2 CAPA/PDC dates for ${controlNumber}?`,
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, Save',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-
-                if (result.isConfirmed) {
-                    fetch('@Url.Action("SaveMp2CapaPdc", "UpdatePerActivity")', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            ControlNumber: controlNumber,
-                            TargetMoldUsageDate: targetMold || null,
-                            PartsShortageDate: partsShortage || null
-                        })
-                    })
-                    .then(res => {
-                        if (!res.ok) throw new Error("Server error");
-                        return res.json();
-                    })
-                    .then(data => {
-                        Swal.fire('Saved!', '', 'success');
-                    })
-                    .catch(err => {
-                        Swal.fire('Error', err.message, 'error');
-                    });
-                } else {
-                    location.reload();
-                }
+        fetch('@Url.Action("GetMonitoringPartial", "UpdatePerActivity")'
+            + '?activity=' + encodeURIComponent(activity))
+            .then(res => res.text())
+            .then(html => { container.innerHTML = html; })
+            .catch(() => {
+                container.innerHTML = `
+                    <div class="alert alert-danger text-center mt-3">
+                        Failed to load monitoring data.
+                    </div>`;
             });
-        });
-    </script>
-
+    });
+</script>

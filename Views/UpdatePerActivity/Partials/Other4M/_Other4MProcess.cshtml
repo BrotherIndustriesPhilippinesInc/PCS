@@ -1,0 +1,404 @@
+﻿@model List<PartsControlSystem.ViewModels.Other4MProcessVM>
+
+@foreach (var item in Model)
+{
+    <div class="card shadow-sm border-0 mb-4 process-card"
+         data-endpoint="@Url.Action("SaveOther4MProcess", "UpdatePerActivity")"
+         data-controlno="@item.ControlNumber"
+         data-processstep="@item.ProcessStep"
+         data-steporder="@item.StepOrder"
+         data-fields="@GetFieldsForStep(item.ProcessStep)">
+
+        <div class="card-header d-flex justify-content-between align-items-center"
+             style="background:#4a5568; border-radius:12px 12px 0 0;">
+            <span class="text-white fw-semibold">
+                Other 4M &mdash; @item.ProcessStep
+            </span>
+            <span class="badge bg-light text-dark">
+                Step @item.StepOrder
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Control No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ControlNumber" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Section</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Section" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Model</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Model" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Code</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ChildPartcode" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Name</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.PartName" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Supplier" readonly />
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">BIPH Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.BIPHMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.SupplierMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Mold Maker</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.MoldMaker" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tooling Mgt. No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingManagement" readonly />
+                </div>
+            </div>
+
+            <hr class="my-2" />
+
+            <div class="row g-3 mb-2">
+                @switch (item.ProcessStep)
+                {
+                    case "Test Run meeting date":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Target Date</label>
+                            <input type="date" name="TestRunMeetingTargetDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Actual Date</label>
+                            <input type="date" name="TestRunMeetingActualDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "Kataken Request date":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Target Date</label>
+                            <input type="date" name="KatakenRequestTargetDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Actual Date</label>
+                            <input type="date" name="KatakenRequestActualDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "Kataken PH Sample Submission":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Submission Date</label>
+                            <input type="date" name="KatakenSampleSubmissionDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "Kataken Evaluation Approval":
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Requested Date</label>
+                            <input type="date" name="KatakenRequestedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Submission Date</label>
+                            <input type="date" name="KatakenSubmissionDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Approved Date</label>
+                            <input type="date" name="KatakenApprovedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Kataken Status</label>
+                            <select name="KatakenStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option>FOR REQUEST</option>
+                                <option>NOT RECEIVED</option>
+                                <option>FOR INSPECTION</option>
+                                <option>DATA REVIEW</option>
+                                <option>FOR SPV APPROVAL</option>
+                                <option>ACCEPT</option>
+                                <option>REJECT</option>
+                                <option>CONDITIONALLY ACCEPT (JUDGMENT B)</option>
+                                <option>CONDITIONALLY ACCEPT (JUDGMENT D)</option>
+                                <option>CONDITIONALLY ACCEPT (JUDGMENT E)</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="KatakenRemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "DE Evaluation":
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Reference No.</label>
+                            <input type="text" name="DEReferenceNo" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Workflow/System No.</label>
+                            <input type="text" name="DEWorkflowSystemNo" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Parts Received Date</label>
+                            <input type="date" name="DEPartsReceivedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Parts Endorsement Date</label>
+                            <input type="date" name="DEPartsEndorsementDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Actual Finished Date</label>
+                            <input type="date" name="DEActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">DE Eval Status</label>
+                            <select name="DEEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option>FOR DE WORKFLOW CREATION</option>
+                                <option>FOR REQUEST</option>
+                                <option>NOT RECEIVED</option>
+                                <option>FOR ENDORSE</option>
+                                <option>ONGOING EVALUATION</option>
+                                <option>PASSED</option>
+                                <option>REJECT</option>
+                                <option>FOR RE-EVALUATION</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="DERemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "EE Evaluation":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Parts Received Date</label>
+                            <input type="date" name="EEPartsReceivedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Parts Endorsement Date</label>
+                            <input type="date" name="EEPartsEndorsementDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Actual Finished Date</label>
+                            <input type="date" name="EEActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">EE Eval Status</label>
+                            <select name="EEEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option>FOR REQUEST</option>
+                                <option>NOT RECEIVED</option>
+                                <option>FOR ENDORSE</option>
+                                <option>ONGOING EVALUATION</option>
+                                <option>PASSED</option>
+                                <option>REJECT</option>
+                                <option>FOR RE-EVALUATION</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="EERemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "QA Evaluation":
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Workflow No.</label>
+                            <input type="text" name="QAWorkflowNo" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Target Delivery Date</label>
+                            <input type="date" name="QATargetDeliveryDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Parts Received Date</label>
+                            <input type="date" name="QAPartsReceivedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Parts Endorsement Date</label>
+                            <input type="date" name="QAPartsEndorsementDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Actual Finished Date</label>
+                            <input type="date" name="QAActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">QA Eval Status</label>
+                            <select name="QAEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option>FOR QA WORKFLOW CREATION</option>
+                                <option>FOR REQUEST P.O TO SUPPLIER</option>
+                                <option>NOT RECEIVED</option>
+                                <option>FOR REQUEST P.O TO PRODUCTION (DUMMY P.O)</option>
+                                <option>NO DUMMY P.O YET FROM PC-PPG</option>
+                                <option>FOR ENDORSE</option>
+                                <option>ONGOING EVALUATION</option>
+                                <option>PASSED</option>
+                                <option>REJECT</option>
+                                <option>FOR RE-EVALUATION</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="QARemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "ITF Process":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Actual Finished Date</label>
+                            <input type="date" name="ITFActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">ITF Status</label>
+                            <select name="ITFStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select status</option>
+                                <option>FOR ITF CREATION</option>
+                                <option>ONGOING SYSTEM APPROVAL</option>
+                                <option>FOR POC</option>
+                                <option>FOR DISPOSAL APPROVAL</option>
+                                <option>DONE</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="ITFRemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "Delivery PO Requisition":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Request of Delivery PO</label>
+                            <input type="date" name="DeliveryPORequestDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">PO Issuance</label>
+                            <input type="date" name="DeliveryPOIssuanceDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Target Delivery Date</label>
+                            <input type="date" name="DeliveryPOTargetDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "Test Run PO request":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Test Run PO Request Date</label>
+                            <input type="date" name="TestRunPORequestDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">PO Issuance</label>
+                            <input type="date" name="TestRunPOIssuanceDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "TEST RUN":
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Test Run No.</label>
+                            <input type="text" name="TestRunNo" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Actual Received Date</label>
+                            <input type="date" name="TestRunActualReceivedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold">Actual Finished Date</label>
+                            <input type="date" name="TestRunActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Test Result</label>
+                            <select name="TestResult" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                                <option value="" disabled selected>Select result</option>
+                                <option>FOR TEST RUN NO. CREATION</option>
+                                <option>FOR REQUEST P.O TO SUPPLIER</option>
+                                <option>NOT RECEIVED</option>
+                                <option>FOR CPR / REQUEST P.O. TO PRODUCTION</option>
+                                <option>NO P.O. YET FROM PC-PPG</option>
+                                <option>ALREADY ENDORSED TO LC</option>
+                                <option>ONGOING TEST RUN</option>
+                                <option>PASSED</option>
+                                <option>REJECT</option>
+                                <option>FOR RE-EVALUATION</option>
+                                <option>NO NEED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Remarks</label>
+                            <input type="text" name="TestRunRemarks" class="form-control form-control-sm" style="background-color:#fffbe6;" />
+                        </div>
+                        break;
+
+                    case "IMPLEMENTATION DATE":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">Implementation Date</label>
+                            <input type="date" name="ImplementationDate" class="form-control form-control-sm" style="background-color:#fffbe6;" required />
+                        </div>
+                        break;
+
+                    case "FIRST DELIVERY DATE":
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold">First Delivery Date</label>
+                            <input type="date" name="FirstDeliveryDate" class="form-control form-control-sm" style="background-color:#fffbe6;" required />
+                        </div>
+                        break;
+                }
+            </div>
+
+            <div class="row g-3 align-items-end mt-1">
+                <div class="col-md-10"></div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-success btn-sm btn-save-approval">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(item.NextProcessStep))
+            {
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fa-solid fa-arrow-right me-1"></i>
+                        Next step after save: <strong>@item.NextProcessStep</strong>
+                    </small>
+                </div>
+            }
+
+        </div>
+    </div>
+}
+
+@functions
+{
+    // Field list must exactly match SaveOther4MProcessDto property names for each step,
+    // since the universal save handler reads data-fields to build the payload.
+    public string GetFieldsForStep(string step) => step switch
+    {
+        "Test Run meeting date" => "TestRunMeetingTargetDate,TestRunMeetingActualDate",
+        "Kataken Request date" => "KatakenRequestTargetDate,KatakenRequestActualDate",
+        "Kataken PH Sample Submission" => "KatakenSampleSubmissionDate",
+        "Kataken Evaluation Approval" => "KatakenRequestedDate,KatakenSubmissionDate,KatakenApprovedDate,KatakenStatus,KatakenRemarks",
+        "DE Evaluation" => "DEReferenceNo,DEWorkflowSystemNo,DEPartsReceivedDate,DEPartsEndorsementDate,DEActualFinishedDate,DEEvalStatus,DERemarks",
+        "EE Evaluation" => "EEPartsReceivedDate,EEPartsEndorsementDate,EEActualFinishedDate,EEEvalStatus,EERemarks",
+        "QA Evaluation" => "QAWorkflowNo,QATargetDeliveryDate,QAPartsReceivedDate,QAPartsEndorsementDate,QAActualFinishedDate,QAEvalStatus,QARemarks",
+        "ITF Process" => "ITFActualFinishedDate,ITFStatus,ITFRemarks",
+        "Delivery PO Requisition" => "DeliveryPORequestDate,DeliveryPOIssuanceDate,DeliveryPOTargetDate",
+        "Test Run PO request" => "TestRunPORequestDate,TestRunPOIssuanceDate",
+        "TEST RUN" => "TestRunNo,TestRunActualReceivedDate,TestRunActualFinishedDate,TestResult,TestRunRemarks",
+        "IMPLEMENTATION DATE" => "ImplementationDate",
+        "FIRST DELIVERY DATE" => "FirstDeliveryDate",
+        _ => ""
+    };
+}

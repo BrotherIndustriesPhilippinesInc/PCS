@@ -41,6 +41,10 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("text")
                         .HasColumnName("current_process");
 
+                    b.Property<bool>("IsDelay")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_delay");
+
                     b.Property<DateTime>("UpdateAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("update_at");
@@ -48,6 +52,155 @@ namespace PartsControlSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("activity_current_process");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ChangeMaterialProcess", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Activity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ActualDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentProcess")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("InputBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProcessStep")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Remarks")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("TargetDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlNumber", "ProcessStep")
+                        .IsUnique();
+
+                    b.ToTable("change_material_processes");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ChangeMaterialProcessMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("LeadTime")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("ProcessStep")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("change_material_process_mappings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            LeadTime = 21m,
+                            ProcessStep = "Material LOA",
+                            Section = "MP1",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            LeadTime = 0m,
+                            ProcessStep = "Kataken PH Sample Submission",
+                            Section = "IQC",
+                            StepOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            LeadTime = 7m,
+                            ProcessStep = "Kataken Evaluation Approval",
+                            Section = "IQC",
+                            StepOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            LeadTime = 10m,
+                            ProcessStep = "QA Evaluation",
+                            Section = "IQC",
+                            StepOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            LeadTime = 10m,
+                            ProcessStep = "DE Evaluation",
+                            Section = "IQC",
+                            StepOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            LeadTime = 2m,
+                            ProcessStep = "Test Run",
+                            Section = "IQC",
+                            StepOrder = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            LeadTime = 0m,
+                            ProcessStep = "Implementation Date",
+                            Section = "MP1",
+                            StepOrder = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            LeadTime = 0m,
+                            ProcessStep = "First Delivery Date",
+                            Section = "MP1",
+                            StepOrder = 8
+                        });
                 });
 
             modelBuilder.Entity("PartsControlSystem.Models.DE_Evaluation", b =>
@@ -303,6 +456,11 @@ namespace PartsControlSystem.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("mother_moldcode");
+
+                    b.Property<string>("MultipleProcurementLocalization")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("multiple_procurement_localization");
 
                     b.Property<string>("NewModel")
                         .IsRequired()
@@ -696,6 +854,1125 @@ namespace PartsControlSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("mp2_tooling_transfer");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.NewToolingCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("AssignedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlNumber")
+                        .IsUnique();
+
+                    b.ToTable("new_tooling_category");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.NewToolingLocalizationProcess", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Activity")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("ActualDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentProcess")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<DateTime?>("FinalPOIssuedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InputBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("ProcessStep")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ReferenceNo")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Result")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("TargetDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlNumber", "Category", "ProcessStep")
+                        .IsUnique();
+
+                    b.ToTable("new_tooling_localization_process");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.NewToolingProcessMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<decimal>("LeadTimeDays")
+                        .HasColumnType("numeric")
+                        .HasColumnName("LeadTimeDays");
+
+                    b.Property<string>("ProcessStep")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("new_tooling_process_mapping");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Mold LOA",
+                            Section = "MP1-PUR",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Material LOA",
+                            Section = "MP1-PUR",
+                            StepOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Manual FC to new supplier",
+                            Section = "MP2-DOM",
+                            StepOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling PO issuance",
+                            Section = "MP2-TOOLING",
+                            StepOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling Transfer Date",
+                            Section = "MP2-TOOLING",
+                            StepOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "4M Application Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Submission",
+                            Section = "IQC",
+                            StepOrder = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Approval",
+                            Section = "IQC",
+                            StepOrder = 8
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Availability of Parts Packaging Standard",
+                            Section = "IQC",
+                            StepOrder = 9
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Open sourcelist (New Supplier) / Updated Price input",
+                            Section = "MP1-PUR",
+                            StepOrder = 10
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Procurement Type Change",
+                            Section = "MP1-PUR",
+                            StepOrder = 11
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Request Date",
+                            Section = "IQC",
+                            StepOrder = 12
+                        },
+                        new
+                        {
+                            Id = 13,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Return of Special procurement type",
+                            Section = "MP1-PUR",
+                            StepOrder = 13
+                        },
+                        new
+                        {
+                            Id = 14,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 14
+                        },
+                        new
+                        {
+                            Id = 15,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Delivery Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 15
+                        },
+                        new
+                        {
+                            Id = 16,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Schedule",
+                            Section = "IQC",
+                            StepOrder = 16
+                        },
+                        new
+                        {
+                            Id = 17,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Approval Date",
+                            Section = "IQC",
+                            StepOrder = 17
+                        },
+                        new
+                        {
+                            Id = 18,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Confirmation of Parts Availability",
+                            Section = "MP1-PUR",
+                            StepOrder = 18
+                        },
+                        new
+                        {
+                            Id = 19,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Quota Arrangement SAP input",
+                            Section = "MP1-PUR",
+                            StepOrder = 19
+                        },
+                        new
+                        {
+                            Id = 20,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "PO issuance Date (New Supplier)",
+                            Section = "MP2-DOM",
+                            StepOrder = 20
+                        },
+                        new
+                        {
+                            Id = 21,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Parts Delivery Date (New Supplier Delivery Date)",
+                            Section = "MP2-DOM",
+                            StepOrder = 21
+                        },
+                        new
+                        {
+                            Id = 22,
+                            Category = "Multiple Procurement",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Target Usage Date",
+                            Section = "MP2",
+                            StepOrder = 22
+                        },
+                        new
+                        {
+                            Id = 23,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Mold LOA",
+                            Section = "MP1-PUR",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            Id = 24,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Material LOA",
+                            Section = "MP1-PUR",
+                            StepOrder = 2
+                        },
+                        new
+                        {
+                            Id = 25,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Manual FC to new supplier",
+                            Section = "MP2-DOM",
+                            StepOrder = 3
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling PO issuance",
+                            Section = "MP2-TOOLING",
+                            StepOrder = 4
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling Transfer Date",
+                            Section = "MP2-TOOLING",
+                            StepOrder = 5
+                        },
+                        new
+                        {
+                            Id = 28,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "4M Application Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 6
+                        },
+                        new
+                        {
+                            Id = 29,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Submission",
+                            Section = "IQC",
+                            StepOrder = 7
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Approval",
+                            Section = "IQC",
+                            StepOrder = 8
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "DE Sample Received Date",
+                            Section = "DE",
+                            StepOrder = 9
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "DE Sample Approval",
+                            Section = "DE",
+                            StepOrder = 10
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "QA Sample Received Date",
+                            Section = "QA",
+                            StepOrder = 11
+                        },
+                        new
+                        {
+                            Id = 34,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "QA Sample Approval",
+                            Section = "QA",
+                            StepOrder = 12
+                        },
+                        new
+                        {
+                            Id = 35,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Availability of Parts Packaging Standard",
+                            Section = "IQC",
+                            StepOrder = 13
+                        },
+                        new
+                        {
+                            Id = 36,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Open sourcelist (New Supplier)",
+                            Section = "MP1-PUR",
+                            StepOrder = 14
+                        },
+                        new
+                        {
+                            Id = 37,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Request Date",
+                            Section = "IQC",
+                            StepOrder = 15
+                        },
+                        new
+                        {
+                            Id = 38,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 16
+                        },
+                        new
+                        {
+                            Id = 39,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Delivery Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 17
+                        },
+                        new
+                        {
+                            Id = 40,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Schedule",
+                            Section = "IQC",
+                            StepOrder = 18
+                        },
+                        new
+                        {
+                            Id = 41,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Approval Date",
+                            Section = "IQC",
+                            StepOrder = 19
+                        },
+                        new
+                        {
+                            Id = 42,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "4M Approval Date",
+                            Section = "IQC",
+                            StepOrder = 20
+                        },
+                        new
+                        {
+                            Id = 43,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Request Simulation to MP2",
+                            Section = "MP1-PUR",
+                            StepOrder = 21
+                        },
+                        new
+                        {
+                            Id = 44,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Simulation of Old Suppliers Stocks",
+                            Section = "MP2-DOM",
+                            StepOrder = 22
+                        },
+                        new
+                        {
+                            Id = 45,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Final PO Delivery (Date)",
+                            Section = "MP2-DOM",
+                            StepOrder = 23
+                        },
+                        new
+                        {
+                            Id = 46,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "SAP Setting Change",
+                            Section = "MP1-PUR",
+                            StepOrder = 24
+                        },
+                        new
+                        {
+                            Id = 47,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "BLK and FIX Supplier",
+                            Section = "MP1-PUR",
+                            StepOrder = 25
+                        },
+                        new
+                        {
+                            Id = 48,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Recosting Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 26
+                        },
+                        new
+                        {
+                            Id = 49,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "PO issuance Date (New Supplier)",
+                            Section = "MP2-DOM",
+                            StepOrder = 27
+                        },
+                        new
+                        {
+                            Id = 50,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Parts Availability (New Supplier Delivery Date)",
+                            Section = "MP2-DOM",
+                            StepOrder = 28
+                        },
+                        new
+                        {
+                            Id = 51,
+                            Category = "Supplier Change",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Target Usage Date",
+                            Section = "MP2",
+                            StepOrder = 29
+                        },
+                        new
+                        {
+                            Id = 52,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling PO Issued Date",
+                            Section = "MP2-TOOL",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            Id = 53,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Drawing Issuance to Supplier",
+                            Section = "PC-DCI",
+                            StepOrder = 2
+                        },
+                        new
+                        {
+                            Id = 54,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Tooling Transfer Date",
+                            Section = "MP2-TOOL",
+                            StepOrder = 3
+                        },
+                        new
+                        {
+                            Id = 55,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "4M Application Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 4
+                        },
+                        new
+                        {
+                            Id = 56,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Submission",
+                            Section = "IQC",
+                            StepOrder = 5
+                        },
+                        new
+                        {
+                            Id = 57,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Kataken PH Sample Approval",
+                            Section = "IQC",
+                            StepOrder = 6
+                        },
+                        new
+                        {
+                            Id = 58,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Procurement Type Change",
+                            Section = "PC-DCI",
+                            StepOrder = 7
+                        },
+                        new
+                        {
+                            Id = 59,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Open Sourcelist Local",
+                            Section = "MP1-PUR",
+                            StepOrder = 8
+                        },
+                        new
+                        {
+                            Id = 60,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Request Date",
+                            Section = "IQC",
+                            StepOrder = 9
+                        },
+                        new
+                        {
+                            Id = 61,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run PO Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 10
+                        },
+                        new
+                        {
+                            Id = 62,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Delivery Date",
+                            Section = "MP2-DOM",
+                            StepOrder = 11
+                        },
+                        new
+                        {
+                            Id = 63,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Schedule",
+                            Section = "IQC",
+                            StepOrder = 12
+                        },
+                        new
+                        {
+                            Id = 64,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Test Run Approval Date",
+                            Section = "IQC",
+                            StepOrder = 13
+                        },
+                        new
+                        {
+                            Id = 65,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "4M Approval Date",
+                            Section = "IQC",
+                            StepOrder = 14
+                        },
+                        new
+                        {
+                            Id = 66,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Request Simulation to MP2",
+                            Section = "MP1-PUR",
+                            StepOrder = 15
+                        },
+                        new
+                        {
+                            Id = 67,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Simulation of Old Suppliers Stocks",
+                            Section = "MP2-OVR",
+                            StepOrder = 16
+                        },
+                        new
+                        {
+                            Id = 68,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Final PO Delivery (Date)",
+                            Section = "MP2-OVR",
+                            StepOrder = 17
+                        },
+                        new
+                        {
+                            Id = 69,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "SAP Setting Change",
+                            Section = "MP1-PUR",
+                            StepOrder = 18
+                        },
+                        new
+                        {
+                            Id = 70,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "BLK and FIX Supplier",
+                            Section = "MP1-PUR",
+                            StepOrder = 19
+                        },
+                        new
+                        {
+                            Id = 71,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Recosting Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 20
+                        },
+                        new
+                        {
+                            Id = 72,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "PO issuance Date (New Supplier)",
+                            Section = "MP2-DOM",
+                            StepOrder = 21
+                        },
+                        new
+                        {
+                            Id = 73,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Parts Availability (New Supplier Delivery Date)",
+                            Section = "MP2-DOM",
+                            StepOrder = 22
+                        },
+                        new
+                        {
+                            Id = 74,
+                            Category = "Localization",
+                            LeadTimeDays = 0m,
+                            ProcessStep = "Target Usage Date",
+                            Section = "MP1-PUR",
+                            StepOrder = 23
+                        });
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.Other4MProcess", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Activity")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CurrentProcess")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DEActualFinishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DEEvalStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DEPartsEndorsementDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DEPartsReceivedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DEReferenceNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DERemarks")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DEWorkflowSystemNo")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("DeliveryPOIssuanceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeliveryPORequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeliveryPOTargetDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EEActualFinishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EEEvalStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("EEPartsEndorsementDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EEPartsReceivedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EERemarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("FirstDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("ITFActualFinishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ITFRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ITFStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("ImplementationDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InputBy")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("KatakenApprovedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("KatakenRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("KatakenRequestActualDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("KatakenRequestTargetDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("KatakenRequestedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("KatakenSampleSubmissionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("KatakenStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("KatakenSubmissionDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("QAActualFinishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("QAEvalStatus")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("QAPartsEndorsementDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("QAPartsReceivedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("QARemarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("QATargetDeliveryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("QAWorkflowNo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Section")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TestResult")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("TestRunActualFinishedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TestRunActualReceivedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TestRunMeetingActualDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TestRunMeetingTargetDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TestRunNo")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("TestRunPOIssuanceDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("TestRunPORequestDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TestRunRemarks")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("UpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ControlNumber")
+                        .IsUnique();
+
+                    b.ToTable("Other4MProcesses");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.Other4MProcessMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("LeadTimeDays")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LeadTimeNote")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProcessStep")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Other4MProcessMappings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            LeadTimeDays = 5,
+                            LeadTimeNote = "5 days after 4M form received",
+                            ProcessStep = "Test Run meeting date",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            LeadTimeDays = 1,
+                            LeadTimeNote = "1 day after 4M form received",
+                            ProcessStep = "Kataken Request date",
+                            StepOrder = 2
+                        },
+                        new
+                        {
+                            Id = 3,
+                            LeadTimeNote = "Manual Input/0",
+                            ProcessStep = "Kataken PH Sample Submission",
+                            StepOrder = 3
+                        },
+                        new
+                        {
+                            Id = 4,
+                            LeadTimeDays = 7,
+                            LeadTimeNote = "7 days",
+                            ProcessStep = "Kataken Evaluation Approval",
+                            StepOrder = 4
+                        },
+                        new
+                        {
+                            Id = 5,
+                            LeadTimeDays = 10,
+                            LeadTimeNote = "10 days",
+                            ProcessStep = "DE Evaluation",
+                            StepOrder = 5
+                        },
+                        new
+                        {
+                            Id = 6,
+                            LeadTimeDays = 10,
+                            LeadTimeNote = "10 days",
+                            ProcessStep = "EE Evaluation",
+                            StepOrder = 6
+                        },
+                        new
+                        {
+                            Id = 7,
+                            LeadTimeDays = 10,
+                            LeadTimeNote = "10 days",
+                            ProcessStep = "QA Evaluation",
+                            StepOrder = 7
+                        },
+                        new
+                        {
+                            Id = 8,
+                            LeadTimeDays = 2,
+                            LeadTimeNote = "2 days",
+                            ProcessStep = "ITF Process",
+                            StepOrder = 8
+                        },
+                        new
+                        {
+                            Id = 9,
+                            LeadTimeDays = 1,
+                            LeadTimeNote = "1 day after QA evaluation",
+                            ProcessStep = "Delivery PO Requisition",
+                            StepOrder = 9
+                        },
+                        new
+                        {
+                            Id = 10,
+                            LeadTimeDays = 1,
+                            LeadTimeNote = "1 day after delivery of Test Run",
+                            ProcessStep = "Test Run PO request",
+                            StepOrder = 10
+                        },
+                        new
+                        {
+                            Id = 11,
+                            LeadTimeDays = 2,
+                            LeadTimeNote = "2 days",
+                            ProcessStep = "TEST RUN",
+                            StepOrder = 11
+                        },
+                        new
+                        {
+                            Id = 12,
+                            LeadTimeNote = "Depends on DCI implementation / current material stocks depletion",
+                            ProcessStep = "IMPLEMENTATION DATE",
+                            StepOrder = 12
+                        },
+                        new
+                        {
+                            Id = 13,
+                            LeadTimeNote = "Depends on DCI implementation / current material stocks depletion",
+                            ProcessStep = "FIRST DELIVERY DATE",
+                            StepOrder = 13
+                        });
                 });
 
             modelBuilder.Entity("PartsControlSystem.Models.QA_SpecialEvaluation", b =>
@@ -1300,6 +2577,615 @@ namespace PartsControlSystem.Migrations
                     b.ToTable((string)null);
 
                     b.ToView("view_activity_monitoring", "public");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ViewChangeMaterialMonitoring", b =>
+                {
+                    b.Property<string>("BIPHMoldNo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("BIPHMoldNo");
+
+                    b.Property<string>("ChildPartcode")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ChildPartcode");
+
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ControlNumber");
+
+                    b.Property<string>("CurrentProcess")
+                        .HasColumnType("text")
+                        .HasColumnName("CurrentProcess");
+
+                    b.Property<DateTime?>("DeEvalActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("DeEvalActualDate");
+
+                    b.Property<DateTime?>("DeEvalTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("DeEvalTargetDate");
+
+                    b.Property<DateTime?>("FirstDelActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("FirstDelActualDate");
+
+                    b.Property<DateTime?>("FirstDelTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("FirstDelTargetDate");
+
+                    b.Property<DateTime?>("ImplDateActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ImplDateActualDate");
+
+                    b.Property<DateTime?>("ImplDateTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ImplDateTargetDate");
+
+                    b.Property<DateTime?>("KatakenEvalActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("KatakenEvalActualDate");
+
+                    b.Property<DateTime?>("KatakenEvalTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("KatakenEvalTargetDate");
+
+                    b.Property<DateTime?>("KatakenPhActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("KatakenPhActualDate");
+
+                    b.Property<DateTime?>("KatakenPhTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("KatakenPhTargetDate");
+
+                    b.Property<DateTime?>("MaterialLoaActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("MaterialLoaActualDate");
+
+                    b.Property<DateTime?>("MaterialLoaTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("MaterialLoaTargetDate");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Model");
+
+                    b.Property<string>("MoldMaker")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("MoldMaker");
+
+                    b.Property<string>("PartName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("PartName");
+
+                    b.Property<DateTime?>("QaEvalActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("QaEvalActualDate");
+
+                    b.Property<DateTime?>("QaEvalTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("QaEvalTargetDate");
+
+                    b.Property<string>("Section")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Section");
+
+                    b.Property<string>("Supplier")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("Supplier");
+
+                    b.Property<string>("SupplierMoldNo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("SupplierMoldNo");
+
+                    b.Property<DateTime?>("TestRunActualDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("TestRunActualDate");
+
+                    b.Property<DateTime?>("TestRunTargetDate")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("TestRunTargetDate");
+
+                    b.Property<string>("ToolingManagement")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ToolingManagement");
+
+                    b.ToTable("view_change_material_monitoring");
+
+                    b.ToView("view_change_material_monitoring", "public");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ViewLocalizationMonitoring", b =>
+                {
+                    b.Property<string>("ControlNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("actual_delivery_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("application_date_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("approval_date_4m_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("blk_fix_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("blk_fix_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("blk_fix_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("drawing_issuance_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("drawing_issuance_revision")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("final_po_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_sub_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_sub_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("open_sourcelist_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("parts_availability_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_delivery_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_issuance_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("proc_type_change_input")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("recosting_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("recosting_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("recosting_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("request_sim_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sap_setting_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sap_setting_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_actual_stocks")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_final_po_issued_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_mrp_transfer_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_shortage_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("target_usage_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_req_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_sched_start")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_po_issued_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_transfer_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ViewLocalizationMonitoring", (string)null);
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ViewMultipleProcurementMonitoring", b =>
+                {
+                    b.Property<string>("ControlNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("application_date_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("application_date_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("confirm_parts_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("confirm_parts_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("kataken_appr_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("kataken_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_sub_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("kataken_sub_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("kataken_sub_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("manual_fc_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("manual_fc_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("material_loa_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("material_loa_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("material_loa_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("mold_loa_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("mold_loa_biph_new")
+                        .HasColumnType("text");
+
+                    b.Property<string>("mold_loa_old_biph")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("mold_loa_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("open_sourcelist_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("open_sourcelist_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("parts_availability_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("parts_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("parts_delivery_po_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_issuance_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_issuance_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("pps_approval_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("pps_available")
+                        .HasColumnType("text");
+
+                    b.Property<string>("pps_packaging_type")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("pps_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("proc_type_change_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("proc_type_change_input")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("proc_type_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("quota_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("quota_current_supplier")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("quota_input_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("quota_new_supplier")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("quota_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("return_special_proc_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("return_special_proc_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("return_special_proc_type")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("target_usage_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("target_usage_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("test_run_appr_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("test_run_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_delivery_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_req_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_req_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_sched_finish")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_sched_start")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_po_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_po_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_transfer_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_transfer_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("view_multiple_procurement_monitoring", "public");
+                });
+
+            modelBuilder.Entity("PartsControlSystem.Models.ViewSupplierChangeMonitoring", b =>
+                {
+                    b.Property<string>("ControlNumber")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Model")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PartName")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("actual_delivery_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("application_date_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("approval_date_4m_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("blk_fix_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("blk_fix_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("de_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("de_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("de_sample_received_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("final_po_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_sub_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("kataken_sub_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("manual_fc_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("material_loa_status")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("material_loa_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("mold_loa_biph_new_supplier")
+                        .HasColumnType("text");
+
+                    b.Property<string>("mold_loa_old_supplier_biph")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("mold_loa_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("open_sourcelist_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("parts_availability_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_delivery_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("po_issuance_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("pps_approval_date")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("pps_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("qa_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("qa_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("qa_sample_received_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("recosting_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("recosting_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("request_sim_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sap_setting_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sap_setting_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("sim_actual_stocks")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("sim_final_po_issued_date")
+                        .HasColumnType("text");
+
+                    b.Property<string>("sim_shortage_date")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime?>("sim_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("target_usage_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_appr_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_appr_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_delivery_actual")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_req_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_po_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("test_run_sched_start")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_po_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("tooling_transfer_target")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("ViewSupplierChangeMonitoring", (string)null);
                 });
 
             modelBuilder.Entity("PartsControlSystem.Models._4mForm", b =>

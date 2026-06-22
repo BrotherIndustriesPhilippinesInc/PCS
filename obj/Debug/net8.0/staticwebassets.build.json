@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "8ij/z5RV4YrOG2mzn+VsKeESI67GqJOH6IA9TszhBj0=",
+  "Hash": "fnijMUBV2IJFFaxFyFMyhEcVzM1UPqAeR2IbX75tOD4=",
   "Source": "PartsControlSystem",
   "BasePath": "_content/PartsControlSystem",
   "Mode": "Default",
@@ -1585,8 +1585,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "yxtblovwbc",
-      "Integrity": "qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios=",
+      "Fingerprint": "hhwgrdti60",
+      "Integrity": "i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\templates\\ImportData_Batch Entry Template.xlsx"
@@ -7459,7 +7459,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 31 Mar 2026 07:12:13 GMT"
+          "Value": "Thu, 14 May 2026 01:40:28 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -7496,7 +7496,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 31 Mar 2026 07:12:13 GMT"
+          "Value": "Thu, 14 May 2026 01:40:28 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -7541,7 +7541,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 31 Mar 2026 07:12:13 GMT"
+          "Value": "Thu, 14 May 2026 01:40:28 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -7586,7 +7586,7 @@
         },
         {
           "Name": "Last-Modified",
-          "Value": "Tue, 31 Mar 2026 07:12:13 GMT"
+          "Value": "Thu, 14 May 2026 01:40:28 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -7683,6 +7683,51 @@
       ]
     },
     {
+      "Route": "templates/ImportData_Batch Entry Template.hhwgrdti60.xlsx",
+      "AssetFile": "C:\\Users\\asijo\\source\\repos\\PCS\\wwwroot\\templates\\ImportData_Batch Entry Template.xlsx",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "12302"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Tue, 28 Apr 2026 07:42:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "hhwgrdti60"
+        },
+        {
+          "Name": "label",
+          "Value": "templates/ImportData_Batch Entry Template.xlsx"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo="
+        }
+      ]
+    },
+    {
       "Route": "templates/ImportData_Batch Entry Template.xlsx",
       "AssetFile": "C:\\Users\\asijo\\source\\repos\\PCS\\wwwroot\\templates\\ImportData_Batch Entry Template.xlsx",
       "Selectors": [],
@@ -7693,7 +7738,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "12270"
+          "Value": "12302"
         },
         {
           "Name": "Content-Type",
@@ -7701,11 +7746,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios=\""
+          "Value": "\"i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Mon, 23 Mar 2026 07:18:33 GMT"
+          "Value": "Tue, 28 Apr 2026 07:42:40 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -7715,52 +7760,7 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios="
-        }
-      ]
-    },
-    {
-      "Route": "templates/ImportData_Batch Entry Template.yxtblovwbc.xlsx",
-      "AssetFile": "C:\\Users\\asijo\\source\\repos\\PCS\\wwwroot\\templates\\ImportData_Batch Entry Template.xlsx",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "12270"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        },
-        {
-          "Name": "ETag",
-          "Value": "\"qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios=\""
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "Mon, 23 Mar 2026 07:18:33 GMT"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "max-age=31536000, immutable"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "fingerprint",
-          "Value": "yxtblovwbc"
-        },
-        {
-          "Name": "label",
-          "Value": "templates/ImportData_Batch Entry Template.xlsx"
-        },
-        {
-          "Name": "integrity",
-          "Value": "sha256-qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios="
+          "Value": "sha256-i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo="
         }
       ]
     },

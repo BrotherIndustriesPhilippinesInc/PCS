@@ -19,27 +19,22 @@
                     <label class="form-label small mb-1">Control No.</label>
                     <input type="text" class="form-control form-control-sm" name="ControlNumber" value="@item.ControlNo" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Section</label>
                     <input type="text" class="form-control form-control-sm" value="@item.Section" readonly />
                 </div>
-                
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Tooling Type</label>
                     <input type="text" class="form-control form-control-sm" value="@item.ToolingType" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Category</label>
                     <input type="text" class="form-control form-control-sm" value="@item.ToolingCategory" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Model</label>
                     <input type="text" class="form-control form-control-sm" value="@item.Model" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Part Code</label>
                     <input type="text" class="form-control form-control-sm" value="@item.ChildPart" readonly />
@@ -52,27 +47,22 @@
                     <label class="form-label small mb-1">Part Name</label>
                     <input type="text" class="form-control form-control-sm" value="@item.PartName" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Tooling Mgt. No.</label>
                     <input type="text" class="form-control form-control-sm" value="@item.ToolingManagement" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Supplier</label>
                     <input type="text" class="form-control form-control-sm" value="@item.Supplier" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">BIPH Mold No.</label>
                     <input type="text" class="form-control form-control-sm" value="@item.BiphMoldNo" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Supplier Mold No.</label>
                     <input type="text" class="form-control form-control-sm" value="@item.SupplierMoldNo" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Mold Maker</label>
                     <input type="text" class="form-control form-control-sm" value="@item.MoldMaker" readonly />
@@ -88,48 +78,49 @@
                     <label class="form-label small mb-1">Limit Date</label>
                     <input type="date" class="form-control form-control-sm" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Remaining Days</label>
                     <input type="number" class="form-control form-control-sm" readonly />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Target Approval</label>
-                    <input type="date" 
-                        name="TargetDate"  
-                        class="form-control form-control-sm" 
-                        style="background-color: #FFF4B6; color: #333333" />
+                    <input type="date"
+                           name="TargetDate"
+                           class="form-control form-control-sm"
+                           style="background-color: #FFF4B6; color: #333333" />
                 </div>
-
                 <div class="col-md-2">
                     <label class="form-label small mb-1">Actual Approval</label>
-                    <input type="date" 
-                        name="ActualDate" 
-                        class="form-control form-control-sm" 
-                        style="background-color: #FFF4B6; color: #333333" />
+                    <input type="date"
+                           name="ActualDate"
+                           class="form-control form-control-sm"
+                           style="background-color: #FFF4B6; color: #333333" />
                 </div>
-
                 <div class="col-md-4">
                     <label class="form-label small mb-1">Remarks</label>
-                    <textarea 
-                        class="form-control form-control-sm" 
-                        rows="2"
-                        name="Remarks"></textarea>
+                    <textarea class="form-control form-control-sm"
+                              rows="2"
+                              name="Remarks"></textarea>
                 </div>
             </div>
 
             <!-- ACTION ROW -->
-            <div class="row mt-3">
-                <div class="col text-end">
+            <div class="row mt-2">
+                <div class="col-6">
+                    <!-- Next step indicator -->
+                    <small class="text-muted">
+                        <i class="fa-solid fa-arrow-right me-1"></i>
+                        Next step after save: <strong>Tooling Request-Order</strong>
+                    </small>
+                </div>
+                <div class="col-6 text-end">
                     <button type="button"
                             class="btn btn-sm btn-success btn-save-approval">
                         <i class="fa-solid fa-save me-1"></i> Save
                     </button>
                 </div>
             </div>
+
         </div>
     </div>
 }
-
-    

@@ -27,9 +27,185 @@ namespace PartsControlSystem.Controllers
 
 
         [Authorize]
-        public IActionResult Dashboard()
+        public async Task<IActionResult> Dashboard(
+     string? section = null,
+     string? startDate = null,
+     string? endDate = null)
         {
+            var allData = await _postgreAppDbContext.ImportDatas.ToListAsync();
+            var allCurrentProcesses = await _postgreAppDbContext.ActivityCurrentProcesses.ToListAsync();
+            var leadTimes = await _postgreAppDbContext.LeadTimes.ToListAsync();
+            var today = DateTime.UtcNow;
+
+            // ── Parse date range ─────────────────────────────────────────────────────
+            DateTime? parsedStart = DateTime.TryParse(startDate, out var sd)
+                ? sd.Date : null;
+            DateTime? parsedEnd = DateTime.TryParse(endDate, out var ed)
+                ? ed.Date.AddDays(1) : null;   // +1 so endDate is inclusive
+
+            // ── Section filter ───────────────────────────────────────────────────────
+            var data = string.IsNullOrWhiteSpace(section)
+                ? allData
+                : allData.Where(x => (x.Section ?? "N/A") == section).ToList();
+
+            // ── Date filter ──────────────────────────────────────────────────────────
+            // Replace DateCreated with whatever your ImportData date field is called
+            if (parsedStart.HasValue)
+                data = data.Where(x => x.DateImported >= parsedStart.Value).ToList();
+            if (parsedEnd.HasValue)
+                data = data.Where(x => x.DateImported < parsedEnd.Value).ToList();
+
+            var filteredControlNos = data.Select(x => x.ControlNo).ToHashSet();
+
+            // ── Completed sets (scoped to filtered data) ─────────────────────────────
+            var completedIqc = _postgreAppDbContext.IQCTestRuns
+                .Where(t => filteredControlNos.Contains(t.ControlNumber))
+                .Select(t => t.ControlNumber)
+                .ToHashSet();
+
+            var completedNewTooling = _postgreAppDbContext.NewToolingLocalizationProcesses
+                .Where(p => p.CurrentProcess == "Completed" && filteredControlNos.Contains(p.ControlNumber))
+                .Select(p => p.ControlNumber)
+                .ToHashSet();
+
+            var completedChangeMaterial = _postgreAppDbContext.ChangeMaterialProcesses
+                .Where(p => p.ProcessStep == "First Delivery Date" && filteredControlNos.Contains(p.ControlNumber))
+                .Select(p => p.ControlNumber)
+                .ToHashSet();
+
+            // ── Per-Activity Stats ───────────────────────────────────────────────────
+            var activityStats = new Dictionary<string, (int Done, int Ongoing, int Delay)>
+            {
+                ["Renewal / Additional Mold"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.RenewalAdditionalMold, completedIqc),
+                ["New Tooling / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NewToolingLocalization, completedNewTooling),
+                ["Supplier Change / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.SupplierChangeLocalization, completedNewTooling),
+                ["Multiple Procurement / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.MultipleProcurementLocalization, completedNewTooling),
+                ["Transfer Tooling"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.TransferTooling, new HashSet<string>()),
+                ["Change Material"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.ChangeMaterial, completedChangeMaterial),
+                ["New Model"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NewModel, new HashSet<string>()),
+                ["Non-Concurrent"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NonConcurrent, new HashSet<string>()),
+                ["Other 4M"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.Other4M, new HashSet<string>()),
+            };
+
+            // ── Overall totals (summed from cards — single source of truth) ──────────
+            int totalDone = activityStats.Values.Sum(s => s.Done);
+            int totalDelay = activityStats.Values.Sum(s => s.Delay);
+            int totalOngoing = activityStats.Values.Sum(s => s.Ongoing);
+
+            // ── Delay details per section (scoped to filtered data) ──────────────────
+            var delayDetails = new List<(string Section, int DelayItems, int DaysDelay)>();
+
+            var activitySelectors = new List<Func<ImportData, string>>
+{
+    x => x.RenewalAdditionalMold,
+    x => x.NewToolingLocalization,
+    x => x.SupplierChangeLocalization,
+    x => x.MultipleProcurementLocalization,
+    x => x.TransferTooling,
+    x => x.ChangeMaterial,
+    x => x.NewModel,
+    x => x.NonConcurrent,
+    x => x.Other4M
+};
+
+            foreach (var group in data.GroupBy(x => x.Section ?? "N/A"))
+            {
+                int sectionDelayItems = 0;
+                int sectionMaxDays = 0;
+
+                foreach (var record in group)
+                {
+                    // Count once per YES activity flag, not once per record
+                    foreach (var selector in activitySelectors)
+                    {
+                        if (!string.Equals(selector(record)?.Trim(), "YES", StringComparison.OrdinalIgnoreCase))
+                            continue;
+
+                        var currentProcess = allCurrentProcesses
+                            .Where(acp => acp.ControlNumber == record.ControlNo)
+                            .OrderByDescending(acp => acp.UpdateAt)
+                            .FirstOrDefault();
+
+                        if (currentProcess == null) continue;
+
+                        var leadTime = leadTimes
+                            .FirstOrDefault(lt => lt.Activity == currentProcess.CurrentProcess);
+
+                        if (leadTime == null) continue;
+
+                        var deadline = currentProcess.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
+                        if (deadline < today)
+                        {
+                            sectionDelayItems++;
+                            int daysLate = (int)(today - deadline).TotalDays;
+                            if (daysLate > sectionMaxDays) sectionMaxDays = daysLate;
+                        }
+                    }
+                }
+
+                if (sectionDelayItems > 0)
+                    delayDetails.Add((Section: group.Key, DelayItems: sectionDelayItems, DaysDelay: sectionMaxDays));
+            }
+
+            // ── Section dropdown list (always from allData, unfiltered) ──────────────
+            var sections = allData
+                .Select(x => x.Section ?? "N/A")
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            ViewBag.TotalDone = totalDone;
+            ViewBag.TotalOngoing = totalOngoing;
+            ViewBag.TotalDelay = totalDelay;
+            ViewBag.DelayDetails = delayDetails;
+            ViewBag.ActivityStats = activityStats;
+            ViewBag.Sections = sections;
+            ViewBag.SelectedSection = section;
+            ViewBag.SelectedStartDate = startDate;   // raw string — view echoes it into value=""
+            ViewBag.SelectedEndDate = endDate;
+
             return View();
+        }
+
+        // ── Helper ───────────────────────────────────────────────────────────────────
+        private (int Done, int Ongoing, int Delay) GetActivityStats(
+            List<ImportData> data,
+            List<ActivityCurrentProcess> allCurrentProcesses,
+            List<LeadTime> leadTimes,
+            DateTime today,
+            Func<ImportData, string> activitySelector,
+            HashSet<string> completedControlNos)
+        {
+            var activityRecords = data
+                .Where(x => activitySelector(x)
+                    ?.Trim().Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                .ToList();
+
+            int done = activityRecords.Count(x => completedControlNos.Contains(x.ControlNo));
+            int delayed = 0;
+
+            foreach (var record in activityRecords)
+            {
+                if (completedControlNos.Contains(record.ControlNo)) continue;
+
+                var currentProcess = allCurrentProcesses
+                    .Where(acp => acp.ControlNumber == record.ControlNo)
+                    .OrderByDescending(acp => acp.UpdateAt)
+                    .FirstOrDefault();
+
+                if (currentProcess == null) continue;
+
+                var leadTime = leadTimes
+                    .FirstOrDefault(lt => lt.Activity == currentProcess.CurrentProcess);
+
+                if (leadTime == null) continue;
+
+                var deadline = currentProcess.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
+                if (deadline < today) delayed++;
+            }
+
+            int ongoing = Math.Max(activityRecords.Count - done - delayed, 0);
+            return (done, ongoing, delayed);
         }
 
 

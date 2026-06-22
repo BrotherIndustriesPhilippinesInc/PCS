@@ -7,12 +7,17 @@ namespace PartsControlSystem.Models
     {
         [Column("id")]
         public int Id { get; set; }
+
         [Column("control_number")]
         public string ControlNumber { get; set; }
+
         [Column("current_process")]
         public string CurrentProcess { get; set; }
-        [Column("update_at")]
-        public DateTime UpdateAt{ get; set; }
-    }
 
+        [Column("update_at")]
+        public DateTime UpdateAt { get; set; }
+
+        [Column("is_delay")]
+        public bool IsDelay { get; set; } = false;
+    }
 }

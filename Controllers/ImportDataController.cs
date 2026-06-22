@@ -8,7 +8,6 @@ using PartsControlSystem.Models;
 
 namespace PartsControlSystem.Controllers
 {
-   
     public class ImportDataController : Controller
     {
         private readonly PostgreAppDbContext _dbContext;
@@ -23,7 +22,6 @@ namespace PartsControlSystem.Controllers
             return View();
         }
 
-        // POST: AJAX save
         [HttpPost]
         public async Task<IActionResult> SaveImportData([FromBody] ImportData importData)
         {
@@ -32,21 +30,14 @@ namespace PartsControlSystem.Controllers
 
             try
             {
-                // ================= GET SECTION FROM LOGGED-IN USER =================
                 var section = User.FindFirst("Section")?.Value;
 
                 if (string.IsNullOrEmpty(section))
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "Section not found. Please re-login."
-                    });
-                }
+                    return Json(new { success = false, message = "Section not found. Please re-login." });
 
                 importData.Section = section;
 
-                // ================= GENERATE CONTROL NO =================
+                // ── Generate Control No ──────────────────────────────────────
                 var today = DateTime.Now.ToString("yyyyMMdd");
                 var prefix = $"IMP-DATA-{today}-";
 
@@ -57,7 +48,6 @@ namespace PartsControlSystem.Controllers
                     .FirstOrDefaultAsync();
 
                 int nextSequence = 1;
-
                 if (!string.IsNullOrEmpty(lastControlNo))
                 {
                     var lastSeq = lastControlNo.Substring(prefix.Length);
@@ -68,7 +58,7 @@ namespace PartsControlSystem.Controllers
                 importData.ControlNo = prefix + nextSequence.ToString("D4");
                 importData.DateImported = DateTime.UtcNow;
 
-                // ================= DEFAULT CHECKBOX VALUES =================
+                // ── Default checkbox values ──────────────────────────────────
                 importData.RenewalAdditionalMold ??= "NO";
                 importData.NewToolingLocalization ??= "NO";
                 importData.TransferTooling ??= "NO";
@@ -77,23 +67,20 @@ namespace PartsControlSystem.Controllers
                 importData.NonConcurrent ??= "NO";
                 importData.SupplierChangeLocalization ??= "NO";
                 importData.Other4M ??= "NO";
+                importData.MultipleProcurementLocalization ??= "NO";
 
-                string currentProcessValue = "Tooling Quotation Request~Approval";
+                // ── Determine initial CurrentProcess per selected activity ───
+                // Each activity has its own starting process.
+                // If multiple are checked, we create one ActivityCurrentProcess per activity.
+                var activityProcessEntries = BuildActivityCurrentProcesses(importData);
+                foreach (var acp in activityProcessEntries)
+                    _dbContext.ActivityCurrentProcesses.Add(acp);
 
-                var activityProcess = new ActivityCurrentProcess
-                {
-                    ControlNumber = importData.ControlNo,
-                    CurrentProcess = currentProcessValue,
-                    UpdateAt = DateTime.UtcNow
-                };
-
-                _dbContext.ActivityCurrentProcesses.Add(activityProcess);
-
-                //FOR TRANSACTION LOGS
-                var logRows = BuildTransactionLogRows(importData, currentProcessValue);
+                // ── Transaction logs ─────────────────────────────────────────
+                var logRows = BuildTransactionLogRows(importData);
                 if (logRows.Any())
                     _dbContext.TransactionLogs.AddRange(logRows);
-                //END FOR TRANSACTION LOGS
+
                 _dbContext.ImportDatas.Add(importData);
                 await _dbContext.SaveChangesAsync();
 
@@ -105,67 +92,83 @@ namespace PartsControlSystem.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = ex.InnerException?.Message ?? ex.Message
-                });
+                return Json(new { success = false, message = ex.InnerException?.Message ?? ex.Message });
             }
         }
 
-        //Download template for batch import
-        public IActionResult DownloadImportTemplate()
+        // ================================================================
+        // HELPER: builds one ActivityCurrentProcess per selected activity,
+        // each with the correct starting process for that activity.
+        // ================================================================
+        private List<ActivityCurrentProcess> BuildActivityCurrentProcesses(ImportData data)
         {
-            var path = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "templates",
-                "ImportData_Batch Entry Template.xlsx");
+            var entries = new List<ActivityCurrentProcess>();
 
-            return PhysicalFile(
-                path,
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                "ImportData_Batch Entry Template.xlsx");
+            // Renewal / Additional Mold
+            if (data.RenewalAdditionalMold?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+
+            if (data.NewToolingLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Tooling PO Issued Date"));
+
+            // Supplier Change / Localization (Supplier Change category) → starts at Mold LOA
+            if (data.SupplierChangeLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Mold LOA"));
+
+            // Multiple Procurement / Localization → starts at Mold LOA
+            if (data.MultipleProcurementLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Mold LOA"));
+
+            // Other activities — update these when their flows are implemented
+            if (data.TransferTooling?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+
+            if (data.ChangeMaterial?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Material LOA"));
+
+            if (data.NewModel?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+
+            if (data.NonConcurrent?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+
+            if (data.Other4M?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
+                entries.Add(Make(data.ControlNo, "Test Run meeting date"));
+
+            return entries;
         }
 
-
-        private async Task<int> GetNextControlSequenceAsync(string prefix)
-        {
-            var lastControlNo = await _dbContext.ImportDatas
-                .Where(x => x.ControlNo.StartsWith(prefix))
-                .OrderByDescending(x => x.ControlNo)
-                .Select(x => x.ControlNo)
-                .FirstOrDefaultAsync();
-
-            if (string.IsNullOrEmpty(lastControlNo))
-                return 1;
-
-            var lastSeqStr = lastControlNo.Substring(prefix.Length);
-            return int.TryParse(lastSeqStr, out int lastSeq)
-                ? lastSeq + 1
-                : 1;
-        }
-
-        //FOR TRANSACTION LOGS
-        private List<TransactionLogs> BuildTransactionLogRows(ImportData data, string currentProcess)
-        {
-            var activityMap = new Dictionary<string, Func<ImportData, string>>
+        private static ActivityCurrentProcess Make(string controlNo, string process) =>
+            new ActivityCurrentProcess
             {
-                ["Renewal / Additional Mold"] = x => x.RenewalAdditionalMold,
-                ["New Tooling / Localization"] = x => x.NewToolingLocalization,
-                ["Transfer Tooling"] = x => x.TransferTooling,
-                ["Change Material"] = x => x.ChangeMaterial,
-                ["New Model"] = x => x.NewModel,
-                ["Non-Concurrent"] = x => x.NonConcurrent,
-                ["Supplier Change / Localization"] = x => x.SupplierChangeLocalization,
-                ["Other 4M"] = x => x.Other4M,
+                ControlNumber = controlNo,
+                CurrentProcess = process,
+                UpdateAt = DateTime.UtcNow
             };
+
+        // ================================================================
+        // HELPER: builds TransactionLog rows per selected activity
+        // ================================================================
+        private List<TransactionLogs> BuildTransactionLogRows(ImportData data)
+        {
+            var activityMap = new List<(string name, Func<ImportData, string> selector, string initialProcess)>
+    {
+        ("Renewal / Additional Mold",           x => x.RenewalAdditionalMold,           "Tooling Quotation Request~Approval"),
+        ("New Tooling / Localization",          x => x.NewToolingLocalization,          "Tooling PO Issued Date"),
+        ("Transfer Tooling",                    x => x.TransferTooling,                 "Tooling Quotation Request~Approval"),
+        ("Change Material",                     x => x.ChangeMaterial,                  "Material LOA"),
+        ("New Model",                           x => x.NewModel,                        "Tooling Quotation Request~Approval"),
+        ("Non-Concurrent",                      x => x.NonConcurrent,                   "Tooling Quotation Request~Approval"),
+        ("Supplier Change / Localization",      x => x.SupplierChangeLocalization,      "Mold LOA"),
+        ("Other 4M",                            x => x.Other4M,                         "Testing Run meeting date"),
+        ("Multiple Procurement / Localization", x => x.MultipleProcurementLocalization, "Mold LOA"),
+    };
 
             var rows = new List<TransactionLogs>();
 
-            foreach (var (activityName, selector) in activityMap)
+            foreach (var (activityName, selector, initialProcess) in activityMap)
             {
-                if (!selector(data).Equals("YES", StringComparison.OrdinalIgnoreCase))
+                if (selector(data)?.Equals("YES", StringComparison.OrdinalIgnoreCase) != true)
                     continue;
 
                 rows.Add(new TransactionLogs
@@ -181,7 +184,7 @@ namespace PartsControlSystem.Controllers
                     EndDate = null,
                     ReceivedDate = null,
                     InputDate = data.DateImported,
-                    CurrentProcess = currentProcess,
+                    CurrentProcess = initialProcess,
                     Status = "In Progress",
                     Remarks = string.Empty
                 });
@@ -189,7 +192,33 @@ namespace PartsControlSystem.Controllers
 
             return rows;
         }
-        //END FOR TRANSACTION LOGS
+
+        public IActionResult DownloadImportTemplate()
+        {
+            var path = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot", "templates",
+                "ImportData_Batch Entry Template.xlsx");
+
+            return PhysicalFile(
+                path,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "ImportData_Batch Entry Template.xlsx");
+        }
+
+        private async Task<int> GetNextControlSequenceAsync(string prefix)
+        {
+            var lastControlNo = await _dbContext.ImportDatas
+                .Where(x => x.ControlNo.StartsWith(prefix))
+                .OrderByDescending(x => x.ControlNo)
+                .Select(x => x.ControlNo)
+                .FirstOrDefaultAsync();
+
+            if (string.IsNullOrEmpty(lastControlNo)) return 1;
+
+            var lastSeqStr = lastControlNo.Substring(prefix.Length);
+            return int.TryParse(lastSeqStr, out int lastSeq) ? lastSeq + 1 : 1;
+        }
 
         [HttpPost]
         public async Task<IActionResult> PreviewExcelTemplate(IFormFile excelFile)
@@ -197,15 +226,11 @@ namespace PartsControlSystem.Controllers
             if (excelFile == null || excelFile.Length == 0)
                 return BadRequest("No file uploaded");
 
-            // 🔹 Prepare ControlNo prefix
             var today = DateTime.UtcNow.ToString("yyyyMMdd");
             var prefix = $"IMP-DATA-{today}-";
-
             int sequence = await GetNextControlSequenceAsync(prefix);
-
             var list = new List<ImportData>();
 
-            // 🔹 Required for ExcelDataReader text encoding
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
             using var stream = excelFile.OpenReadStream();
@@ -216,12 +241,8 @@ namespace PartsControlSystem.Controllers
             while (reader.Read())
             {
                 rowIndex++;
+                if (rowIndex < 5) continue; // Skip header rows
 
-                // Skip rows 1–4 (headers)
-                if (rowIndex < 5)
-                    continue;
-
-                // 🔹 Get values
                 var motherMoldCode = reader.GetValue(0)?.ToString()?.Trim();
                 var childPartcode = reader.GetValue(1)?.ToString()?.Trim();
                 var partName = reader.GetValue(2)?.ToString()?.Trim();
@@ -229,39 +250,26 @@ namespace PartsControlSystem.Controllers
                 var supplier = reader.GetValue(4)?.ToString()?.Trim();
                 var moldMaker = reader.GetValue(5)?.ToString()?.Trim();
                 var supplierMoldNo = reader.GetValue(6)?.ToString()?.Trim();
-                var BiphMoldNo = reader.GetValue(7)?.ToString()?.Trim();
-                var ToolingManagement = reader.GetValue(8)?.ToString()?.Trim();
-                var RenewalAdditionalMold = reader.GetValue(9)?.ToString()?.Trim();
-                var NewTooling = reader.GetValue(10)?.ToString()?.Trim();
-                var TransferTooling = reader.GetValue(11)?.ToString()?.Trim();
-                var ChangeMaterial = reader.GetValue(12)?.ToString()?.Trim();
-                var NewModel = reader.GetValue(13)?.ToString()?.Trim();
-                var NonConcurrent = reader.GetValue(14)?.ToString()?.Trim();
-                var SupplierChange = reader.GetValue(15)?.ToString()?.Trim();
-                var Other4m = reader.GetValue(16)?.ToString()?.Trim();
-                var ReasonOfChange = reader.GetValue(17)?.ToString()?.Trim();
+                var biphMoldNo = reader.GetValue(7)?.ToString()?.Trim();
+                var toolingManagement = reader.GetValue(8)?.ToString()?.Trim();
+                var renewalAdditionalMold = reader.GetValue(9)?.ToString()?.Trim();
+                var newTooling = reader.GetValue(10)?.ToString()?.Trim();
+                var supplierChange = reader.GetValue(11)?.ToString()?.Trim();
+                var multipleProcurement = reader.GetValue(12)?.ToString()?.Trim(); // ← NEW column
+                var transferTooling = reader.GetValue(13)?.ToString()?.Trim();
+                var changeMaterial = reader.GetValue(14)?.ToString()?.Trim();
+                var newModel = reader.GetValue(15)?.ToString()?.Trim();
+                var nonConcurrent = reader.GetValue(16)?.ToString()?.Trim();
+                var other4m = reader.GetValue(17)?.ToString()?.Trim();
+                var reasonOfChange = reader.GetValue(18)?.ToString()?.Trim();
 
-                // 🔹 Skip blank rows (all key fields empty)
-                if (string.IsNullOrEmpty(motherMoldCode) &&
-                    string.IsNullOrEmpty(childPartcode) &&
-                    string.IsNullOrEmpty(partName) &&
-                    string.IsNullOrEmpty(model) &&
-                    string.IsNullOrEmpty(supplier) &&
-                    string.IsNullOrEmpty(moldMaker) &&
-                    string.IsNullOrEmpty(supplierMoldNo) &&
-                    string.IsNullOrEmpty(BiphMoldNo) &&
-                    string.IsNullOrEmpty(ToolingManagement) &&
-                    string.IsNullOrEmpty(RenewalAdditionalMold) &&
-                    string.IsNullOrEmpty(NewTooling) &&
-                    string.IsNullOrEmpty(ChangeMaterial) &&
-                    string.IsNullOrEmpty(NewModel) &&
-                    string.IsNullOrEmpty(NonConcurrent) &&
-                    string.IsNullOrEmpty(SupplierChange) &&
-                    string.IsNullOrEmpty(Other4m) &&
-                    string.IsNullOrEmpty(ReasonOfChange))
-                {
+                // Skip blank rows
+                if (string.IsNullOrEmpty(motherMoldCode) && string.IsNullOrEmpty(partName) &&
+                    string.IsNullOrEmpty(supplier) && string.IsNullOrEmpty(reasonOfChange))
                     continue;
-                }
+
+                bool IsYes(string val) =>
+                    val?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true;
 
                 var item = new ImportData
                 {
@@ -273,19 +281,18 @@ namespace PartsControlSystem.Controllers
                     Supplier = supplier,
                     MoldMaker = moldMaker,
                     SupplierMoldNo = supplierMoldNo,
-                    BIPHMoldNo = BiphMoldNo,
-                    ToolingManagement =ToolingManagement,
-                   
-                    RenewalAdditionalMold = RenewalAdditionalMold?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    NewToolingLocalization = NewTooling?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    TransferTooling = TransferTooling?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    ChangeMaterial = ChangeMaterial?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    NewModel = NewModel?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    NonConcurrent = NonConcurrent?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    SupplierChangeLocalization = SupplierChange?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    Other4M = Other4m?.Trim().Equals("Yes", StringComparison.OrdinalIgnoreCase) == true ? "YES" : "NO",
-                    ReasonOfChange = ReasonOfChange,
-
+                    BIPHMoldNo = biphMoldNo,
+                    ToolingManagement = toolingManagement,
+                    RenewalAdditionalMold = IsYes(renewalAdditionalMold) ? "YES" : "NO",
+                    NewToolingLocalization = IsYes(newTooling) ? "YES" : "NO",
+                    SupplierChangeLocalization = IsYes(supplierChange) ? "YES" : "NO",
+                    MultipleProcurementLocalization = IsYes(multipleProcurement) ? "YES" : "NO",
+                    TransferTooling = IsYes(transferTooling) ? "YES" : "NO",
+                    ChangeMaterial = IsYes(changeMaterial) ? "YES" : "NO",
+                    NewModel = IsYes(newModel) ? "YES" : "NO",
+                    NonConcurrent = IsYes(nonConcurrent) ? "YES" : "NO",
+                    Other4M = IsYes(other4m) ? "YES" : "NO",
+                    ReasonOfChange = reasonOfChange,
                     DateImported = DateTime.UtcNow
                 };
 
@@ -293,8 +300,7 @@ namespace PartsControlSystem.Controllers
                 sequence++;
             }
 
-
-            return Json(list); // Preview only, no DB save yet
+            return Json(list);
         }
 
         [HttpPost]
@@ -305,24 +311,15 @@ namespace PartsControlSystem.Controllers
 
             try
             {
-                // ================= GET SECTION FROM LOGGED-IN USER =================
                 var section = User.FindFirst("Section")?.Value;
 
                 if (string.IsNullOrEmpty(section))
-                {
-                    return Json(new
-                    {
-                        success = false,
-                        message = "User section not found. Please re-login."
-                    });
-                }
+                    return Json(new { success = false, message = "User section not found. Please re-login." });
 
-                // ================= STAMP SECTION ON ALL ROWS =================
                 foreach (var item in importList)
                 {
                     item.Section = section;
 
-                    // Optional safety defaults (in case Excel sends nulls)
                     item.RenewalAdditionalMold ??= "NO";
                     item.NewToolingLocalization ??= "NO";
                     item.TransferTooling ??= "NO";
@@ -331,53 +328,42 @@ namespace PartsControlSystem.Controllers
                     item.NonConcurrent ??= "NO";
                     item.SupplierChangeLocalization ??= "NO";
                     item.Other4M ??= "NO";
-
-                    // Optional: ensure date consistency
+                    item.MultipleProcurementLocalization ??= "NO";
                     item.DateImported = DateTime.UtcNow;
 
-                    //FOR TRANSACTION LOGS
-                    var logRows = BuildTransactionLogRows(item, "Tooling Quotation Request~Approval");
+                    // Correct initial CurrentProcess per activity
+                    var acpEntries = BuildActivityCurrentProcesses(item);
+                    foreach (var acp in acpEntries)
+                        _dbContext.ActivityCurrentProcesses.Add(acp);
+
+                    // Transaction logs
+                    var logRows = BuildTransactionLogRows(item);
                     if (logRows.Any())
                         _dbContext.TransactionLogs.AddRange(logRows);
-                    //END FOR TRANSACTION LOGS
                 }
 
-                // ================= DUPLICATE CHECK =================
+                // Duplicate check
                 var controlNos = importList.Select(x => x.ControlNo).ToList();
-
                 var existingControls = await _dbContext.ImportDatas
                     .Where(x => controlNos.Contains(x.ControlNo))
                     .Select(x => x.ControlNo)
                     .ToListAsync();
 
                 if (existingControls.Any())
-                {
                     return Json(new
                     {
                         success = false,
                         message = $"Duplicate Control No found: {string.Join(", ", existingControls)}"
                     });
-                }
 
-                // ================= INSERT BATCH =================
                 await _dbContext.ImportDatas.AddRangeAsync(importList);
                 await _dbContext.SaveChangesAsync();
 
-                return Json(new
-                {
-                    success = true,
-                    message = $"{importList.Count} rows imported successfully!"
-                });
+                return Json(new { success = true, message = $"{importList.Count} rows imported successfully!" });
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine(ex);
-
-                return Json(new
-                {
-                    success = false,
-                    message = ex.InnerException?.Message ?? ex.Message
-                });
+                return Json(new { success = false, message = ex.InnerException?.Message ?? ex.Message });
             }
         }
 
@@ -386,7 +372,6 @@ namespace PartsControlSystem.Controllers
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            // Convert to UTC and include entire end day
             start = DateTime.SpecifyKind(start.Date, DateTimeKind.Utc);
             end = DateTime.SpecifyKind(end.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
 
@@ -394,33 +379,26 @@ namespace PartsControlSystem.Controllers
                 .Where(x => x.DateImported >= start && x.DateImported <= end)
                 .ToListAsync();
 
-            // ✅ Validate if no data found
             if (!data.Any())
-            {
-                return BadRequest(new
-                {
-                    success = false,
-                    message = $"No records found between {start:yyyy-MM-dd} and {end:yyyy-MM-dd}."
-                });
-            }
+                return BadRequest(new { success = false, message = $"No records found between {start:yyyy-MM-dd} and {end:yyyy-MM-dd}." });
 
             using var package = new ExcelPackage();
             var ws = package.Workbook.Worksheets.Add("Exported Data");
 
-            // Add headers
             var headers = new[]
             {
                 "Control No", "Mother Mold Code", "Child Partcode", "Part Name", "Model",
                 "Supplier", "Mold Maker", "Supplier Mold No", "BIPH Mold No", "Tooling Management",
-                "Activity", "Reason Of Change", "Renewal Additional Mold", "New Tooling Localization",
+                "Activity", "Reason Of Change",
+                "Renewal Additional Mold", "New Tooling / Localization",
+                "Supplier Change / Localization", "Multiple Procurement / Localization",
                 "Transfer Tooling", "Change Material", "New Model", "Non Concurrent",
-                "Supplier Change Localization", "Other 4M", "Date Imported"
+                "Other 4M", "Date Imported"
             };
 
             for (int i = 0; i < headers.Length; i++)
                 ws.Cells[1, i + 1].Value = headers[i];
 
-            // Fill data
             int row = 2;
             foreach (var d in data)
             {
@@ -438,13 +416,14 @@ namespace PartsControlSystem.Controllers
                 ws.Cells[row, 12].Value = d.ReasonOfChange;
                 ws.Cells[row, 13].Value = d.RenewalAdditionalMold;
                 ws.Cells[row, 14].Value = d.NewToolingLocalization;
-                ws.Cells[row, 15].Value = d.TransferTooling;
-                ws.Cells[row, 16].Value = d.ChangeMaterial;
-                ws.Cells[row, 17].Value = d.NewModel;
-                ws.Cells[row, 18].Value = d.NonConcurrent;
-                ws.Cells[row, 19].Value = d.SupplierChangeLocalization;
-                ws.Cells[row, 20].Value = d.Other4M;
-                ws.Cells[row, 21].Value = d.DateImported.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+                ws.Cells[row, 15].Value = d.SupplierChangeLocalization;
+                ws.Cells[row, 16].Value = d.MultipleProcurementLocalization;
+                ws.Cells[row, 17].Value = d.TransferTooling;
+                ws.Cells[row, 18].Value = d.ChangeMaterial;
+                ws.Cells[row, 19].Value = d.NewModel;
+                ws.Cells[row, 20].Value = d.NonConcurrent;
+                ws.Cells[row, 21].Value = d.Other4M;
+                ws.Cells[row, 22].Value = d.DateImported.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
                 row++;
             }
 
@@ -453,9 +432,5 @@ namespace PartsControlSystem.Controllers
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 $"ExportedData_{start:yyyyMMdd}_to_{end:yyyyMMdd}.xlsx");
         }
-
-
-
-
     }
 }

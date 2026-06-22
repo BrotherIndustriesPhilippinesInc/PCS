@@ -856,13 +856,13 @@
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\PartsControlSystem.gf3bwhezpg.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-5HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1136"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00225HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k=\u0022"},{"Name":"Last-Modified","Value":"Tue, 31 Mar 2026 07:12:13 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"1136"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00225HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k=\u0022"},{"Name":"Last-Modified","Value":"Thu, 14 May 2026 01:40:28 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/PartsControlSystem/PartsControlSystem.gf3bwhezpg.bundle.scp.css">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\PartsControlSystem.gf3bwhezpg.bundle.scp.css'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"gf3bwhezpg"},{"Name":"integrity","Value":"sha256-5HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k="},{"Name":"label","Value":"_content/PartsControlSystem/PartsControlSystem.bundle.scp.css"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1136"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00225HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k=\u0022"},{"Name":"Last-Modified","Value":"Tue, 31 Mar 2026 07:12:13 GMT"}]]]></ResponseHeaders>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"1136"},{"Name":"Content-Type","Value":"text/css"},{"Name":"ETag","Value":"\u00225HVAK7VkjP\u002BuEmv7D/eIaLGF2giz3DoWQjymFHopy6k=\u0022"},{"Name":"Last-Modified","Value":"Thu, 14 May 2026 01:40:28 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/PartsControlSystem/templates/4MForm_Batch Data Entry Template.xlsx">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\4MForm_Batch Data Entry Template.xlsx'))</AssetFile>
@@ -876,17 +876,17 @@
       <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"xux43nmxz2"},{"Name":"integrity","Value":"sha256-acPhyajkytV64Bzu/6b95j85XADoPJT02jXkjOA9IhU="},{"Name":"label","Value":"_content/PartsControlSystem/templates/4MForm_Batch Data Entry Template.xlsx"}]]]></EndpointProperties>
       <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"11510"},{"Name":"Content-Type","Value":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{"Name":"ETag","Value":"\u0022acPhyajkytV64Bzu/6b95j85XADoPJT02jXkjOA9IhU=\u0022"},{"Name":"Last-Modified","Value":"Mon, 23 Mar 2026 07:18:33 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
+    <StaticWebAssetEndpoint Include="_content/PartsControlSystem/templates/ImportData_Batch Entry Template.hhwgrdti60.xlsx">
+      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\ImportData_Batch Entry Template.xlsx'))</AssetFile>
+      <Selectors><![CDATA[[]]]></Selectors>
+      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"hhwgrdti60"},{"Name":"integrity","Value":"sha256-i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo="},{"Name":"label","Value":"_content/PartsControlSystem/templates/ImportData_Batch Entry Template.xlsx"}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"12302"},{"Name":"Content-Type","Value":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{"Name":"ETag","Value":"\u0022i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=\u0022"},{"Name":"Last-Modified","Value":"Tue, 28 Apr 2026 07:42:40 GMT"}]]]></ResponseHeaders>
+    </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/PartsControlSystem/templates/ImportData_Batch Entry Template.xlsx">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\ImportData_Batch Entry Template.xlsx'))</AssetFile>
       <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-qg4o6DUlmSnrlunLoIFC\u002BmBFfAsH\u002BFx0MwkFWsx/ios="}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"12270"},{"Name":"Content-Type","Value":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{"Name":"ETag","Value":"\u0022qg4o6DUlmSnrlunLoIFC\u002BmBFfAsH\u002BFx0MwkFWsx/ios=\u0022"},{"Name":"Last-Modified","Value":"Mon, 23 Mar 2026 07:18:33 GMT"}]]]></ResponseHeaders>
-    </StaticWebAssetEndpoint>
-    <StaticWebAssetEndpoint Include="_content/PartsControlSystem/templates/ImportData_Batch Entry Template.yxtblovwbc.xlsx">
-      <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\ImportData_Batch Entry Template.xlsx'))</AssetFile>
-      <Selectors><![CDATA[[]]]></Selectors>
-      <EndpointProperties><![CDATA[[{"Name":"fingerprint","Value":"yxtblovwbc"},{"Name":"integrity","Value":"sha256-qg4o6DUlmSnrlunLoIFC\u002BmBFfAsH\u002BFx0MwkFWsx/ios="},{"Name":"label","Value":"_content/PartsControlSystem/templates/ImportData_Batch Entry Template.xlsx"}]]]></EndpointProperties>
-      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"max-age=31536000, immutable"},{"Name":"Content-Length","Value":"12270"},{"Name":"Content-Type","Value":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{"Name":"ETag","Value":"\u0022qg4o6DUlmSnrlunLoIFC\u002BmBFfAsH\u002BFx0MwkFWsx/ios=\u0022"},{"Name":"Last-Modified","Value":"Mon, 23 Mar 2026 07:18:33 GMT"}]]]></ResponseHeaders>
+      <EndpointProperties><![CDATA[[{"Name":"integrity","Value":"sha256-i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo="}]]]></EndpointProperties>
+      <ResponseHeaders><![CDATA[[{"Name":"Accept-Ranges","Value":"bytes"},{"Name":"Cache-Control","Value":"no-cache"},{"Name":"Content-Length","Value":"12302"},{"Name":"Content-Type","Value":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{"Name":"ETag","Value":"\u0022i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=\u0022"},{"Name":"Last-Modified","Value":"Tue, 28 Apr 2026 07:42:40 GMT"}]]]></ResponseHeaders>
     </StaticWebAssetEndpoint>
     <StaticWebAssetEndpoint Include="_content/PartsControlSystem/templates/ImportData_Batch Entry Template_old.bv2znmzw3f.xlsx">
       <AssetFile>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\ImportData_Batch Entry Template_old.xlsx'))</AssetFile>

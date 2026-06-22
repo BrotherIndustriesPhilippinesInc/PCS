@@ -1,0 +1,111 @@
+﻿@model List<PartsControlSystem.ViewModels.ChangeMaterialProcessVM>
+
+@foreach (var item in Model)
+{
+    <div class="card shadow-sm border-0 mb-4 process-card"
+         data-endpoint="@Url.Action("SaveChangeMaterialProcess", "UpdatePerActivity")"
+         data-controlno="@item.ControlNumber"
+         data-processstep="@item.ProcessStep"
+         data-steporder="@item.StepOrder"
+         data-fields="TargetDate,ActualDate,Remarks">
+
+        <div class="card-header d-flex justify-content-between align-items-center"
+             style="background:#4a5568; border-radius:12px 12px 0 0;">
+            <span class="text-white fw-semibold">
+                Change Material &mdash; @item.ProcessStep
+            </span>
+            <span class="badge bg-light text-dark">
+                Step @item.StepOrder
+            </span>
+        </div>
+
+        <div class="card-body">
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Control No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ControlNumber" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Section</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Section" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Model</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Model" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Code</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ChildPartcode" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Part Name</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.PartName" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.Supplier" readonly />
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">BIPH Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.BIPHMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Supplier Mold No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.SupplierMoldNo" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Mold Maker</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.MoldMaker" readonly />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold">Tooling Mgt. No.</label>
+                    <input type="text" class="form-control form-control-sm" value="@item.ToolingManagement" readonly />
+                </div>
+            </div>
+
+            <hr class="my-2" />
+
+            <div class="row g-3 mb-2">
+                <div class="col-md-3">
+
+                    <label class="form-label small fw-semibold">Target Date</label>
+                    <input type="date" name="TargetDate" class="form-control form-control-sm"
+                           style="background-color:#fffbe6;" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Actual Date</label>
+                    <input type="date" name="ActualDate" class="form-control form-control-sm"
+                           style="background-color:#fffbe6;" />
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-end mt-1">
+                <div class="col-md-10">
+                    <label class="form-label small fw-semibold">Remarks</label>
+                    <textarea name="Remarks" class="form-control form-control-sm" rows="2"
+                              placeholder="Remarks..."></textarea>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-success btn-sm btn-save-approval">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(item.NextProcessStep))
+            {
+                <div class="mt-2">
+                    <small class="text-muted">
+                        <i class="fa-solid fa-arrow-right me-1"></i>
+                        Next step after save: <strong>@item.NextProcessStep</strong>
+                    </small>
+                </div>
+            }
+
+        </div>
+    </div>
+}

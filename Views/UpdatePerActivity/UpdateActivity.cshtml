@@ -1,19 +1,15 @@
 ﻿@model List<PartsControlSystem.ViewModels.ActivityCardViewModel>
-
 @{
     ViewData["Title"] = "Update Per Activity";
 }
-
 <div class="container py-4">
     <div class="row g-4">
-
         @foreach (var card in Model ?? Enumerable.Empty<PartsControlSystem.ViewModels.ActivityCardViewModel>())
         {
             <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                 <div class="card mold-card modern-card h-100 position-relative"
                      style="min-height: 350px; cursor: pointer;"
                      onclick="location.href='@Url.Action("ActivityDetails", "UpdatePerActivity", new { activityName = card.ActivityName })';">
-
                     <div class="card-header text-center fw-semibold text-white">
                         @card.ActivityName
                     </div>
@@ -25,26 +21,20 @@
                                 <span class="fw-bold">@sec.Count</span>
                             </div>
                         }
-
                         <div class="">
                             <div class="total-entry">
                                 TOTAL ENTRY <span>@card.SectionCounts.Sum(x => x.Count)</span>
                             </div>
                             <div class="total-delay mt-1">
-                                TOTAL DELAY <span>0</span>
+                                TOTAL DELAY <span>@card.TotalDelay</span>
                             </div>
                         </div>
-                        
                     </div>
                 </div>
             </div>
         }
-
     </div>
 </div>
-
-
-
 @section Scripts {
     <style>
         .mold-card {
@@ -53,15 +43,15 @@
             border: none;
             height: 600px;
         }
-        
+
         .modern-card {
             transition: all 0.25s ease;
         }
 
-        .modern-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-        }
+            .modern-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+            }
 
         .card-header {
             background: linear-gradient(135deg, #0d6efd, #0a58ca);
@@ -100,7 +90,5 @@
             text-align: center;
             font-weight: 600;
         }
-
     </style>
 }
-    

@@ -6,174 +6,244 @@
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body">
             <div class="row g-3 align-items-end">
-
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label small fw-semibold">Section</label>
                     <input type="text" id="sectionInput"
                            class="form-control form-control-sm"
                            value="@User.FindFirst("Section")?.Value"
                            readonly />
                 </div>
-
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label class="form-label small fw-semibold">Selected Activity</label>
-                    <input type="text"
-                           id="activityInput"
+                    <input type="text" id="activityInput"
                            class="form-control form-control-sm"
                            readonly />
                 </div>
-
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold">Process</label>
                     <select id="processSelect" class="form-select form-select-sm">
                         <option value="" disabled selected>Select Process</option>
                     </select>
                 </div>
-
                 <div class="col-md-2 d-grid">
                     <button type="button" id="refreshDataBtn" class="btn btn-primary btn-sm">
                         <i class="fa-solid fa-rotate-right"></i> Refresh
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
 
-    <div id="activityPartialContainer">
+    <div id="activityPartialContainer"></div>
 
-
-    </div>
-
-    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    @* Write Activity name in input field *@
     <script>
+        // ── Activity routing constants ──────────────────────────────────────
+        const NEW_TOOLING_ACTIVITIES = [
+            'New Tooling / Localization',
+            'Supplier Change / Localization',
+            'Multiple Procurement / Localization'
+        ];
+
+        const CHANGE_MATERIAL_ACTIVITIES = ['Change Material'];
+
+        const OTHER4M_ACTIVITIES = ['Other 4M']
+
+        // ── On page load ────────────────────────────────────────────────────
         document.addEventListener("DOMContentLoaded", () => {
-            const params = new URLSearchParams(window.location.search);
+            const params       = new URLSearchParams(window.location.search);
             const activityName = params.get('activityName');
 
             if (activityName) {
                 document.getElementById('activityInput').value = activityName;
             }
+
+            if (NEW_TOOLING_ACTIVITIES.includes(activityName)) {
+                } else if (CHANGE_MATERIAL_ACTIVITIES.includes(activityName)) {
+                    loadChangeMaterialProcesses();
+                } else if (OTHER4M_ACTIVITIES.includes(activityName)) {
+                    loadOther4MProcesses();
+                } else {
+                    loadProcessesBySection();
+                }
         });
-    </script>
 
-    <script>
-        document.getElementById('refreshDataBtn').addEventListener('click', function () {
-
-            const section  = document.getElementById('sectionInput').value;
-            const activity = document.getElementById('activityInput').value;
-            const process  = document.getElementById('processSelect').value;
-
-            console.log(process);
-
-            if (!section || !activity || !process) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Required',
-                    text: 'Section, Activity, and Process are required.'
-                });
-                return;
-            }
-
-            fetch(`@Url.Action("GetPartial", "UpdatePerActivity")`
-                + `?section=${encodeURIComponent(section)}`
-                + `&activity=${encodeURIComponent(activity)}`
-                + `&process=${encodeURIComponent(process)}`)
-                .then(res => res.text())
-                .then(html => {
-
-                    // 🔹 Backend returns marker when no data
-                    if (html.includes('NO_DATA')) {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'No Activity',
-                            text: 'No activity for update yet.'
-                        });
-
-                        document.getElementById('activityPartialContainer').innerHTML = '';
-                        return;
-                    }
-
-                    document.getElementById('activityPartialContainer').innerHTML = html;
-                });
-        });
-    </script>
-
-
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-
-            const section = document.getElementById("sectionInput").value;
+        // ── Renewal path: load from LeadTimes by section ────────────────────
+        function loadProcessesBySection() {
+            const section       = document.getElementById("sectionInput").value;
             const processSelect = document.getElementById("processSelect");
-
             if (!section) return;
 
             fetch('@Url.Action("GetActivitiesBySection", "UpdatePerActivity")'
-            + '?section=' + encodeURIComponent(section))
-            .then(res => res.json())
-            .then(activities => {
+                + '?section=' + encodeURIComponent(section))
+                .then(res => res.json())
+                .then(activities => {
+                    processSelect.innerHTML = '';
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value       = '';
+                    defaultOpt.textContent = 'Select process';
+                    defaultOpt.disabled    = true;
+                    defaultOpt.selected    = true;
+                    processSelect.appendChild(defaultOpt);
 
-                // clear existing options
-                processSelect.innerHTML = '';
-
-                // default option
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = 'Select process';
-                defaultOption.disabled = true;  
-                defaultOption.selected = true;
-                processSelect.appendChild(defaultOption);
-
-                // populate activities only
-                activities.forEach(activity => {
-                    const opt = document.createElement('option');
-                    opt.value = activity;
-                    opt.textContent = activity;
-                    processSelect.appendChild(opt);
+                    activities.forEach(activity => {
+                        const opt       = document.createElement('option');
+                        opt.value       = activity;
+                        opt.textContent = activity;
+                        processSelect.appendChild(opt);
+                    });
                 });
-            });
+        }
+
+        // ── New Tooling / Supplier Change / Multiple Procurement path ───────
+        function loadProcessesByActivity(activityName) {
+            const section       = document.getElementById("sectionInput").value;
+            const processSelect = document.getElementById("processSelect");
+            if (!section) return;
+
+            fetch('@Url.Action("GetProcessesByActivity", "UpdatePerActivity")'
+                + '?section='      + encodeURIComponent(section)
+                + '&activityName=' + encodeURIComponent(activityName))
+                .then(res => res.json())
+                .then(processes => {
+                    processSelect.innerHTML = '';
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value       = '';
+                    defaultOpt.textContent = 'Select process';
+                    defaultOpt.disabled    = true;
+                    defaultOpt.selected    = true;
+                    processSelect.appendChild(defaultOpt);
+
+                    processes.forEach(p => {
+                        const opt       = document.createElement('option');
+                        opt.value       = p.processStep;
+                        opt.textContent = p.processStep;
+                        processSelect.appendChild(opt);
+                    });
+                });
+        }
+
+        // ── Change Material path ─────────────────────────────────────────────
+            function loadChangeMaterialProcesses() {
+                const section       = document.getElementById("sectionInput").value;
+                const processSelect = document.getElementById("processSelect");
+
+                fetch('@Url.Action("GetChangeMaterialProcesses", "UpdatePerActivity")'
+                    + '?section=' + encodeURIComponent(section))
+
+                .then(res => res.json())
+                .then(processes => {
+                    processSelect.innerHTML = '';
+                    const defaultOpt       = document.createElement('option');
+                    defaultOpt.value       = '';
+                    defaultOpt.textContent = 'Select process';
+                    defaultOpt.disabled    = true;
+                    defaultOpt.selected    = true;
+                    processSelect.appendChild(defaultOpt);
+
+                    processes.forEach(p => {
+                        const opt       = document.createElement('option');
+                        opt.value       = p.processStep;
+                        opt.textContent = p.processStep;
+                        processSelect.appendChild(opt);
+                    });
+                });
+        }
+
+                // ── Other 4M path (fixed 13-step sequence, no section variation) ────
+        function loadOther4MProcesses() {
+            const processSelect = document.getElementById("processSelect");
+
+            fetch('@Url.Action("GetOther4MProcesses", "UpdatePerActivity")')
+                .then(res => res.json())
+                .then(processes => {
+                    processSelect.innerHTML = '';
+                    const defaultOpt = document.createElement('option');
+                    defaultOpt.value = '';
+                    defaultOpt.textContent = 'Select process';
+                    defaultOpt.disabled = true;
+                    defaultOpt.selected = true;
+                    processSelect.appendChild(defaultOpt);
+
+                    processes.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.processStep;
+                        opt.textContent = p.processStep;
+                        processSelect.appendChild(opt);
+                    });
+                });
+        }
+
+        // ── Refresh button ───────────────────────────────────────────────────
+        document.getElementById('refreshDataBtn').addEventListener('click', function () {
+            const section      = document.getElementById('sectionInput').value;
+            const activity     = document.getElementById('activityInput').value;
+            const process      = document.getElementById('processSelect').value;
+            const isNewTooling = NEW_TOOLING_ACTIVITIES.includes(activity);
+            const isChangeMat  = CHANGE_MATERIAL_ACTIVITIES.includes(activity);
+            const isOther4M    = OTHER4M_ACTIVITIES.includes(activity);
+
+            if (!section || !activity || !process) {
+                Swal.fire({ icon: 'warning', title: 'Required', text: 'Section, Activity, and Process are required.' });
+                return;
+            }
+
+            const container = document.getElementById('activityPartialContainer');
+            container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+            let url;
+
+            if (isNewTooling) {
+                url = '@Url.Action("GetNewToolingPartial", "UpdatePerActivity")'
+                    + '?section='      + encodeURIComponent(section)
+                    + '&activityName=' + encodeURIComponent(activity)
+                    + '&process='      + encodeURIComponent(process);
+                    } else if (isChangeMat) {
+            url = '@Url.Action("GetChangeMaterialPartial", "UpdatePerActivity")'
+                + '?process=' + encodeURIComponent(process);
+            } else if (isOther4M) {
+                url = '@Url.Action("GetOther4MPartial", "UpdatePerActivity")'
+                    + '?process=' + encodeURIComponent(process);
+            } else {
+                url = '@Url.Action("GetPartial", "UpdatePerActivity")'
+                    + '?section='  + encodeURIComponent(section)
+                    + '&activity=' + encodeURIComponent(activity)
+                    + '&process='  + encodeURIComponent(process);
+            }
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => { container.innerHTML = html; })
+                .catch(() => { container.innerHTML = '<div class="alert alert-danger">Failed to load data.</div>'; });
         });
-    </script>
 
-   <script>
-       document.addEventListener('click', function (e) {
-
+        // ── Universal save handler ───────────────────────────────────────────
+        document.addEventListener('click', function (e) {
             const btn = e.target.closest('.btn-save-approval');
             if (!btn) return;
 
-            const card = btn.closest('.card');
-
+            const card     = btn.closest('.card');
             const endpoint = card.dataset.endpoint;
-            const controlNumber = card.dataset.controlno;
-            const fields = card.dataset.fields.split(',');
+            const fields   = card.dataset.fields.split(',');
 
-            const payload = {
-                ControlNumber: controlNumber
-            };
+            const payload = { ControlNumber: card.dataset.controlno };
+
+            if (card.dataset.activityname) payload.ActivityName = card.dataset.activityname;
+            if (card.dataset.category)     payload.Category     = card.dataset.category;
+            if (card.dataset.processstep)  payload.ProcessStep  = card.dataset.processstep;
+            if (card.dataset.steporder)    payload.StepOrder    = parseInt(card.dataset.steporder);
 
             let hasError = false;
-
             fields.forEach(field => {
                 const input = card.querySelector(`[name="${field}"]`);
                 if (!input) return;
-
-                if (input.hasAttribute('required') && !input.value) {
-                    hasError = true;
-                }
-
+                if (input.hasAttribute('required') && !input.value) hasError = true;
                 payload[field] = input.value || null;
             });
 
             if (hasError) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Required Fields',
-                    text: 'Please complete all required fields.'
-                });
+                Swal.fire({ icon: 'warning', title: 'Required Fields', text: 'Please complete all required fields.' });
                 return;
             }
 
@@ -183,7 +253,6 @@
                 showCancelButton: true,
                 confirmButtonText: 'Save'
             }).then(result => {
-
                 if (!result.isConfirmed) return;
 
                 fetch(endpoint, {
@@ -197,123 +266,15 @@
                 })
                 .then(() => {
                     Swal.fire({
-                        icon: 'success',
-                        title: 'Saved',
+                        icon: 'success', title: 'Saved',
                         text: 'Data saved successfully.',
-                        timer: 1500,
-                        showConfirmButton: false
+                        timer: 1500, showConfirmButton: false
                     });
-
                     card.remove();
                 })
-                .catch(() => {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Unable to save data.'
-                    });
-                });
+                .catch(() => Swal.fire({ icon: 'error', title: 'Error', text: 'Unable to save data.' }));
             });
         });
-
-        // document.addEventListener('click', function (e) {
-        //     const btn = e.target.closest('.btn-save-approval');
-        //     if (!btn) return;
-
-        //     const card = btn.closest('.card');
-
-        //     const controlNumber = card.dataset.controlno;
-        //     const section = card.dataset.section;           // Get section
-        //     const activity = card.dataset.activity;         // Get activity
-
-        //     const targetInput = card.querySelector('[name="TargetApprovalDate"]').value;
-        //     const actualInput = card.querySelector('[name="ActualApprovalDate"]').value;
-        //     const remarks = card.querySelector('[name="Remarks"]').value || null;
-
-        //     if (!targetInput || !actualInput) {
-        //         Swal.fire({
-        //             icon: 'warning',
-        //             title: 'Required Fields',
-        //             text: 'Target Approval Date and Actual Approval Date are required.'
-        //         });
-        //         return;
-        //     }
-
-        //     const payload = {
-        //         ControlNumber: controlNumber,
-        //         Section: section,                    // Include section
-        //         Activity: activity,                  // Include activity
-        //         TargetApprovalDate: targetInput,
-        //         ActualApprovalDate: actualInput,
-        //         Remarks: remarks
-        //     };
-
-        //     console.log(payload);
-
-        //     Swal.fire({
-        //         title: 'Save changes?',
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonText: 'Save'
-        //     }).then(result => {
-        //         if (!result.isConfirmed) return;
-
-        //         fetch('@Url.Action("SaveMP1ToolingApproval", "UpdatePerActivity")', {
-        //             method: 'POST',
-        //             headers: { 'Content-Type': 'application/json' },
-        //             body: JSON.stringify(payload)
-        //         })
-        //         .then(r => {
-        //             if (!r.ok) {
-        //                 return r.json().then(err => {
-        //                     throw err;
-        //                 });
-        //             }
-        //             return r.json();
-        //         })
-        //         .then(() => {
-        //             Swal.fire({
-        //                 icon: 'success',
-        //                 title: 'Saved',
-        //                 text: 'Approval data saved successfully.',
-        //                 timer: 1500,
-        //                 showConfirmButton: false
-        //             });
-
-        //             // 🔹 REMOVE CARD FROM UI with fade-out animation
-        //             card.style.transition = 'opacity 0.3s ease-out';
-        //             card.style.opacity = '0';
-
-        //             setTimeout(() => {
-        //                 card.remove();
-
-        //                 // 🔹 Check if there are any remaining cards
-        //                 const remainingCards = document.querySelectorAll('#activityPartialContainer .card');
-        //                 if (remainingCards.length === 0) {
-        //                     document.getElementById('activityPartialContainer').innerHTML = `
-        //                         <div class='alert alert-success text-center mt-3'>
-        //                             <i class='fa-solid fa-check-circle me-2'></i>
-        //                             All records have been saved. No pending updates.
-        //                         </div>
-        //                     `;
-        //                 }
-        //             }, 300); // Wait for fade animation to complete
-        //         })
-        //         .catch((error) => {
-        //             Swal.fire({
-        //                 icon: 'error',
-        //                 title: 'Error',
-        //                 text: error.detail || error.message || 'Unable to save data.'
-        //             });
-        //         });
-        //     });
-        // });
     </script>
 
-
-
-
-
-
-
-   
+</div>

@@ -32,6 +32,14 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5cQWRtaW5BY2Nlc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/asijo/source/repos/PCS/Views/AllPartsData/AllPartsData.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxsUGFydHNEYXRhXEFsbFBhcnRzRGF0YS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/DateCodeUpdate/DateCodeUpdate.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGF0ZUNvZGVVcGRhdGVcRGF0ZUNvZGVVcGRhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/asijo/source/repos/PCS/Views/Home/Dashboard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxEYXNoYm9hcmQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -48,8 +56,12 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW1wb3J0RGF0YVxEYXRhRW50cnkuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/asijo/source/repos/PCS/Views/PartsDownload/DownloadPartsData.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGFydHNEb3dubG9hZFxEb3dubG9hZFBhcnRzRGF0YS5jc2h0bWw=
+[C:/Users/asijo/source/repos/PCS/Views/IQCMonitoring/IQCMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSVFDTW9uaXRvcmluZ1xJUUNNb25pdG9yaW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/LeadTime/LeadTimeSetting.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcTGVhZFRpbWVcTGVhZFRpbWVTZXR0aW5nLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/asijo/source/repos/PCS/Views/Shared/Error.cshtml]
@@ -76,6 +88,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcQWN0aXZpdHlNb25pdG9yaW5nLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/ChangeMaterial/_ChangeMaterialProcess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcQ2hhbmdlTWF0ZXJpYWxcX0NoYW5nZU1hdGVyaWFsUHJvY2Vzcy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/DE/_DEEvaluation.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcREVcX0RFRXZhbHVhdGlvbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -90,6 +106,26 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/IQC/_IQCTestRun.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcSVFDXF9JUUNUZXN0UnVuLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/Monitoring/_ChangeMaterialMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTW9uaXRvcmluZ1xfQ2hhbmdlTWF0ZXJpYWxNb25pdG9yaW5nLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/Monitoring/_LocalizationMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTW9uaXRvcmluZ1xfTG9jYWxpemF0aW9uTW9uaXRvcmluZy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/Monitoring/_MultipleProcurementMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTW9uaXRvcmluZ1xfTXVsdGlwbGVQcm9jdXJlbWVudE1vbml0b3JpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/Monitoring/_RenewalMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTW9uaXRvcmluZ1xfUmVuZXdhbE1vbml0b3JpbmcuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/Monitoring/_SupplierChangeMonitoring.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTW9uaXRvcmluZ1xfU3VwcGxpZXJDaGFuZ2VNb25pdG9yaW5nLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingFabrication.cshtml]
@@ -110,6 +146,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/MP2/_MP2ToolingTransfer.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTVAyXF9NUDJUb29saW5nVHJhbnNmZXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/NewTooling/_NewToolingLocalizationProcess.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXBkYXRlUGVyQWN0aXZpdHlcUGFydGlhbHNcTmV3VG9vbGluZ1xfTmV3VG9vbGluZ0xvY2FsaXphdGlvblByb2Nlc3MuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/asijo/source/repos/PCS/Views/UpdatePerActivity/Partials/QA/_QASpecialEvaluation.cshtml]

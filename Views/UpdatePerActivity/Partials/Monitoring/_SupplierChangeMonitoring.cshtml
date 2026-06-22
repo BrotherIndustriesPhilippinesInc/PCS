@@ -1,0 +1,355 @@
+﻿@model IEnumerable<PartsControlSystem.Models.ViewSupplierChangeMonitoring>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-sm align-middle text-nowrap">
+                <thead class="table-light text-center">
+
+                    <!-- ═══ ROW 1: DEPARTMENT ═══ -->
+                    <tr>
+                        <th rowspan="3" class="sticky-col align-middle"
+                            style="background:#4C4C4C;color:white;min-width:160px;">
+                            Control No
+                        </th>
+                        <!-- Step 29 -->
+                        <th colspan="1" style="background:#F4B8C1;">MP2</th>
+                        <!-- Step 28 -->
+                        <th colspan="3" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 27 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 26 -->
+                        <th colspan="2" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 25 -->
+                        <th colspan="2" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 24 -->
+                        <th colspan="1" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 23 -->
+                        <th colspan="2" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 22 -->
+                        <th colspan="4" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 21 -->
+                        <th colspan="1" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 20 -->
+                        <th colspan="1" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 19 -->
+                        <th colspan="2" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 18 -->
+                        <th colspan="1" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 17 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 16 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 15 -->
+                        <th colspan="1" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 14 -->
+                        <th colspan="1" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 13 -->
+                        <th colspan="2" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 12 -->
+                        <th colspan="2" style="background:#EE8FE3;">QA</th>
+                        <!-- Step 11 -->
+                        <th colspan="1" style="background:#EE8FE3;">QA</th>
+                        <!-- Step 10 -->
+                        <th colspan="2" style="background:#E02525;color:white;">DE</th>
+                        <!-- Step 9 -->
+                        <th colspan="1" style="background:#E02525;color:white;">DE</th>
+                        <!-- Step 8 -->
+                        <th colspan="2" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 7 -->
+                        <th colspan="2" style="background:#4472C4;color:white;">IQC</th>
+                        <!-- Step 6 -->
+                        <th colspan="1" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 5 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-TOOLING</th>
+                        <!-- Step 4 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-TOOLING</th>
+                        <!-- Step 3 -->
+                        <th colspan="1" style="background:#9BC0C8;">MP2-DOM</th>
+                        <!-- Step 2 -->
+                        <th colspan="2" style="background:#E7941E;">MP1-PUR</th>
+                        <!-- Step 1 -->
+                        <th colspan="3" style="background:#E7941E;">MP1-PUR</th>
+                    </tr>
+
+                    <!-- ═══ ROW 2: PROCESS NAME ═══ -->
+                    <tr>
+                        <!-- Step 29 -->
+                        <th rowspan="2" style="background:#F4B8C1;">29. Target Usage Date</th>
+                        <!-- Step 28: 3 sub-cols -->
+                        <th colspan="3" style="background:#9BC0C8">28. Parts Availability<br /><small>(New Supplier Delivery Date)</small></th>
+                        <!-- Step 27 -->
+                        <th rowspan="2" style="background:#9BC0C8">27. PO Issuance Date<br /><small>(New Supplier)</small></th>
+                        <!-- Step 26: 2 sub-cols -->
+                        <th colspan="2" style="background:#E7941E;">26. Recosting Date</th>
+                        <!-- Step 25: 2 sub-cols -->
+                        <th colspan="2" style="background:#E7941E;">25. BLK and FIX Supplier</th>
+                        <!-- Step 24 -->
+                        <th rowspan="2" style="background:#E7941E;">24. SAP Setting Change</th>
+                        <!-- Step 23: 2 sub-cols -->
+                        <th colspan="2" style="background:#9BC0C8;">23. Final PO Delivery (Date)</th>
+                        <!-- Step 22: 4 sub-cols -->
+                        <th colspan="4" style="background:#9BC0C8;">22. Simulation of Old Suppliers Stocks</th>
+                        <!-- Step 21 -->
+                        <th rowspan="2" style="background:#E7941E;">21. Request Simulation to MP2</th>
+                        <!-- Step 20 -->
+                        <th rowspan="2" style="background:#4472C4;color:white;">20. 4M Approval Date</th>
+                        <!-- Step 19: 2 sub-cols -->
+                        <th colspan="2" style="background:#4472C4;color:white;">19. Test Run Approval Date</th>
+                        <!-- Step 18 -->
+                        <th rowspan="2" style="background:#4472C4;color:white;">18. Test Run Schedule</th>
+                        <!-- Step 17 -->
+                        <th rowspan="2" style="background:#9BC0C8;">17. Test Run Delivery Date</th>
+                        <!-- Step 16 -->
+                        <th rowspan="2" style="background:#9BC0C8;">16. Test Run PO Date</th>
+                        <!-- Step 15 -->
+                        <th rowspan="2" style="background:#4472C4;color:white;">15. Test Run PO Request Date</th>
+                        <!-- Step 14 -->
+                        <th rowspan="2" style="background:#E7941E;">14. Open Sourcelist<br /><small>(New Supplier)</small></th>
+                        <!-- Step 13: 2 sub-cols -->
+                        <th colspan="2" style="background:#4472C4;color:white;">13. Availability of Parts Packaging Standard</th>
+                        <!-- Step 12: 2 sub-cols -->
+                        <th colspan="2" style="background:#EE8FE3;">12. QA Sample Approval</th>
+                        <!-- Step 11 -->
+                        <th rowspan="2" style="background:#EE8FE3;">11. QA Sample Submission</th>
+                        <!-- Step 10: 2 sub-cols -->
+                        <th colspan="2" style="background:#E02525;color:white;">10. DE Sample Approval</th>
+                        <!-- Step 9 -->
+                        <th rowspan="2" style="background:#E02525;color:white;">9. DE Sample Submission</th>
+                        <!-- Step 8: 2 sub-cols -->
+                        <th colspan="2" style="background:#4472C4;color:white;">8. Kataken PH Sample Approval</th>
+                        <!-- Step 7: 2 sub-cols -->
+                        <th colspan="2" style="background:#4472C4;color:white;">7. Kataken PH Sample Submission</th>
+                        <!-- Step 6 -->
+                        <th rowspan="2" style="background:#E7941E;">6. 4M Application Date</th>
+                        <!-- Step 5 -->
+                        <th rowspan="2" style="background:#9BC0C8;">5. Tooling Transfer Date</th>
+                        <!-- Step 4 -->
+                        <th rowspan="2" style="background:#9BC0C8;">4. Tooling PO Issuance</th>
+                        <!-- Step 3 -->
+                        <th rowspan="2" style="background:#9BC0C8;">3. Manual FC to New Supplier</th>
+                        <!-- Step 2 -->
+                        <th colspan="2" style="background:#E7941E;">2. Material LOA</th>
+                        <!-- Step 1: 3 sub-cols -->
+                        <th colspan="3" style="background:#E7941E;">1. Mold LOA</th>
+                    </tr>
+
+                    <!-- ═══ ROW 3: SUB-COLUMNS ═══ -->
+                    <tr>
+                        <!-- Step 28 sub-cols -->
+                        <th style="background:#9BC0C8">Parts Availability Date</th>
+                        <th style="background:#9BC0C8">PO Delivery Date</th>
+                        <th style="background:#9BC0C8">Actual Delivery Date</th>
+                        <!-- Step 26 sub-cols -->
+                        <th style="background:#E7941E;">Target</th>
+                        <th style="background:#E7941E;">Actual</th>
+                        <!-- Step 25 sub-cols -->
+                        <th style="background:#E7941E;">Target</th>
+                        <th style="background:#E7941E;">Actual</th>
+                        <!-- Step 23 sub-cols -->
+                        <th style="background:#9BC0C8;">Target</th>
+                        <th style="background:#9BC0C8;">Actual</th>
+                        <!-- Step 22 sub-cols -->
+                        <th style="background:#9BC0C8;">Target</th>
+                        <th style="background:#9BC0C8;">Actual Stocks</th>
+                        <th style="background:#9BC0C8;">Shortage Date</th>
+                        <th style="background:#9BC0C8;">Final PO Issued Date</th>
+                        <!-- Step 19 sub-cols -->
+                        <th style="background:#4472C4;color:white;">Target</th>
+                        <th style="background:#4472C4;color:white;">Actual</th>
+                        <!-- Step 13 sub-cols -->
+                        <th style="background:#4472C4;color:white;">Target</th>
+                        <th style="background:#4472C4;color:white;">PPS Approval Date</th>
+                        <!-- Step 12 sub-cols -->
+                        <th style="background:#EE8FE3;">Target</th>
+                        <th style="background:#EE8FE3;">Actual</th>
+                        <!-- Step 10 sub-cols -->
+                        <th style="background:#E02525;color:white;">Target</th>
+                        <th style="background:#E02525;color:white;">Actual</th>
+                        <!-- Step 8 sub-cols -->
+                        <th style="background:#4472C4;color:white;">Target</th>
+                        <th style="background:#4472C4;color:white;">Actual</th>
+                        <!-- Step 7 sub-cols -->
+                        <th style="background:#4472C4;color:white;">Target</th>
+                        <th style="background:#4472C4;color:white;">Actual</th>
+                        <!-- Step 2 sub-cols -->
+                        <th style="background:#E7941E;">Target</th>
+                        <th style="background:#E7941E;">Status</th>
+                        <!-- Step 1 sub-cols -->
+                        <th style="background:#E7941E;">Target</th>
+                        <th style="background:#E7941E;">BIPH to New Supplier</th>
+                        <th style="background:#E7941E;">Old Supplier to BIPH</th>
+                    </tr>
+
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="100" class="text-center text-muted py-4">
+                                <i class="fa-solid fa-inbox me-2"></i>No Supplier Change records found.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <!-- Control No -->
+                            <td class="sticky-col fw-bold text-center"
+                                style="background:#4C4C4C;color:white;">
+                                @item.ControlNumber
+                            </td>
+
+                            <!-- Step 29: Target Usage Date -->
+                            <td class="text-center">@item.target_usage_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 28: Parts Availability -->
+                            <td class="text-center">@item.parts_availability_date?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.po_delivery_date?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.actual_delivery_date?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 27: PO Issuance Date -->
+                            <td class="text-center">@item.po_issuance_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 26: Recosting Date -->
+                            <td class="text-center">@item.recosting_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.recosting_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 25: BLK and FIX Supplier -->
+                            <td class="text-center">@item.blk_fix_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.blk_fix_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 24: Final PO Delivery -->
+                            <td class="text-center">@item.final_po_delivery_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 23: SAP Setting Change -->
+                            <td class="text-center">@item.sap_setting_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.sap_setting_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 22: Simulation of Old Suppliers Stocks -->
+                            <td class="text-center">@item.sim_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.sim_actual_stocks?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@(DateTime.TryParse(item.sim_shortage_date, out var sd) ? sd.ToString("MM/dd/yyyy") : item.sim_shortage_date)</td>
+                            <td class="text-center">@(DateTime.TryParse(item.sim_final_po_issued_date, out var fpd) ? fpd.ToString("MM/dd/yyyy") : item.sim_final_po_issued_date)</td>
+                      
+
+                            <!-- Step 21: Request Simulation to MP2 -->
+                            <td class="text-center">@item.request_sim_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 20: 4M Approval Date -->
+                            <td class="text-center">@item.approval_date_4m_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 19: Test Run Approval Date -->
+                            <td class="text-center">@item.test_run_appr_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.test_run_appr_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 18: Test Run Schedule -->
+                            <td class="text-center">@item.test_run_sched_start?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 17: Test Run Delivery Date -->
+                            <td class="text-center">@item.test_run_delivery_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 16: Test Run PO Date -->
+                            <td class="text-center">@item.test_run_po_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 15: Test Run PO Request Date -->
+                            <td class="text-center">@item.test_run_po_req_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 14: Open Sourcelist -->
+                            <td class="text-center">@item.open_sourcelist_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 13: Availability of Parts Packaging Standard -->
+                            <td class="text-center">@item.pps_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.pps_approval_date?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 12: QA Sample Approval -->
+                            <td class="text-center">@item.qa_appr_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.qa_appr_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 11: QA Sample Received Date -->
+                            <td class="text-center">@item.qa_sample_received_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 10: DE Sample Approval -->
+                            <td class="text-center">@item.de_appr_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.de_appr_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 9: DE Sample Received Date -->
+                            <td class="text-center">@item.de_sample_received_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 8: Kataken PH Sample Approval -->
+                            <td class="text-center">@item.kataken_appr_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.kataken_appr_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 7: Kataken PH Sample Submission -->
+                            <td class="text-center">@item.kataken_sub_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">@item.kataken_sub_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 6: 4M Application Date -->
+                            <td class="text-center">@item.application_date_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 5: Tooling Transfer Date -->
+                            <td class="text-center">@item.tooling_transfer_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 4: Tooling PO Issuance -->
+                            <td class="text-center">@item.tooling_po_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 3: Manual FC to New Supplier -->
+                            <td class="text-center">@item.manual_fc_actual?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+
+                            <!-- Step 2: Material LOA -->
+                            <td class="text-center">@item.material_loa_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(item.material_loa_status))
+                                {
+                                    <span class="badge @(item.material_loa_status == "Completed" ? "bg-success" : "bg-warning text-dark")">
+                                        @item.material_loa_status
+                                    </span>
+                                }
+                            </td>
+
+                            <!-- Step 1: Mold LOA -->
+                            <td class="text-center">@item.mold_loa_target?.ToLocalTime().ToString("MM/dd/yyyy")</td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(item.mold_loa_biph_new_supplier))
+                                {
+                                    <span class="badge @(item.mold_loa_biph_new_supplier == "Completed" ? "bg-success" : "bg-warning text-dark")">
+                                        @item.mold_loa_biph_new_supplier
+                                    </span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(item.mold_loa_old_supplier_biph))
+                                {
+                                    <span class="badge @(item.mold_loa_old_supplier_biph == "Completed" ? "bg-success" : "bg-warning text-dark")">
+                                        @item.mold_loa_old_supplier_biph
+                                    </span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sticky-col {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        min-width: 160px;
+    }
+@*
+    thead th {
+        white-space: nowrap;
+        font-size: .72rem;
+        padding: 6px 8px;
+    }
+
+    tbody td {
+        white-space: nowrap;
+        padding: 5px 8px;
+        font-size: .78rem;
+    } *@
+</style>

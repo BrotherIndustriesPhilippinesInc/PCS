@@ -1,0 +1,649 @@
+﻿@model PartsControlSystem.ViewModels.IQCMonitoringViewModel
+@using PartsControlSystem.ViewModels
+@{
+    ViewData["Title"] = "IQC Monitoring";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* ── Activity panels ── */
+    .activity-panel {
+        display: none;
+    }
+
+        .activity-panel.active {
+            display: block;
+        }
+
+    /* ── Table font ── */
+    .table-sm th, .table-sm td {
+        font-size: 13px;
+    }
+
+    /* ── Pending Items column ── */
+    .col-pending {
+        min-width: 180px;
+        max-width: 220px;
+    }
+
+    .iqc-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        isolation: isolate;
+    }
+
+    .iqc-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+        margin-bottom: 0;
+    }
+
+        .iqc-table th,
+        .iqc-table td {
+            border: 1px solid #dee2e6 !important;
+            border-right-width: 0 !important;
+            border-bottom-width: 0 !important;
+        }
+
+            .iqc-table th:last-child,
+            .iqc-table td:last-child {
+                border-right-width: 1px !important;
+            }
+
+        .iqc-table tr th,
+        .iqc-table tr td {
+            border-bottom-width: 1px !important;
+        }
+
+        .iqc-table .col-txn {
+            position: sticky;
+            left: 0;
+            min-width: 160px;
+            font-weight: 600;
+            background: #ffffff;
+            z-index: 2;
+            box-shadow: 3px 0 5px -1px rgba(0,0,0,0.18);
+        }
+
+        .iqc-table thead .col-txn {
+            background: #1f3864 !important;
+            z-index: 3;
+            box-shadow: 3px 0 5px -1px rgba(0,0,0,0.28);
+        }
+
+        .iqc-table tbody tr .col-txn {
+            background: #ffffff;
+        }
+
+        .iqc-table tbody tr:hover .col-txn {
+            background: #f0f4ff;
+        }
+
+    .summary-cards {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 14px;
+        margin-bottom: 18px;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+        width: 150px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .summary-card .card-label {
+            font-size: 12px;
+            color: #495057;
+            font-weight: 600;
+            line-height: 1.35;
+            word-break: break-word;
+            white-space: normal;
+            width: 100%;
+            min-height: 34px;
+        }
+
+        .summary-card .card-circle {
+            width: 54px;
+            height: 54px;
+            min-width: 54px;
+            min-height: 54px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1;
+        }
+
+    .circle-blue {
+        background: #0d6efd;
+    }
+
+    .circle-green {
+        background: #198754;
+    }
+
+    .circle-red {
+        background: #dc3545;
+    }
+
+    .circle-yellow {
+        background: #ffc107;
+        color: #000 !important;
+    }
+
+    .circle-purple {
+        background: #6f42c1;
+    }
+
+    .circle-gray {
+        background: #6c757d;
+    }
+
+    .circle-orange {
+        background: #fd7e14;
+    }
+
+    .circle-teal {
+        background: #0dcaf0;
+        color: #000 !important;
+    }
+</style>
+
+<div class="container-fluid bg-white py-3">
+
+    <!-- ── FILTER BAR ── -->
+    <div class="card border mb-3">
+        <div class="card-body py-2 d-flex flex-wrap align-items-center gap-2">
+            <label class="fw-semibold mb-0">Activity</label>
+            <select id="ddlActivity" class="form-select form-select-sm" style="width:260px" onchange="switchActivity(this.value)">
+                <option value="renewal">Renewal / Additional Mold</option>
+                <option value="multi">Multiple Procurement / Localization</option>
+                <option value="supplier">Supplier Change / Localization</option>
+                <option value="local">New Tooling / Localization</option>
+                <option value="change">Change Material</option>
+            </select>
+            <label class="fw-semibold mb-0 ms-2">Search by</label>
+            <select id="ddlSearchColumn" class="form-select form-select-sm" style="width:200px">
+                <option value="txn">Transaction Number</option>
+                <option value="type">Tooling Type</option>
+                <option value="cat">Category</option>
+                <option value="part">Part Code</option>
+                <option value="model">Model</option>
+                <option value="pending">Pending Items</option>
+            </select>
+            <input id="txtSearch" type="text" class="form-control form-control-sm" style="width:220px" placeholder="Search…" oninput="filterTable()" />
+            <button class="btn btn-primary btn-sm ms-auto d-flex align-items-center gap-1" onclick="downloadTable()">
+                <i class="fa-solid fa-download"></i> Download
+            </button>
+        </div>
+    </div>
+
+    <!-- RENEWAL CARDS -->
+    <div id="cards-renewal" class="summary-cards">
+        @{
+            var rRows = Model.RenewalRows;
+        }
+        <div class="summary-card"><div class="card-label">Kataken Finish (Local Trial)</div><div class="card-circle circle-blue">@rRows.Count(r => r.KatakenFinishActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Submission (Local Trial)</div><div class="card-circle circle-green">@rRows.Count(r => r.KatakenSubActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-orange">@rRows.Count(r => r.TestRunActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@rRows.Count</div></div>
+    </div>
+
+    <!-- MULTIPLE PROCUREMENT CARDS -->
+    <div id="cards-multi" class="summary-cards" style="display:none">
+        @{
+            var mRows = Model.MultipleProcurementRows;
+        }
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@mRows.Count(r => r.KatakenSubActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@mRows.Count(r => r.KatakenApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@mRows.Count(r => r.PPSActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@mRows.Count(r => r.TestRunPOReqActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@mRows.Count(r => r.TestRunSchedFinish == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@mRows.Count(r => r.TestRunApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@mRows.Count</div></div>
+    </div>
+
+    <!-- SUPPLIER CHANGE CARDS -->
+    <div id="cards-supplier" class="summary-cards" style="display:none">
+        @{
+            var sRows = Model.SupplierChangeRows;
+        }
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@sRows.Count(r => r.KatakenSubActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@sRows.Count(r => r.KatakenApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@sRows.Count(r => r.PPSActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@sRows.Count(r => r.TestRunPOReqActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@sRows.Count(r => r.TestRunSchedFinish == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@sRows.Count(r => r.TestRunApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@sRows.Count(r => r.FourMApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@sRows.Count</div></div>
+    </div>
+
+    <!-- LOCALIZATION CARDS -->
+    <div id="cards-local" class="summary-cards" style="display:none">
+        @{
+            var lRows = Model.LocalizationRows;
+        }
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@lRows.Count(r => r.KatakenSubActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@lRows.Count(r => r.KatakenApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@lRows.Count(r => r.TestRunPOReqActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@lRows.Count(r => r.TestRunSchedFinish == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@lRows.Count(r => r.TestRunApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@lRows.Count(r => r.FourMApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@lRows.Count</div></div>
+    </div>
+
+    <!-- CHANGE MATERIAL CARDS -->
+    <div id="cards-change" class="summary-cards" style="display:none">
+        @{
+            var cRows = Model.ChangeMaterialRows;
+        }
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@cRows.Count(r => r.KatakenSubActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-teal">@cRows.Count(r => r.KatakenEvalActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">QA Evaluation</div><div class="card-circle circle-green">@cRows.Count(r => r.QAEvalActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@cRows.Count(r => r.DEEvalActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-purple">@cRows.Count(r => r.TestRunActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@cRows.Count</div></div>
+    </div>
+
+    <!-- ══ PANEL 1 — RENEWAL ══ -->
+    <div id="panel-renewal" class="activity-panel active">
+        <div class="iqc-scroll">
+            <table id="tbl-renewal" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="9" class="text-white text-center fw-bold" style="background:#92d050">Renewal / Additional Mold</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Kataken Finish (Local Trial)</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Kataken Submission (Local Trial)</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Test Run</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 3; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#d4edda !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#d4edda !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#d4edda !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.RenewalRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff!important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.KatakenFinishTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenFinishActual)</td>
+                            <td>@row.KatakenFinishRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunActual)</td>
+                            <td>@row.TestRunRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.RenewalRows.Any())
+                    {
+                        <tr><td colspan="15" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ PANEL 2 — MULTIPLE PROCUREMENT ══ -->
+    <div id="panel-multi" class="activity-panel">
+        <div class="iqc-scroll">
+            <table id="tbl-multi" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="18" class="text-white text-center fw-bold" style="background:#ff9999">Multiple Procurement / Localization</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Kataken PH Sample Approval</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Availability of Parts Packaging Standard</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Test Run PO Request Date</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Test Run Schedule</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#ff9999">Test Run Approval Date</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#ffb6c1 !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#ffb6c1 !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#ffb6c1 !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.MultipleProcurementRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff !important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenApprTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenApprActual)</td>
+                            <td>@row.KatakenApprRemarks</td>
+                            <td class="text-center">@Fmt(row.PPSTarget)</td>
+                            <td class="text-center">@Fmt(row.PPSActual)</td>
+                            <td>@row.PPSRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqActual)</td>
+                            <td>@row.TestRunPOReqRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedStart)</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedFinish)</td>
+                            <td>@row.TestRunSchedRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunApprTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunApprActual)</td>
+                            <td>@row.TestRunApprRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.MultipleProcurementRows.Any())
+                    {
+                        <tr><td colspan="24" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ PANEL 3 — SUPPLIER CHANGE ══ -->
+    <div id="panel-supplier" class="activity-panel">
+        <div class="iqc-scroll">
+            <table id="tbl-supplier" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="21" class="text-white text-center fw-bold" style="background:#ff0000">Supplier Change / Localization</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Kataken PH Sample Approval</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Availability of Parts Packaging Standard</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Test Run PO Request Date</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Test Run Schedule</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">Test Run Approval Date</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#c00000">4M Approval Date</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#ff4d4d !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#ff4d4d !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#ff4d4d !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.SupplierChangeRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff !important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenApprTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenApprActual)</td>
+                            <td>@row.KatakenApprRemarks</td>
+                            <td class="text-center">@Fmt(row.PPSTarget)</td>
+                            <td class="text-center">@Fmt(row.PPSActual)</td>
+                            <td>@row.PPSRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqActual)</td>
+                            <td>@row.TestRunPOReqRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedStart)</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedFinish)</td>
+                            <td>@row.TestRunSchedRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunApprTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunApprActual)</td>
+                            <td>@row.TestRunApprRemarks</td>
+                            <td class="text-center">@Fmt(row.FourMApprTarget)</td>
+                            <td class="text-center">@Fmt(row.FourMApprActual)</td>
+                            <td>@row.FourMApprRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.SupplierChangeRows.Any())
+                    {
+                        <tr><td colspan="27" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ PANEL 4 — NEW TOOLING / LOCALIZATION ══ -->
+    <div id="panel-local" class="activity-panel">
+        <div class="iqc-scroll">
+            <table id="tbl-local" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="18" class="text-white text-center fw-bold" style="background:#7030a0">New Tooling / Localization</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">Kataken PH Sample Approval</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">Test Run PO Request Date</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">Test Run Schedule</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">Test Run Approval Date</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#9b59d0">4M Approval Date</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#c598f1 !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#c598f1 !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#c598f1 !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.LocalizationRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff !important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenApprTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenApprActual)</td>
+                            <td>@row.KatakenApprRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunPOReqActual)</td>
+                            <td>@row.TestRunPOReqRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedStart)</td>
+                            <td class="text-center">@Fmt(row.TestRunSchedFinish)</td>
+                            <td>@row.TestRunSchedRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunApprTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunApprActual)</td>
+                            <td>@row.TestRunApprRemarks</td>
+                            <td class="text-center">@Fmt(row.FourMApprTarget)</td>
+                            <td class="text-center">@Fmt(row.FourMApprActual)</td>
+                            <td>@row.FourMApprRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.LocalizationRows.Any())
+                    {
+                        <tr><td colspan="24" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ══ PANEL 5 — CHANGE MATERIAL ══ -->
+    <div id="panel-change" class="activity-panel">
+        <div class="iqc-scroll">
+            <table id="tbl-change" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="15" class="text-center fw-bold" style="background:#e6e600; color:#000">Change Material</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#ffff00; color:#000">Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#ffff00; color:#000">Kataken Evaluation Approval</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#ffff00; color:#000">QA Evaluation</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#ffff00; color:#000">DE Evaluation</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#ffff00; color:#000">Test Run</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 5; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#ffff81 !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#ffff81 !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#ffff81 !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.ChangeMaterialRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff !important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenEvalActual)</td>
+                            <td>@row.KatakenEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.QAEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.QAEvalActual)</td>
+                            <td>@row.QAEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.DEEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.DEEvalActual)</td>
+                            <td>@row.DEEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunActual)</td>
+                            <td>@row.TestRunRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.ChangeMaterialRows.Any())
+                    {
+                        <tr><td colspan="21" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string Fmt(DateTime? d) => d.HasValue ? d.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—";
+}
+
+<script>
+    const panelMap = { renewal:'panel-renewal', multi:'panel-multi', supplier:'panel-supplier', local:'panel-local', change:'panel-change' };
+    const cardMap  = { renewal:'cards-renewal', multi:'cards-multi', supplier:'cards-supplier', local:'cards-local', change:'cards-change' };
+
+    function switchActivity(val) {
+        Object.values(panelMap).forEach(id => document.getElementById(id)?.classList.remove('active'));
+        Object.values(cardMap).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+        document.getElementById(panelMap[val])?.classList.add('active');
+        const cards = document.getElementById(cardMap[val]);
+        if (cards) cards.style.display = 'flex';
+        document.getElementById('txtSearch').value = '';
+    }
+
+    const colMap = { txn:'txn', type:'type', cat:'cat', part:'part', model:'model', pending:'pending' };
+    function filterTable() {
+        const activity = document.getElementById('ddlActivity').value;
+        const colKey   = document.getElementById('ddlSearchColumn').value;
+        const keyword  = document.getElementById('txtSearch').value.trim().toLowerCase();
+        const tbl      = document.getElementById('tbl-' + activity);
+        if (!tbl) return;
+        const attr = 'data-' + colMap[colKey];
+        tbl.querySelectorAll('tbody tr').forEach(tr => {
+            const val = (tr.getAttribute(attr) || '').toLowerCase();
+            tr.style.display = (!keyword || val.includes(keyword)) ? '' : 'none';
+        });
+    }
+
+    // ── Download — calls server-side ClosedXML action ──
+    function downloadTable() {
+        const activity = document.getElementById('ddlActivity').value;
+        window.location.href = `/IQCMonitoring/Download?activity=${encodeURIComponent(activity)}`;
+    }
+</script>

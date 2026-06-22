@@ -68,7 +68,7 @@
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Module</div>
 
-                                <a class="nav-link"  asp-controller="Home" asp-action="Index">
+                                <a class="nav-link"  asp-controller="Home" asp-action="Dashboard">
                                     <div class="sb-nav-link-icon text-light"><i class="fas fa-tachometer-alt"></i></div>
                                     Dashboard
                                 </a>
@@ -78,11 +78,7 @@
                                     Import File
                                 </a>
 
-                                <a class="nav-link" asp-controller="PartsDownload" asp-action="DownloadPartsData">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-arrow-down"></i></div>
-                                    Parts Download
-                                </a>
-
+                                
                                 <li class="nav-item">
                                     <a class="nav-link  d-flex justify-content-between align-items-center"
                                     href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
@@ -110,7 +106,11 @@
                                     </div>
                                 </li>
 
-                                <a class="nav-link" href="#">
+                               @*  <a class="nav-link" asp-controller="ImportData" asp-action="DataEntry">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-import"></i></div>
+                                    Import File
+                                </a> *@
+                                <a class="nav-link" asp-controller="IQCMonitoring" asp-action="Index">
                                     <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-desktop"></i></div>
                                     IQC Monitoring
                                 </a>
@@ -123,10 +123,16 @@
                                     </a>
                                 }
 
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" asp-controller="AllPartsData" asp-action="AllPartsData">
                                     <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
                                     All Parts Data
                                 </a>
+
+
+                               @*  <a class="nav-link" href="#">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
+                                    All Parts Data
+                                </a> *@
 
                                 @*   <a class="nav-link" asp-controller="_4mForm" asp-action="FourMForm">
                                 <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-arrow-down"></i></div>
@@ -191,6 +197,12 @@
                                                         Supplier Setting
                                                     </a>
                                                 </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" asp-controller="LeadTime" asp-action="LeadTimeSetting">
+                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                        Lead Time Setting
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </div>
                                     </li>
@@ -225,14 +237,11 @@
                 
                  @*            <div class="sb-sidenav-menu-heading">Addons</div> *@
 
-                            <a class="nav-link" href="charts.html">
-                                <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-folder-minus"></i></div>
-                                Parts Deletion
-                            </a>
-                            <a class="nav-link" href="tables.html">
-                                <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
-                                Updating of Dates
-                            </a>
+
+                                <a class="nav-link" asp-controller="DateCodeUpdate" asp-action="DateCodeUpdate">
+                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
+                                    Updating of Dates / Part Codes
+                                </a>
                         </div>
                     </div>
 

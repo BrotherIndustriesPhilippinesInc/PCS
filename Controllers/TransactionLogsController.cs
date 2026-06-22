@@ -1,178 +1,4 @@
-﻿//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.EntityFrameworkCore;
-//using PartsControlSystem.Data;
-//using PartsControlSystem.ViewModels;
-
-//namespace PartsControlSystem.Controllers
-//{
-//    public class TransactionLogsController : Controller
-//    {
-//        private readonly PostgreAppDbContext _dbContext;
-
-//        public TransactionLogsController(PostgreAppDbContext dbContext)
-//        {
-//            _dbContext = dbContext;
-//        }
-
-//        public async Task<IActionResult> TransactionLogs()
-//        {
-//            var latestProcesses = await _dbContext.ActivityCurrentProcesses
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
-//                .ToListAsync();
-
-//            var importDataList = await _dbContext.ImportDatas.ToListAsync();
-
-//            var quotationRemarks = await _dbContext.ToolingQuotationRequestApproval
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var requestOrderRemarks = await _dbContext.MP2ToolingRequestOrder
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var poIssuanceRemarks = await _dbContext.MP2ToolingPoIssuance
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var dfmRemarks = await _dbContext.SQCDFMQCDApprovals
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var fabricationRemarks = await _dbContext.MP2ToolingFabrications
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var transferRemarks = await _dbContext.MP2ToolingTransfers
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var katakenSubRemarks = await _dbContext.IQCKatakenSubmissions
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var katakenFinishRemarks = await _dbContext.IQCKatakenFinish
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var deRemarks = await _dbContext.DEEvaluation
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var qaRemarks = await _dbContext.QASpecialEvaluations
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var testRunRemarks = await _dbContext.IQCTestRuns
-//                .GroupBy(x => x.ControlNumber)
-//                .Select(g => g.OrderByDescending(x => x.CreateDate).First())
-//                .ToDictionaryAsync(x => x.ControlNumber, x => new { x.Remarks, x.InputBy, x.CreateDate, Source = "Update Activity" });
-
-//            var logs = new List<TransactionLogViewModel>();
-
-//            foreach (var imp in importDataList)
-//            {
-//                var latestProcess = latestProcesses
-//                    .FirstOrDefault(x => x.ControlNumber == imp.ControlNo);
-
-//                string activity = DetermineActivity(imp);
-//                string currentProcess = latestProcess?.CurrentProcess ?? "Tooling Quotation Request~Approval";
-//                string status = currentProcess == "MP2-PDC" ? "Completed" : "In Progress";
-
-//                string remarks = string.Empty;
-//                string inputBy = imp.Section ?? "System";
-//                string source = "Import File";
-
-//                var allProcessEntries = new List<(string Remarks, string InputBy, DateTime? CreateDate, string Source)>();
-
-//                if (quotationRemarks.TryGetValue(imp.ControlNo, out var q))
-//                    allProcessEntries.Add((q.Remarks, q.InputBy, q.CreateDate, q.Source));
-//                if (requestOrderRemarks.TryGetValue(imp.ControlNo, out var ro))
-//                    allProcessEntries.Add((ro.Remarks, ro.InputBy, ro.CreateDate, ro.Source));
-//                if (poIssuanceRemarks.TryGetValue(imp.ControlNo, out var po))
-//                    allProcessEntries.Add((po.Remarks, po.InputBy, po.CreateDate, po.Source));
-//                if (dfmRemarks.TryGetValue(imp.ControlNo, out var dfm))
-//                    allProcessEntries.Add((dfm.Remarks, dfm.InputBy, dfm.CreateDate, dfm.Source));
-//                if (fabricationRemarks.TryGetValue(imp.ControlNo, out var fab))
-//                    allProcessEntries.Add((fab.Remarks, fab.InputBy, fab.CreateDate, fab.Source));
-//                if (transferRemarks.TryGetValue(imp.ControlNo, out var tr))
-//                    allProcessEntries.Add((tr.Remarks, tr.InputBy, tr.CreateDate, tr.Source));
-//                if (katakenSubRemarks.TryGetValue(imp.ControlNo, out var ks))
-//                    allProcessEntries.Add((ks.Remarks, ks.InputBy, ks.CreateDate, ks.Source));
-//                if (katakenFinishRemarks.TryGetValue(imp.ControlNo, out var kf))
-//                    allProcessEntries.Add((kf.Remarks, kf.InputBy, kf.CreateDate, kf.Source));
-//                if (deRemarks.TryGetValue(imp.ControlNo, out var de))
-//                    allProcessEntries.Add((de.Remarks, de.InputBy, de.CreateDate, de.Source));
-//                if (qaRemarks.TryGetValue(imp.ControlNo, out var qa))
-//                    allProcessEntries.Add((qa.Remarks, qa.InputBy, qa.CreateDate, qa.Source));
-//                if (testRunRemarks.TryGetValue(imp.ControlNo, out var tr2))
-//                    allProcessEntries.Add((tr2.Remarks, tr2.InputBy, tr2.CreateDate, tr2.Source));
-
-//                var latestEntry = allProcessEntries
-//                    .OrderByDescending(x => x.CreateDate)
-//                    .FirstOrDefault();
-
-//                if (latestEntry != default)
-//                {
-//                    remarks = latestEntry.Remarks;
-//                    inputBy = latestEntry.InputBy;
-//                    source = latestEntry.Source;
-//                    // ✅ intentionally NOT reading latestEntry.CreateDate for InputDate
-//                }
-
-//                logs.Add(new TransactionLogViewModel
-//                {
-//                    TransactionNumber = imp.ControlNo,
-//                    PartName = imp.PartName,
-//                    Supplier = imp.Supplier,
-//                    Model = imp.Model,
-//                    Activity = activity,
-//                    Source = source,
-//                    PIC = inputBy,
-//                    StartDate = imp.DateImported,         // when originally imported — never changes
-//                    EndDate = latestProcess?.UpdateAt,  // latest pipeline movement
-//                    ReceivedDate = latestProcess?.UpdateAt,  // same as EndDate
-//                    InputDate = imp.DateImported,         // ✅ FIXED: always the original import date
-//                    CurrentProcess = currentProcess,
-//                    Status = status,
-//                    Remarks = remarks
-//                });
-//            }
-
-//            var sorted = logs
-//                .OrderByDescending(x => x.EndDate ?? x.StartDate)
-//                .ToList();
-
-//            return View("TransactionLogs", sorted);
-//        }
-
-//        private string DetermineActivity(PartsControlSystem.Models.ImportData data)
-//        {
-//            if (data.RenewalAdditionalMold == "YES") return "Renewal / Additional Mold";
-//            if (data.NewToolingLocalization == "YES") return "New Tooling / Localization";
-//            if (data.TransferTooling == "YES") return "Transfer Tooling";
-//            if (data.ChangeMaterial == "YES") return "Change Material";
-//            if (data.NewModel == "YES") return "New Model";
-//            if (data.NonConcurrent == "YES") return "Non-Concurrent";
-//            if (data.SupplierChangeLocalization == "YES") return "Supplier Change / Localization";
-//            if (data.Other4M == "YES") return "Other 4M";
-//            return "Unknown";
-//        }
-//    }
-//}
-
-
-
+﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
@@ -192,117 +18,334 @@ namespace PartsControlSystem.Controllers
 
         public async Task<IActionResult> TransactionLogs()
         {
-            // ── Get only the latest row per TransactionNumber for the main table ──
             var logs = await _dbContext.TransactionLogs
-                .GroupBy(x => x.TransactionNumber)
-                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                 .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                 .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                 .ToListAsync();
+
+            var latestProcesses = await _dbContext.ActivityCurrentProcesses
+                .GroupBy(x => x.ControlNumber)
+                .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
                 .ToListAsync();
 
             var viewModel = logs
                 .OrderByDescending(x => x.InputDate)
-                .Select(x => new TransactionLogViewModel
+                .Select(x =>
                 {
-                    TransactionNumber = x.TransactionNumber,
-                    PartName = x.PartName,
-                    Supplier = x.Supplier,
-                    Model = x.Model,
-                    Activity = x.Activity,
-                    Source = x.Source,
-                    PIC = x.PIC,
-                    StartDate = x.StartDate,
-                    EndDate = x.EndDate,
-                    ReceivedDate = x.ReceivedDate,
-                    InputDate = x.InputDate,
-                    CurrentProcess = x.CurrentProcess,
-                    Status = x.Status,
-                    Remarks = x.Remarks
+                    var latestProcess = latestProcesses
+                        .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
+
+                    string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+
+                    return new TransactionLogViewModel
+                    {
+                        TransactionNumber = x.TransactionNumber,
+                        PartName = x.PartName,
+                        Supplier = x.Supplier,
+                        Model = x.Model,
+                        Activity = x.Activity,
+                        Source = x.Source,
+                        PIC = x.PIC,
+                        StartDate = x.StartDate,
+                        EndDate = x.EndDate,
+                        ReceivedDate = x.ReceivedDate,
+                        InputDate = x.InputDate,
+                        CurrentProcess = x.CurrentProcess,
+                        Status = IsCompleted(x.Activity, actualCurrentProcess)
+                                                ? "Completed"
+                                                : "In Progress",
+                        Remarks = x.Remarks
+                    };
                 })
                 .ToList();
 
             return View("TransactionLogs", viewModel);
         }
 
-        // ── Called by the history modal button via AJAX ──
-        //[HttpGet]
-        //public async Task<IActionResult> GetHistory(string transactionNumber)
-        //{
-        //    if (string.IsNullOrWhiteSpace(transactionNumber))
-        //        return BadRequest(new { success = false, message = "Transaction number is required." });
-
-        //    var history = await _dbContext.TransactionLogs
-        //        .Where(x => x.TransactionNumber == transactionNumber)
-        //        .OrderByDescending(x => x.InputDate)
-        //        .Select(x => new
-        //        {
-        //            x.TransactionNumber,
-        //            x.Activity,
-        //            x.Source,
-        //            x.PIC,
-        //            StartDate = x.StartDate.HasValue ? x.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—",
-        //            EndDate = x.EndDate.HasValue ? x.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—",
-        //            ReceivedDate = x.ReceivedDate.HasValue ? x.ReceivedDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "—",
-        //            InputDate = x.InputDate.HasValue ? x.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm") : "—",
-        //            x.CurrentProcess,
-        //            x.Status,
-        //            x.Remarks
-        //        })
-        //        .ToListAsync();
-
-        //    return Json(history);
-        //}
-
-      [HttpGet]
-public async Task<IActionResult> GetHistory(string transactionNumber)
-{
-    if (string.IsNullOrWhiteSpace(transactionNumber))
-        return BadRequest(new { success = false, message = "Transaction number is required." });
-
-    var history = await _dbContext.TransactionLogs
-        .Where(x => x.TransactionNumber == transactionNumber)
-        .OrderByDescending(x => x.InputDate)
-        .ToListAsync();
-
-    var result = history.Select((row, index) =>
-    {
-        string status;
-
-        if (index == 0)
+        // =====================================================================
+        // DOWNLOAD — ClosedXML
+        // =====================================================================
+        [HttpGet]
+        public async Task<IActionResult> Download(
+            string? searchField,
+            string? searchValue,
+            string? startDate,
+            string? endDate)
         {
-            // latest row — completed only if it reached the final process
-            status = row.CurrentProcess == "MP2-PDC" ? "Completed" : "In Progress";
+            var logs = await _dbContext.TransactionLogs
+                .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                .ToListAsync();
+
+            var latestProcesses = await _dbContext.ActivityCurrentProcesses
+                .GroupBy(x => x.ControlNumber)
+                .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
+                .ToListAsync();
+
+            var rows = logs
+                .OrderByDescending(x => x.InputDate)
+                .Select(x =>
+                {
+                    var latestProcess = latestProcesses
+                        .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
+                    string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+
+                    return new TransactionLogViewModel
+                    {
+                        TransactionNumber = x.TransactionNumber,
+                        PartName = x.PartName,
+                        Supplier = x.Supplier,
+                        Model = x.Model,
+                        Activity = x.Activity,
+                        Source = x.Source,
+                        PIC = x.PIC,
+                        StartDate = x.StartDate,
+                        EndDate = x.EndDate,
+                        ReceivedDate = x.ReceivedDate,
+                        InputDate = x.InputDate,
+                        CurrentProcess = x.CurrentProcess,
+                        Status = IsCompleted(x.Activity, actualCurrentProcess)
+                                                ? "Completed"
+                                                : "In Progress",
+                        Remarks = x.Remarks
+                    };
+                })
+                .ToList();
+
+            // ── Apply search filter ────────────────────────────────────────
+            if (!string.IsNullOrWhiteSpace(searchValue) && !string.IsNullOrWhiteSpace(searchField))
+            {
+                var val = searchValue.Trim().ToLower();
+                rows = searchField switch
+                {
+                    "0" => rows.Where(r => (r.TransactionNumber ?? "").ToLower().Contains(val)).ToList(),
+                    "1" => rows.Where(r => (r.PartName ?? "").ToLower().Contains(val)).ToList(),
+                    "2" => rows.Where(r => (r.Supplier ?? "").ToLower().Contains(val)).ToList(),
+                    "3" => rows.Where(r => (r.Model ?? "").ToLower().Contains(val)).ToList(),
+                    "4" => rows.Where(r => (r.Activity ?? "").ToLower().Contains(val)).ToList(),
+                    "6" => rows.Where(r => (r.PIC ?? "").ToLower().Contains(val)).ToList(),
+                    _ => rows
+                };
+            }
+
+            // ── Apply date filter (on StartDate, column index 7) ──────────
+            if (DateTime.TryParse(startDate, out var sd))
+                rows = rows.Where(r => r.StartDate.HasValue && r.StartDate.Value.ToLocalTime().Date >= sd.Date).ToList();
+            if (DateTime.TryParse(endDate, out var ed))
+                rows = rows.Where(r => r.StartDate.HasValue && r.StartDate.Value.ToLocalTime().Date <= ed.Date).ToList();
+
+            // ── Build XLSX ─────────────────────────────────────────────────
+            using var workbook = new XLWorkbook();
+            var ws = workbook.Worksheets.Add("Transaction Logs");
+
+            // ── Headers ───────────────────────────────────────────────────
+            var headers = new[]
+            {
+                "Transaction No", "Part Name", "Supplier", "Model",
+                "Activity", "Source", "PIC", "Start Date", "End Date",
+                "Received Date", "Input Date", "Current Process", "Status", "Remarks"
+            };
+
+            for (int i = 0; i < headers.Length; i++)
+            {
+                var cell = ws.Cell(1, i + 1);
+                cell.Value = headers[i];
+                cell.Style.Font.Bold = true;
+                cell.Style.Font.FontColor = XLColor.White;
+                cell.Style.Font.FontSize = 10;
+                cell.Style.Font.FontName = "Arial";
+                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#1565c0");
+                cell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                cell.Style.Alignment.WrapText = true;
+                cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                cell.Style.Border.OutsideBorderColor = XLColor.Black;
+            }
+
+            // ── Data rows ─────────────────────────────────────────────────
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var r = rows[i];
+                int rowNum = i + 2;
+                bool isAlt = i % 2 == 1;
+                var altColor = XLColor.FromHtml("#f0f4f8");
+
+                void WriteCell(int col, string val, bool center = false)
+                {
+                    var cell = ws.Cell(rowNum, col);
+                    cell.Value = val ?? "";
+                    cell.Style.Font.FontSize = 10;
+                    cell.Style.Font.FontName = "Arial";
+                    cell.Style.Alignment.Horizontal = center
+                        ? XLAlignmentHorizontalValues.Center
+                        : XLAlignmentHorizontalValues.Left;
+                    cell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    cell.Style.Alignment.WrapText = true;
+                    cell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    cell.Style.Border.OutsideBorderColor = XLColor.Black;
+                    if (isAlt)
+                        cell.Style.Fill.BackgroundColor = altColor;
+                }
+
+                WriteCell(1, r.TransactionNumber ?? "");
+                WriteCell(2, r.PartName ?? "");
+                WriteCell(3, r.Supplier ?? "");
+                WriteCell(4, r.Model ?? "");
+                WriteCell(5, r.Activity ?? "");
+                WriteCell(6, r.Source ?? "");
+                WriteCell(7, r.PIC ?? "");
+                WriteCell(8, r.StartDate.HasValue ? r.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "", true);
+                WriteCell(9, r.EndDate.HasValue ? r.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "", true);
+                WriteCell(10, r.ReceivedDate.HasValue ? r.ReceivedDate.Value.ToLocalTime().ToString("MM/dd/yyyy") : "", true);
+                WriteCell(11, r.InputDate.HasValue ? r.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm") : "", true);
+                WriteCell(12, r.CurrentProcess ?? "");
+                WriteCell(14, r.Remarks ?? "");
+
+                // ── Status cell — color coded ──────────────────────────────
+                var statusCell = ws.Cell(rowNum, 13);
+                statusCell.Value = r.Status ?? "";
+                statusCell.Style.Font.Bold = true;
+                statusCell.Style.Font.FontSize = 10;
+                statusCell.Style.Font.FontName = "Arial";
+                statusCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                statusCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                statusCell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                statusCell.Style.Border.OutsideBorderColor = XLColor.Black;
+
+                if (r.Status == "Completed")
+                {
+                    statusCell.Style.Font.FontColor = XLColor.FromHtml("#166534");
+                    statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#dcfce7");
+                }
+                else
+                {
+                    statusCell.Style.Font.FontColor = XLColor.FromHtml("#92400e");
+                    statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#fef9c3");
+                }
+
+                ws.Row(rowNum).Height = 18;
+            }
+
+            // ── Auto-fit columns ───────────────────────────────────────────
+            ws.Columns().AdjustToContents();
+            foreach (var col in ws.ColumnsUsed())
+            {
+                if (col.Width < 12) col.Width = 12;
+                if (col.Width > 60) col.Width = 60;
+            }
+
+            // ── Freeze header + auto-filter ────────────────────────────────
+            ws.Row(1).Height = 28;
+            ws.SheetView.FreezeRows(1);
+            if (ws.RangeUsed() != null) ws.RangeUsed().SetAutoFilter();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            return File(
+                stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"TransactionLogs_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
+            );
         }
-        else
+
+        // =====================================================================
+        // GET HISTORY
+        // =====================================================================
+        [HttpGet]
+        public async Task<IActionResult> GetHistory(string transactionNumber, string activity)
         {
-            // older rows — already moved to a newer step so they are completed
-            status = "Completed";
+            if (string.IsNullOrWhiteSpace(transactionNumber))
+                return BadRequest(new { success = false, message = "Transaction number is required." });
+
+            var query = _dbContext.TransactionLogs
+                .Where(x => x.TransactionNumber == transactionNumber);
+
+            if (!string.IsNullOrWhiteSpace(activity))
+                query = query.Where(x => x.Activity == activity);
+
+            var history = await query
+                .OrderByDescending(x => x.InputDate)
+                .ToListAsync();
+
+            var latestProcess = await _dbContext.ActivityCurrentProcesses
+                .Where(x => x.ControlNumber == transactionNumber)
+                .OrderByDescending(x => x.UpdateAt)
+                .FirstOrDefaultAsync();
+
+            string actualCurrentProcess = latestProcess?.CurrentProcess ?? string.Empty;
+
+            var result = history.Select((row, index) => new
+            {
+                row.TransactionNumber,
+                row.PartName,
+                row.Supplier,
+                row.Model,
+                row.Activity,
+                row.Source,
+                row.PIC,
+
+                StartDate = row.StartDate.HasValue
+                    ? row.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
+                    : "—",
+
+                EndDate = row.EndDate.HasValue
+                    ? row.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
+                    : "—",
+
+                InputDate = row.InputDate.HasValue
+                    ? row.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm")
+                    : "—",
+
+                row.CurrentProcess,
+
+                Status = index == 0
+                    ? IsCompleted(row.Activity, actualCurrentProcess)
+                        ? "Completed"
+                        : "In Progress"
+                    : "Completed",
+
+                row.Remarks
+            }).ToList();
+
+            return Json(result);
         }
 
-        return new
+        // =====================================================================
+        // IS COMPLETED
+        // =====================================================================
+        private static bool IsCompleted(string activity, string currentProcess)
         {
-            row.TransactionNumber,
-            row.PartName,
-            row.Supplier,
-            row.Model,
-            row.Activity,
-            row.Source,
-            row.PIC,
-            StartDate      = row.StartDate.HasValue  ? row.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy")       : "—",
-            EndDate        = row.EndDate.HasValue    ? row.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy")         : "—",
-            InputDate      = row.InputDate.HasValue  ? row.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm") : "—",
-            row.CurrentProcess,
-            Status         = status,
-            row.Remarks
-        };
-    }).ToList();
+            if (string.IsNullOrWhiteSpace(currentProcess)) return false;
 
-    return Json(result);
-}
+            if (activity == "Renewal / Additional Mold")
+                return currentProcess == "MP2-PDC";
+
+            if (activity == "Change Material")
+                return currentProcess == "First Delivery Date";
+
+            if (activity == "Other 4M")
+                return currentProcess == "FIRST DELIVERY DATE";
+
+            if (activity == "New Tooling / Localization"
+                || activity == "Multiple Procurement / Localization"
+                || activity == "Supplier Change / Localization")
+            {
+                return currentProcess == "Completed";
+            }
+
+            return currentProcess == "Completed";
+        }
+
+        // =====================================================================
+        // BACKFILL
+        // =====================================================================
         [HttpPost]
         public async Task<IActionResult> BackfillTransactionLogs()
         {
             try
             {
-                // ── 1. Load everything we need ──
                 var importDataList = await _dbContext.ImportDatas.ToListAsync();
 
                 var quotations = await _dbContext.ToolingQuotationRequestApproval.ToListAsync();
@@ -317,18 +360,14 @@ public async Task<IActionResult> GetHistory(string transactionNumber)
                 var qaEvals = await _dbContext.QASpecialEvaluations.ToListAsync();
                 var testRuns = await _dbContext.IQCTestRuns.ToListAsync();
 
-                // ── 2. Get all ControlNos already in transaction_logs to avoid duplicates ──
                 var existingKeys = await _dbContext.TransactionLogs
                     .Select(x => new { x.TransactionNumber, x.Source, x.CurrentProcess })
                     .ToListAsync();
 
                 var newRows = new List<TransactionLogs>();
 
-                // ── 3. Backfill import rows (one per YES activity flag) ──
                 foreach (var imp in importDataList)
                 {
-                    string activity = DetermineActivity(imp);
-
                     var activityMap = new Dictionary<string, string>
                     {
                         ["Renewal / Additional Mold"] = imp.RenewalAdditionalMold,
@@ -339,6 +378,7 @@ public async Task<IActionResult> GetHistory(string transactionNumber)
                         ["Non-Concurrent"] = imp.NonConcurrent,
                         ["Supplier Change / Localization"] = imp.SupplierChangeLocalization,
                         ["Other 4M"] = imp.Other4M,
+                        ["Multiple Procurement / Localization"] = imp.MultipleProcurementLocalization,
                     };
 
                     foreach (var (activityName, flag) in activityMap)
@@ -346,7 +386,6 @@ public async Task<IActionResult> GetHistory(string transactionNumber)
                         if (!string.Equals(flag, "YES", StringComparison.OrdinalIgnoreCase))
                             continue;
 
-                        // skip if already backfilled
                         bool alreadyExists = existingKeys.Any(x =>
                             x.TransactionNumber == imp.ControlNo &&
                             x.Source == "Import File" &&
@@ -374,150 +413,134 @@ public async Task<IActionResult> GetHistory(string transactionNumber)
                     }
                 }
 
-                // ── 4. Backfill each process table ──
-
-                // helper to avoid repeating the duplicate check
                 bool IsDupe(string controlNo, string source, string process) =>
                     existingKeys.Any(x =>
                         x.TransactionNumber == controlNo &&
                         x.Source == source &&
                         x.CurrentProcess == process);
 
-                // helper to find the matching import row
-                TransactionLogs MakeRow(string controlNo, string nextProcess,
-                    string inputBy, string remarks, DateTime? inputDate,
+                TransactionLogs MakeRow(
+                    string controlNo,
+                    string currentProcess,
+                    string nextProcess,
+                    string inputBy,
+                    string remarks,
+                    DateTime? inputDate,
                     DateTime? endDate)
                 {
                     var imp = importDataList.FirstOrDefault(x => x.ControlNo == controlNo);
                     if (imp == null) return null;
 
+                    string act = DetermineActivity(imp);
                     return new TransactionLogs
                     {
                         TransactionNumber = controlNo,
                         PartName = imp.PartName,
                         Supplier = imp.Supplier,
                         Model = imp.Model,
-                        Activity = DetermineActivity(imp),
+                        Activity = act,
                         Source = "Update Activity",
                         PIC = inputBy ?? "SYSTEM",
                         StartDate = imp.DateImported,
                         EndDate = endDate,
                         ReceivedDate = endDate,
                         InputDate = inputDate,
-                        CurrentProcess = nextProcess,
-                        Status = nextProcess == "MP2-PDC" ? "Completed" : "In Progress",
+                        CurrentProcess = currentProcess,
+                        Status = IsCompleted(act, nextProcess)
+                                                ? "Completed"
+                                                : "In Progress",
                         Remarks = remarks ?? string.Empty
                     };
                 }
 
                 foreach (var r in quotations)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Request-Order")) continue;
-                    var row = MakeRow(r.ControlNumber, "Tooling Request-Order",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Quotation Request~Approval")) continue;
+                    var row = MakeRow(r.ControlNumber, "Tooling Quotation Request~Approval", "Tooling Request-Order", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in requestOrders)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling PO Issuance")) continue;
-                    var row = MakeRow(r.ControlNumber, "Tooling PO Issuance",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Request-Order")) continue;
+                    var row = MakeRow(r.ControlNumber, "Tooling Request-Order", "Tooling PO Issuance", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in poIssuances)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "DFM/QCD Approval")) continue;
-                    var row = MakeRow(r.ControlNumber, "DFM/QCD Approval",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling PO Issuance")) continue;
+                    var row = MakeRow(r.ControlNumber, "Tooling PO Issuance", "DFM/QCD Approval", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in dfmApprovals)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Fabrication")) continue;
-                    var row = MakeRow(r.ControlNumber, "Tooling Fabrication",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "DFM/QCD Approval")) continue;
+                    var row = MakeRow(r.ControlNumber, "DFM/QCD Approval", "Tooling Fabrication", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in fabrications)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Transfer (Arrival in PH)")) continue;
-                    var row = MakeRow(r.ControlNumber, "Tooling Transfer (Arrival in PH)",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Fabrication")) continue;
+                    var row = MakeRow(r.ControlNumber, "Tooling Fabrication", "Tooling Transfer (Arrival in PH)", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in transfers)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Kataken Submission (Local Trial)")) continue;
-                    var row = MakeRow(r.ControlNumber, "Kataken Submission (Local Trial)",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Tooling Transfer (Arrival in PH)")) continue;
+                    var row = MakeRow(r.ControlNumber, "Tooling Transfer (Arrival in PH)", "Kataken Submission (Local Trial)", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in katakenSubs)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Kataken Finish (Local Trial)")) continue;
-                    var row = MakeRow(r.ControlNumber, "Kataken Finish (Local Trial)",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Kataken Submission (Local Trial)")) continue;
+                    var row = MakeRow(r.ControlNumber, "Kataken Submission (Local Trial)", "Kataken Finish (Local Trial)", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in katakenFinish)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "DE Evaluation")) continue;
-                    var row = MakeRow(r.ControlNumber, "DE Evaluation",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Kataken Finish (Local Trial)")) continue;
+                    var row = MakeRow(r.ControlNumber, "Kataken Finish (Local Trial)", "DE Evaluation", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in deEvals)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "QA Special Evaluation")) continue;
-                    var row = MakeRow(r.ControlNumber, "QA Special Evaluation",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "DE Evaluation")) continue;
+                    var row = MakeRow(r.ControlNumber, "DE Evaluation", "QA Special Evaluation", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in qaEvals)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "Test Run")) continue;
-                    var row = MakeRow(r.ControlNumber, "Test Run",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "QA Special Evaluation")) continue;
+                    var row = MakeRow(r.ControlNumber, "QA Special Evaluation", "Test Run", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
                 foreach (var r in testRuns)
                 {
-                    if (IsDupe(r.ControlNumber, "Update Activity", "MP2-PDC")) continue;
-                    var row = MakeRow(r.ControlNumber, "MP2-PDC",
-                        r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
+                    if (IsDupe(r.ControlNumber, "Update Activity", "Test Run")) continue;
+                    var row = MakeRow(r.ControlNumber, "Test Run", "MP2-PDC", r.InputBy, r.Remarks, r.CreateDate, r.CreateDate);
                     if (row != null) newRows.Add(row);
                 }
 
-                // ── 5. Bulk insert ──
                 if (newRows.Any())
                 {
                     await _dbContext.TransactionLogs.AddRangeAsync(newRows);
                     await _dbContext.SaveChangesAsync();
                 }
 
-                return Ok(new
-                {
-                    success = true,
-                    message = $"Backfill complete. {newRows.Count} rows inserted."
-                });
+                return Ok(new { success = true, message = $"Backfill complete. {newRows.Count} rows inserted." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
-                {
-                    success = false,
-                    message = ex.InnerException?.Message ?? ex.Message
-                });
+                return StatusCode(500, new { success = false, message = ex.InnerException?.Message ?? ex.Message });
             }
         }
 
@@ -531,8 +554,8 @@ public async Task<IActionResult> GetHistory(string transactionNumber)
             if (data.NonConcurrent == "YES") return "Non-Concurrent";
             if (data.SupplierChangeLocalization == "YES") return "Supplier Change / Localization";
             if (data.Other4M == "YES") return "Other 4M";
+            if (data.MultipleProcurementLocalization == "YES") return "Multiple Procurement / Localization";
             return "Unknown";
-
         }
     }
 }

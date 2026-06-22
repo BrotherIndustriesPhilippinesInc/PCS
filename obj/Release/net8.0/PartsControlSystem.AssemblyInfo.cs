@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PartsControlSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fd1682178773139ee676572a329a257c1986236d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bbad966d90c3cd5011102edbdeed0ae4f77bc4fa")]
 [assembly: System.Reflection.AssemblyProductAttribute("PartsControlSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PartsControlSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

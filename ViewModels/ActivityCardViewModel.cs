@@ -5,5 +5,6 @@
         public string ActivityCode { get; set; }
         public string ActivityName { get; set; }
         public List<SectionSummaryViewModel> SectionCounts { get; set; } = new();
+        public int TotalDelay { get; set; }
     }
 }

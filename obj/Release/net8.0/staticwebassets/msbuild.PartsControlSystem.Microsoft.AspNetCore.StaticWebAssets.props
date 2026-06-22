@@ -1326,8 +1326,8 @@
       <RelatedAsset></RelatedAsset>
       <AssetTraitName></AssetTraitName>
       <AssetTraitValue></AssetTraitValue>
-      <Fingerprint>yxtblovwbc</Fingerprint>
-      <Integrity>qg4o6DUlmSnrlunLoIFC+mBFfAsH+Fx0MwkFWsx/ios=</Integrity>
+      <Fingerprint>hhwgrdti60</Fingerprint>
+      <Integrity>i1g66ETMHNuy9ESRRlR0me9vOE7gG7c4lh7E9WlsZOo=</Integrity>
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       <OriginalItemSpec>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\staticwebassets\templates\ImportData_Batch Entry Template.xlsx'))</OriginalItemSpec>

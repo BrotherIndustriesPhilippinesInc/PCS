@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace PartsControlSystem.Models
@@ -61,5 +62,7 @@ namespace PartsControlSystem.Models
         [Column("tooling_category")]
         public string ToolingCategory { get; set; }
 
+        [Column("multiple_procurement_localization")]
+        public string MultipleProcurementLocalization { get; set; }
     }
 }

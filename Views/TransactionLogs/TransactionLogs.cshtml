@@ -106,7 +106,8 @@
                         </td>
                         <td class="col-remarks">@(string.IsNullOrEmpty(log.Remarks) ? "—" : log.Remarks)</td>
                         <td class="col-action">
-                            <button class="btn-history" onclick="openHistory('@log.TransactionNumber')">
+                            <button class="btn-history"
+                                    onclick="openHistory('@log.TransactionNumber', '@log.Activity')">
                                 View
                             </button>
                         </td>
@@ -116,12 +117,10 @@
         </table>
     </div>
 
-    @* ── Custom pagination — outside scroll wrapper so it never scrolls ── *@
     <div class="tlog-dt-bottom">
         <span id="customInfo" class="tlog-dt-info-text"></span>
         <div id="customPaginate" class="tlog-custom-paginate"></div>
     </div>
-
 </div>
 
 @* ── History Modal ── *@
@@ -159,7 +158,6 @@
 
 @section Scripts {
     <style>
-        /* ── Filter card ── */
         .filter-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -286,12 +284,11 @@
                 background: #1251a3;
             }
 
-        /* ── Table card ── */
         .tlog-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 16px;
-            overflow: visible; /* ← changed from hidden to visible */
+            overflow: visible;
             box-shadow: 0 1px 4px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
@@ -312,68 +309,53 @@
             color: #1a1d23;
         }
 
-        /* ── Horizontal scroll wrapper ── */
         .tlog-table-wrap {
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
-            border-radius: 0; /* remove radius here, card handles it */
         }
 
-        /* ── Force equal column widths ── */
         #transactionTable {
             width: 100%;
-            min-width: 1400px; /* ensures scroll kicks in before columns squeeze */
+            min-width: 1400px;
             table-layout: fixed;
             border-collapse: collapse;
         }
 
             #transactionTable thead th,
             #transactionTable tbody td {
-                width: 110px; /* base equal width for all columns */
+                width: 110px;
                 min-width: 110px;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
-            /* ── Column-specific widths ── */
-            #transactionTable th:nth-child(1),
-            #transactionTable td:nth-child(1) {
+            #transactionTable th:nth-child(1), #transactionTable td:nth-child(1) {
                 width: 160px;
                 min-width: 160px;
             }
-            /* Transaction No */
 
-            #transactionTable th:nth-child(5),
-            #transactionTable td:nth-child(5) {
+            #transactionTable th:nth-child(5), #transactionTable td:nth-child(5) {
                 width: 160px;
                 min-width: 160px;
             }
-            /* Activity */
 
-            #transactionTable th:nth-child(12),
-            #transactionTable td:nth-child(12) {
+            #transactionTable th:nth-child(12), #transactionTable td:nth-child(12) {
                 width: 180px;
                 min-width: 180px;
             }
-            /* Current Process */
 
-            #transactionTable th:nth-child(14),
-            #transactionTable td:nth-child(14) {
+            #transactionTable th:nth-child(14), #transactionTable td:nth-child(14) {
                 width: 140px;
                 min-width: 140px;
             }
-            /* Remarks */
 
-            #transactionTable th:nth-child(15),
-            #transactionTable td:nth-child(15) {
+            #transactionTable th:nth-child(15), #transactionTable td:nth-child(15) {
                 width: 80px;
                 min-width: 80px;
             }
-            /* History */
 
-            /* ── Table styles ── */
             #transactionTable thead th {
                 font-size: 11px;
                 font-weight: 600;
@@ -408,27 +390,17 @@
             color: #6b7280;
         }
 
-        /* ── DataTables overrides ── */
-        .dataTables_wrapper .dataTables_filter {
-            display: none !important;
-        }
-
-        .dataTables_wrapper .dataTables_paginate {
-            display: none !important;
-        }
-
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_paginate,
         .dataTables_wrapper .dataTables_info {
             display: none !important;
         }
 
-
-        /* Top bar */
         .tlog-dt-top {
             padding: 8px 16px;
             font-size: 12px;
         }
 
-        /* ── Custom bottom bar — sibling of tlog-table-wrap, never scrolls ── */
         .tlog-dt-bottom {
             display: flex;
             align-items: center;
@@ -436,7 +408,7 @@
             padding: 10px 16px;
             border-top: 1px solid #e5e7eb;
             background: #fff;
-            border-radius: 0 0 16px 16px; /* match card bottom radius */
+            border-radius: 0 0 16px 16px;
             flex-shrink: 0;
         }
 
@@ -445,7 +417,6 @@
             color: #6b7280;
         }
 
-        /* ── Custom paginate buttons ── */
         .tlog-custom-paginate .paginate_button {
             display: inline-block !important;
             border-radius: 6px;
@@ -477,42 +448,6 @@
                 background: #f3f4f6;
             }
 
-        /* .dataTables_wrapper .dataTables_info {
-            font-size: 12px;
-            color: #6b7280;
-            padding: 0;
-            margin-right: auto; 
-        }
-
-        .dataTables_wrapper .dataTables_paginate {
-            padding: 0;
-            flex-shrink: 0;
-        }
-
-            .dataTables_wrapper .dataTables_paginate .paginate_button {
-                border-radius: 6px !important;
-                font-size: 11px !important;
-                padding: 2px 8px !important;
-                margin: 0 2px !important;
-                border: 1px solid #d1d5db !important;
-                background: #fff !important;
-                color: #374151 !important;
-                box-shadow: none !important;
-            }
-
-                .dataTables_wrapper .dataTables_paginate .paginate_button.current,
-                .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-                    background: #1565c0 !important;
-                    color: #fff !important;
-                    border-color: #1565c0 !important;
-                }
-
-                .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
-                    background: #f3f4f6 !important;
-                    color: #374151 !important;
-                } */
-
-        /* ── Badges ── */
         .tlog-badge-activity {
             background: #dbeafe;
             color: #1d4ed8;
@@ -563,7 +498,6 @@
             white-space: nowrap;
         }
 
-        /* ── History button ── */
         .btn-history {
             height: 26px;
             background: #1565c0;
@@ -581,7 +515,6 @@
                 background: #1251a3;
             }
 
-        /* ── History modal ── */
         .history-backdrop {
             position: fixed;
             inset: 0;
@@ -597,12 +530,13 @@
             background: #fff;
             border-radius: 12px;
             width: 100%;
-            max-width: 1500px; /* ← wider to fit 12 columns */
+            max-width: 1500px;
             max-height: 80vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
+
         .history-modal-header {
             display: flex;
             align-items: center;
@@ -646,7 +580,7 @@
 
         #historyTable {
             width: 100%;
-            min-width: 900px; /* ← wider min-width */
+            min-width: 900px;
             table-layout: fixed;
         }
 
@@ -659,7 +593,7 @@
                 padding: 8px 10px;
                 border-bottom: 1px solid #e5e7eb;
                 white-space: nowrap;
-                width: 8.33%; /* ← 100% / 12 columns */
+                width: 8.33%;
             }
 
             #historyTable tbody td {
@@ -677,83 +611,36 @@
                 border-bottom: none;
             }
 
-        /*     #historyTable th:nth-child(1),
-            #historyTable td:nth-child(1) {
-                width: 100px;
-                min-width: 150px;
-            }
-
-            #historyTable th:nth-child(2),
-            #historyTable td:nth-child(2) {
-                width: 80px;
-                min-width: 150px;
-            }
-
-            #historyTable th:nth-child(3),
-            #historyTable td:nth-child(3) {
-                width: 80px;
-                min-width: 150px;
-            }
-
-            #historyTable th:nth-child(4),
-            #historyTable td:nth-child(4) {
-                width: 150px;
-                min-width: 150px;
-            }
-            #historyTable th:nth-child(5),
-            #historyTable td:nth-child(5) {
-                width: 120px;
-                min-width: 150px;
-            }
-
-            #historyTable th:nth-child(6),
-            #historyTable td:nth-child(6) {
-                width: 120px;
-                min-width: 150px;
-            }
-            #historyTable th:nth-child(10),
-            #historyTable td:nth-child(10) {
-                width: 180px;
-                min-width: 150px;
-            }
- */
-        /* ── Responsive breakpoints ── */
         @@media (max-width: 768px) {
-            .filter-row
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        {
-            flex-direction: column;
-            align-items: stretch;
-        }
+            .filter-select, .search-wrap, .date-group, .dl-btn {
+                width: 100%;
+            }
 
-        .filter-select, .search-wrap, .date-group, .dl-btn {
-            width: 100%;
-        }
+            .date-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-        .date-group {
-            flex-direction: column;
-            align-items: stretch;
-        }
+            .date-input {
+                width: 100%;
+            }
 
-        .date-input {
-            width: 100%;
-        }
-
-        .dl-btn {
-            justify-content: center;
-        }
-
+            .dl-btn {
+                justify-content: center;
+            }
         }
     </style>
 
-    @* Store server-generated URL for JS to use *@
     <span id="getHistoryUrl" data-url="@Url.Action("GetHistory", "TransactionLogs")" style="display:none;"></span>
 
     <script>
-                // ── Declare table variable OUTSIDE so functions can access it ──
         var table;
 
-        // ── These functions must be OUTSIDE $(document).ready ──
         function updateCount() {
             if (!table || !table.page) return;
             var info = table.page.info();
@@ -764,11 +651,9 @@
             if (!table || !table.page) return;
             var info = table.page.info();
             var text = 'Showing ' + (info.recordsDisplay === 0 ? 0 : info.start + 1)
-                + ' to ' + info.end
-                + ' of ' + info.recordsDisplay + ' records';
-            if (info.recordsDisplay !== info.recordsTotal) {
+                + ' to ' + info.end + ' of ' + info.recordsDisplay + ' records';
+            if (info.recordsDisplay !== info.recordsTotal)
                 text += ' (filtered from ' + info.recordsTotal + ' total entries)';
-            }
             $('#customInfo').text(text);
         }
 
@@ -780,68 +665,45 @@
             var html        = '';
 
             html += '<span class="paginate_button ' + (currentPage === 0 ? 'disabled' : '') + '" id="pgPrev">Previous</span>';
-
             for (var i = 0; i < totalPages; i++) {
-                if (
-                    i === 0 ||
-                    i === totalPages - 1 ||
-                    (i >= currentPage - 1 && i <= currentPage + 1)
-                ) {
+                if (i === 0 || i === totalPages - 1 || (i >= currentPage - 1 && i <= currentPage + 1))
                     html += '<span class="paginate_button ' + (i === currentPage ? 'current' : '') + '" data-page="' + i + '">' + (i + 1) + '</span>';
-                } else if (i === currentPage - 2 || i === currentPage + 2) {
+                else if (i === currentPage - 2 || i === currentPage + 2)
                     html += '<span class="paginate_button disabled">…</span>';
-                }
             }
-
             html += '<span class="paginate_button ' + (currentPage >= totalPages - 1 ? 'disabled' : '') + '" id="pgNext">Next</span>';
 
             var $p = $('#customPaginate');
             $p.html(html);
-
-            $p.find('[data-page]').on('click', function () {
-                table.page(parseInt($(this).data('page'))).draw('page');
-            });
-            $p.find('#pgPrev').on('click', function () {
-                if (currentPage > 0) table.page('previous').draw('page');
-            });
-            $p.find('#pgNext').on('click', function () {
-                if (currentPage < totalPages - 1) table.page('next').draw('page');
-            });
+            $p.find('[data-page]').on('click', function () { table.page(parseInt($(this).data('page'))).draw('page'); });
+            $p.find('#pgPrev').on('click', function () { if (currentPage > 0) table.page('previous').draw('page'); });
+            $p.find('#pgNext').on('click', function () { if (currentPage < totalPages - 1) table.page('next').draw('page'); });
         }
 
-           $(document).ready(function () {
+        $(document).ready(function () {
 
-        table = $('#transactionTable').DataTable({
-            paging:      true,
-            pageLength:  10,
-            lengthMenu:  [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
-            ordering:    true,
-            info:        true,
-            scrollX:     false,
-            autoWidth:   false,
-            dom:         '<"tlog-dt-top"l>t',
-            columnDefs:  [{ targets: 14, orderable: false, searchable: false }],
-            language: {
-                emptyTable:  'No records found.',
-                zeroRecords: 'No matching records found.',
-                info:        'Showing _START_ to _END_ of _TOTAL_ records',
-                infoEmpty:   'Showing 0 to 0 of 0 records',
-                lengthMenu:  'Show _MENU_ entries'
-            },
-                    initComplete: function () {
-            setTimeout(function () {
-                updateCount();
-                updateCustomInfo();
-                renderCustomPaginate();
-            }, 100);
-        },
-        drawCallback: function () {
-            updateCount();
-            updateCustomInfo();
-            renderCustomPaginate();
-        }
-        });
-
+            table = $('#transactionTable').DataTable({
+                paging:     true,
+                pageLength: 10,
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+                ordering:   true,
+                info:       true,
+                scrollX:    false,
+                autoWidth:  false,
+                dom:        '<"tlog-dt-top"l>t',
+                columnDefs: [{ targets: 14, orderable: false, searchable: false }],
+                language: {
+                    emptyTable:  'No records found.',
+                    zeroRecords: 'No matching records found.',
+                    info:        'Showing _START_ to _END_ of _TOTAL_ records',
+                    infoEmpty:   'Showing 0 to 0 of 0 records',
+                    lengthMenu:  'Show _MENU_ entries'
+                },
+                initComplete: function () {
+                    setTimeout(function () { updateCount(); updateCustomInfo(); renderCustomPaginate(); }, 100);
+                },
+                drawCallback: function () { updateCount(); updateCustomInfo(); renderCustomPaginate(); }
+            });
 
             // ── Search ──
             function applySearch() {
@@ -883,112 +745,43 @@
                 var startInput = $('#filterStartDate').val();
                 var endInput   = $('#filterEndDate').val();
                 if (!startInput && !endInput) return true;
-
                 var rowStartDate = parseCellDate(data[7]);
                 if (!rowStartDate) return false;
-
                 var filterStart = parseInputDate(startInput);
                 var filterEnd   = parseInputDate(endInput);
-
-                if (filterStart && filterEnd)
-                    return rowStartDate >= filterStart && rowStartDate <= filterEnd;
-                if (filterStart && !filterEnd)
-                    return rowStartDate >= filterStart;
-                if (!filterStart && filterEnd)
-                    return rowStartDate <= filterEnd;
-
+                if (filterStart && filterEnd)   return rowStartDate >= filterStart && rowStartDate <= filterEnd;
+                if (filterStart && !filterEnd)  return rowStartDate >= filterStart;
+                if (!filterStart && filterEnd)  return rowStartDate <= filterEnd;
                 return true;
             });
             $('#filterStartDate, #filterEndDate').on('change', function () { table.draw(); });
 
-            // ── Download ──
+            // ── Download — server-side ClosedXML ──
             $('#btnDownload').on('click', function () {
-                var headers = [];
-                $('#transactionTable thead tr th').each(function (i) {
-                    if (i < 14) headers.push($(this).text().trim());
-                });
-                var rows = [];
-                table.rows({ search: 'applied', page: 'all' }).every(function () {
-                    var $row = $(this.node());
-                    var rowValues = [];
-                    $row.find('td').each(function (i) {
-                        if (i < 14) rowValues.push($(this).text().trim());
-                    });
-                    rows.push(rowValues);
-                });
-                var wsData    = [headers].concat(rows);
-                var ws        = XLSX.utils.aoa_to_sheet(wsData);
-                var colWidths = headers.map(function (h, i) {
-                    var maxLen = h.length;
-                    rows.forEach(function (row) {
-                        var cellLen = (row[i] || '').toString().length;
-                        if (cellLen > maxLen) maxLen = cellLen;
-                    });
-                    return { wch: Math.min(maxLen + 4, 50) };
-                });
-                ws['!cols'] = colWidths;
-                var wb      = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, 'Transaction Logs');
-                var today   = new Date();
-                var dateStr = today.getFullYear()
-                    + ('0' + (today.getMonth() + 1)).slice(-2)
-                    + ('0' + today.getDate()).slice(-2);
-                XLSX.writeFile(wb, 'TransactionLogs_' + dateStr + '.xlsx');
+                var searchField = $('#searchField').val() || '';
+                var searchValue = $('#searchValue').val() || '';
+                var startDate   = $('#filterStartDate').val() || '';
+                var endDate     = $('#filterEndDate').val() || '';
+                window.location.href = '/TransactionLogs/Download'
+                    + '?searchField=' + encodeURIComponent(searchField)
+                    + '&searchValue=' + encodeURIComponent(searchValue)
+                    + '&startDate='   + encodeURIComponent(startDate)
+                    + '&endDate='     + encodeURIComponent(endDate);
             });
         });
 
         // ── History modal ──
-        //         function openHistory(transactionNumber) {
-        //     document.getElementById('historyModalTitle').textContent = 'History — ' + transactionNumber;
-        //     document.getElementById('historyTableBody').innerHTML =
-        //         '<tr><td colspan="12" class="text-center text-muted py-3">Loading...</td></tr>';
-        //     document.getElementById('historyModalBackdrop').style.display = 'flex';
-
-        //     fetch('/TransactionLogs/GetHistory?transactionNumber=' + encodeURIComponent(transactionNumber))
-        //         .then(function (res) { return res.json(); })
-        //         .then(function (data) {
-        //             var tbody = document.getElementById('historyTableBody');
-        //             if (!data || data.length === 0) {
-        //                 tbody.innerHTML = '<tr><td colspan="12" class="text-center text-muted py-3">No history found.</td></tr>';
-        //                 return;
-        //             }
-        //             tbody.innerHTML = data.map(function (row) {
-        //                 var sourceBadge = row.source === 'Import File'
-        //                     ? '<span class="tlog-source-import">Import File</span>'
-        //                     : '<span class="tlog-source-activity">Update Activity</span>';
-        //                 var statusBadge = row.status === 'Completed'
-        //                     ? '<span class="tlog-badge-completed">Completed</span>'
-        //                     : '<span class="tlog-badge-inprogress">In Progress</span>';
-        //                 return '<tr>'
-        //                     + '<td>' + (row.partName       || '—') + '</td>'
-        //                     + '<td>' + (row.supplier       || '—') + '</td>'
-        //                     + '<td>' + (row.model          || '—') + '</td>'
-        //                     + '<td><span class="tlog-badge-activity">' + (row.activity || '—') + '</span></td>'
-        //                     + '<td>' + sourceBadge + '</td>'
-        //                     + '<td>' + (row.pic            || '—') + '</td>'
-        //                     + '<td>' + (row.startDate      || '—') + '</td>'
-        //                     + '<td>' + (row.endDate        || '—') + '</td>'
-        //                     + '<td>' + (row.inputDate      || '—') + '</td>'
-        //                     + '<td><small>' + (row.currentProcess || '—') + '</small></td>'
-        //                     + '<td>' + statusBadge + '</td>'
-        //                     + '<td>' + (row.remarks        || '—') + '</td>'
-        //                     + '</tr>';
-        //             }).join('');
-        //         })
-        //         .catch(function () {
-        //             document.getElementById('historyTableBody').innerHTML =
-        //                 '<tr><td colspan="12" class="text-center text-danger py-3">Failed to load history.</td></tr>';
-        //         });
-        // }
-                function openHistory(transactionNumber) {
-            document.getElementById('historyModalTitle').textContent = 'History — ' + transactionNumber;
+        function openHistory(transactionNumber, activity) {
+            document.getElementById('historyModalTitle').textContent =
+                'History — ' + transactionNumber + ' (' + activity + ')';
             document.getElementById('historyTableBody').innerHTML =
                 '<tr><td colspan="12" class="text-center text-muted py-3">Loading...</td></tr>';
             document.getElementById('historyModalBackdrop').style.display = 'flex';
 
-            // ── Use Razor-generated URL instead of hardcoded path ──
             var baseUrl = document.getElementById('getHistoryUrl').dataset.url;
-            var url     = baseUrl + '?transactionNumber=' + encodeURIComponent(transactionNumber);
+            var url = baseUrl
+                + '?transactionNumber=' + encodeURIComponent(transactionNumber)
+                + '&activity='          + encodeURIComponent(activity);
 
             fetch(url)
                 .then(function (res) {

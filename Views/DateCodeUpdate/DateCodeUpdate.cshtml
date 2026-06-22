@@ -1,0 +1,1068 @@
+﻿@{
+    ViewData["Title"] = "Updating of Dates / Part Codes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --pcs-navy: #1a2332;
+        --pcs-cyan: #00bcd4;
+        --pcs-cyan2: #00acc1;
+        --pcs-white: #ffffff;
+        --pcs-bg: #f4f6f9;
+        --pcs-border: #dee4ec;
+        --pcs-text: #1e2d3d;
+        --pcs-muted: #6b7f93;
+        --pcs-danger: #e53935;
+        --pcs-success: #00897b;
+        --pcs-warn: #f59e0b;
+        --pcs-radius: 6px;
+        --pcs-shadow: 0 2px 10px rgba(0,0,0,.08);
+    }
+
+    .dcu-page {
+        padding: 24px 28px;
+        min-height: 100vh;
+    }
+
+    .dcu-page-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--pcs-navy);
+        margin-bottom: 20px;
+    }
+
+    .dcu-toolbar {
+        background: var(--pcs-white);
+        border: 1px solid var(--pcs-border);
+        border-radius: var(--pcs-radius);
+        box-shadow: var(--pcs-shadow);
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+
+    .dcu-toolbar-label {
+        font-size: .82rem;
+        font-weight: 600;
+        color: var(--pcs-text);
+        white-space: nowrap;
+    }
+
+    .dcu-select {
+        border: 1px solid var(--pcs-border);
+        border-radius: var(--pcs-radius);
+        padding: 7px 10px;
+        font-size: .85rem;
+        color: var(--pcs-text);
+        background: var(--pcs-white);
+        outline: none;
+        cursor: pointer;
+        min-width: 160px;
+        transition: border-color .2s;
+    }
+
+        .dcu-select:focus {
+            border-color: var(--pcs-cyan);
+        }
+
+    .dcu-search-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--pcs-border);
+        border-radius: var(--pcs-radius);
+        background: var(--pcs-white);
+        overflow: hidden;
+        min-width: 200px;
+        transition: border-color .2s;
+    }
+
+        .dcu-search-wrap:focus-within {
+            border-color: var(--pcs-cyan);
+        }
+
+        .dcu-search-wrap i {
+            padding: 0 10px;
+            color: var(--pcs-muted);
+            font-size: .85rem;
+        }
+
+    .dcu-search-input {
+        border: none;
+        outline: none;
+        flex: 1;
+        padding: 7px 10px 7px 0;
+        font-size: .85rem;
+        color: var(--pcs-text);
+        background: transparent;
+    }
+
+    .btn-pcs {
+        border: none;
+        border-radius: var(--pcs-radius);
+        padding: 8px 20px;
+        font-size: .85rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        transition: all .18s;
+        white-space: nowrap;
+    }
+
+        .btn-pcs:active {
+            transform: scale(.97);
+        }
+
+        .btn-pcs:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .btn-pcs-danger {
+        background: var(--pcs-danger);
+        color: #fff;
+    }
+
+        .btn-pcs-danger:hover {
+            background: #c62828;
+        }
+
+    .btn-pcs-navy {
+        background: var(--pcs-navy);
+        color: #fff;
+    }
+
+        .btn-pcs-navy:hover {
+            background: #111b27;
+        }
+
+    .btn-pcs-success {
+        background: var(--pcs-success);
+        color: #fff;
+    }
+
+        .btn-pcs-success:hover {
+            background: #00695c;
+        }
+
+    .dcu-card {
+        background: var(--pcs-white);
+        border: 1px solid var(--pcs-border);
+        border-radius: var(--pcs-radius);
+        box-shadow: var(--pcs-shadow);
+        overflow: hidden;
+    }
+
+    .dcu-card-header {
+        padding: 12px 18px;
+        border-bottom: 1px solid var(--pcs-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .dcu-card-title {
+        font-size: .9rem;
+        font-weight: 700;
+        color: var(--pcs-navy);
+    }
+
+    .dcu-show-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: .82rem;
+        color: var(--pcs-text);
+    }
+
+    .dcu-show-select {
+        border: 1px solid var(--pcs-border);
+        border-radius: 4px;
+        padding: 3px 6px;
+        font-size: .82rem;
+        outline: none;
+    }
+
+    .dcu-table-wrap {
+        overflow-x: auto;
+    }
+
+    .dcu-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .81rem;
+        min-width: 900px;
+    }
+
+        .dcu-table thead tr {
+            border-bottom: 2px solid var(--pcs-border);
+        }
+
+        .dcu-table thead th {
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 700;
+            font-size: .73rem;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: var(--pcs-muted);
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+            background: var(--pcs-white);
+        }
+
+            .dcu-table thead th:hover {
+                color: var(--pcs-navy);
+            }
+
+            .dcu-table thead th .sort-ico {
+                margin-left: 4px;
+                opacity: .35;
+                font-size: .65rem;
+            }
+
+            .dcu-table thead th.sorted-asc .sort-ico,
+            .dcu-table thead th.sorted-desc .sort-ico {
+                opacity: 1;
+                color: var(--pcs-cyan);
+            }
+
+        .dcu-table tbody tr {
+            border-bottom: 1px solid var(--pcs-border);
+            transition: background .1s;
+        }
+
+            .dcu-table tbody tr:last-child {
+                border-bottom: none;
+            }
+
+            .dcu-table tbody tr:hover {
+                background: rgba(0,188,212,.05);
+            }
+
+            .dcu-table tbody tr.row-selected {
+                background: rgba(0,188,212,.08);
+            }
+
+        .dcu-table td {
+            padding: 9px 12px;
+            color: var(--pcs-text);
+            vertical-align: middle;
+        }
+
+            .dcu-table td.center {
+                text-align: center;
+            }
+
+    .row-check {
+        accent-color: var(--pcs-cyan);
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+    }
+
+    .code-tag {
+        font-family: 'Consolas', monospace;
+        font-size: .78rem;
+        background: #f0f4f8;
+        border: 1px solid var(--pcs-border);
+        border-radius: 4px;
+        padding: 2px 7px;
+        color: var(--pcs-navy);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+        .code-tag:hover {
+            border-color: var(--pcs-cyan);
+            background: rgba(0,188,212,.07);
+        }
+
+        .code-tag i {
+            font-size: .6rem;
+            color: var(--pcs-muted);
+        }
+
+    .date-tag {
+        font-size: .78rem;
+        background: #f0f4f8;
+        border: 1px solid var(--pcs-border);
+        border-radius: 4px;
+        padding: 2px 7px;
+        color: var(--pcs-navy);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all .15s;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+
+        .date-tag:hover {
+            border-color: var(--pcs-cyan);
+            background: rgba(0,188,212,.07);
+        }
+
+        .date-tag i {
+            font-size: .6rem;
+            color: var(--pcs-muted);
+        }
+
+    .pill-activity {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+        white-space: nowrap;
+        background: rgba(0,188,212,.12);
+        color: #00838f;
+    }
+
+    .pill-section {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: .72rem;
+        font-weight: 600;
+        white-space: nowrap;
+        background: rgba(26,35,50,.08);
+        color: var(--pcs-navy);
+    }
+
+    .cell-trunc {
+        max-width: 150px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .dcu-empty {
+        text-align: center;
+        padding: 56px 20px;
+        color: var(--pcs-muted);
+    }
+
+        .dcu-empty i {
+            font-size: 2.4rem;
+            margin-bottom: 12px;
+            display: block;
+            opacity: .28;
+        }
+
+        .dcu-empty p {
+            font-size: .88rem;
+            margin: 0;
+        }
+
+    .dcu-loading {
+        text-align: center;
+        padding: 40px;
+        color: var(--pcs-cyan);
+    }
+
+        .dcu-loading i {
+            font-size: 1.8rem;
+            animation: spin .8s linear infinite;
+        }
+
+    @@keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .dcu-footer {
+        padding: 12px 18px;
+        border-top: 1px solid var(--pcs-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .dcu-showing {
+        font-size: .8rem;
+        color: var(--pcs-muted);
+    }
+
+    .dcu-pagination {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .pg-btn {
+        min-width: 32px;
+        height: 32px;
+        border: 1px solid var(--pcs-border);
+        border-radius: 4px;
+        background: var(--pcs-white);
+        color: var(--pcs-text);
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all .15s;
+    }
+
+        .pg-btn:hover:not(:disabled) {
+            border-color: var(--pcs-cyan);
+            color: var(--pcs-cyan);
+        }
+
+        .pg-btn.active {
+            background: var(--pcs-cyan);
+            border-color: var(--pcs-cyan);
+            color: var(--pcs-navy);
+        }
+
+        .pg-btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+    .dcu-update-panel {
+        border: 1.5px solid var(--pcs-cyan);
+        border-radius: var(--pcs-radius);
+        overflow: hidden;
+        display: none;
+        margin-bottom: 16px;
+    }
+
+        .dcu-update-panel.visible {
+            display: block;
+        }
+
+    .dcu-update-panel-hdr {
+        background: var(--pcs-cyan);
+        color: var(--pcs-navy);
+        padding: 9px 16px;
+        font-size: .85rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dcu-update-panel-body {
+        padding: 14px 18px;
+        background: var(--pcs-white);
+    }
+
+    .dcu-update-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .dcu-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+        .dcu-field label {
+            font-size: .73rem;
+            font-weight: 700;
+            color: var(--pcs-navy);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+    .dcu-input {
+        border: 1.5px solid var(--pcs-border);
+        border-radius: var(--pcs-radius);
+        padding: 7px 11px;
+        font-size: .875rem;
+        color: var(--pcs-text);
+        background: var(--pcs-white);
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .dcu-input:focus {
+            border-color: var(--pcs-cyan);
+        }
+
+        .dcu-input[readonly] {
+            background: var(--pcs-bg);
+        }
+
+    .dcu-toast-wrap {
+        position: fixed;
+        top: 18px;
+        right: 20px;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .dcu-toast {
+        background: var(--pcs-white);
+        border-radius: var(--pcs-radius);
+        padding: 11px 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,.18);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 270px;
+        font-size: .85rem;
+        font-weight: 500;
+        color: var(--pcs-text);
+        border-left: 4px solid var(--pcs-success);
+        animation: toastIn .22s ease;
+    }
+
+        .dcu-toast.error {
+            border-left-color: var(--pcs-danger);
+        }
+
+        .dcu-toast.warn {
+            border-left-color: var(--pcs-warn);
+        }
+
+        .dcu-toast.success i {
+            color: var(--pcs-success);
+        }
+
+        .dcu-toast.error i {
+            color: var(--pcs-danger);
+        }
+
+        .dcu-toast.warn i {
+            color: var(--pcs-warn);
+        }
+
+    @@keyframes toastIn {
+        from {
+            transform: translateX(50px);
+            opacity: 0;
+        }
+
+        to {
+            transform: none;
+            opacity: 1;
+        }
+    }
+
+    .dcu-modal-bd {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.45);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .dcu-modal-bd.open {
+            display: flex;
+        }
+
+    .dcu-modal {
+        background: var(--pcs-white);
+        border-radius: var(--pcs-radius);
+        padding: 28px 32px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 10px 40px rgba(0,0,0,.22);
+        text-align: center;
+    }
+
+        .dcu-modal > i {
+            font-size: 2.4rem;
+            color: var(--pcs-danger);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .dcu-modal h5 {
+            margin: 0 0 8px;
+            font-weight: 700;
+            color: var(--pcs-navy);
+        }
+
+        .dcu-modal p {
+            color: var(--pcs-muted);
+            font-size: .87rem;
+            margin-bottom: 20px;
+        }
+
+    .dcu-modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+</style>
+
+<div class="dcu-page">
+
+    <!-- Update panel -->
+    <div class="dcu-update-panel" id="updatePanel">
+        <div class="dcu-update-panel-hdr">
+            <i class="fa-solid fa-pen-to-square"></i>
+            <span id="updatePanelTitle">Update</span>
+            <span id="updatePanelField" style="font-weight:400;opacity:.85;margin-left:4px"></span>
+        </div>
+        <div class="dcu-update-panel-body">
+            <div class="dcu-update-row">
+                <div class="dcu-field">
+                    <label>Record ID</label>
+                    <input class="dcu-input" id="updateRecordId" readonly style="width:80px" />
+                </div>
+                <div class="dcu-field">
+                    <label>Current Value</label>
+                    <input class="dcu-input" id="updateCurrentCode" readonly
+                           style="min-width:160px;font-family:Consolas,monospace;font-weight:600" />
+                </div>
+                <div class="dcu-field" style="flex:1">
+                    <label id="updateNewLabel">New Value</label>
+                    <input class="dcu-input" id="updateNewCode" placeholder="Enter new value…"
+                           style="font-family:Consolas,monospace;font-weight:600;text-transform:uppercase"
+                           oninput="this.value=this.value.toUpperCase()"
+                           onkeydown="if(event.key==='Enter') doUpdateCode()" />
+                    <input class="dcu-input" id="updateNewDate" type="date"
+                           style="display:none"
+                           onkeydown="if(event.key==='Enter') doUpdateCode()" />
+                </div>
+                <button class="btn-pcs btn-pcs-success" onclick="doUpdateCode()">
+                    <i class="fa-solid fa-check"></i> Update
+                </button>
+                <button class="btn-pcs btn-pcs-navy" onclick="cancelUpdate()">
+                    <i class="fa-solid fa-xmark"></i> Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search toolbar -->
+    <div class="dcu-toolbar">
+        <span class="dcu-toolbar-label">Search</span>
+        <select class="dcu-select" id="searchBy" onchange="applyFilter()">
+            <option value="">-- All Columns --</option>
+            <option value="controlNo">Control No.</option>
+            <option value="supplier">Supplier</option>
+            <option value="activity">Activity</option>
+            <option value="motherMoldCode">Mother Mold Code</option>
+            <option value="childPartcode">Child Part Code</option>
+            <option value="partName">Part Name</option>
+           
+        </select>
+        <div class="dcu-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="dcu-search-input" id="searchKeyword"
+                   placeholder="Type to filter…" oninput="applyFilter()" />
+        </div>
+        <button class="btn-pcs btn-pcs-danger" id="btnDelete" onclick="confirmDelete()" disabled>
+            <i class="fa-solid fa-trash"></i> Delete
+        </button>
+    </div>
+
+    <!-- Main card -->
+    <div class="dcu-card">
+        <div class="dcu-card-header">
+            <span class="dcu-card-title">
+                All Records
+                <span id="filterBadge" style="display:none;font-size:.75rem;font-weight:500;color:var(--pcs-cyan);margin-left:8px"></span>
+            </span>
+            <div class="dcu-show-row">
+                Show
+                <select class="dcu-show-select" id="pageSize" onchange="onPageSizeChange()">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                entries
+            </div>
+        </div>
+
+        <div id="loadingState" class="dcu-loading">
+            <i class="fa-solid fa-spinner"></i>
+            <p style="margin-top:10px;color:var(--pcs-muted);font-size:.82rem">Loading records…</p>
+        </div>
+
+        <div class="dcu-table-wrap" id="tableWrap" style="display:none">
+            <table class="dcu-table">
+                <thead>
+                    <tr>
+                        <th style="width:36px">
+                            <input type="checkbox" class="row-check" id="selectAll" onchange="toggleSelectAll(this)" />
+                        </th>
+                        <th onclick="sortBy('controlNo')">Control No. <i class="fa-solid fa-sort sort-ico" id="sort-controlNo"></i></th>
+                        <th onclick="sortBy('activity')">Activity <i class="fa-solid fa-sort sort-ico" id="sort-activity"></i></th>
+                        <th onclick="sortBy('motherMoldCode')">Mother Mold Code <i class="fa-solid fa-sort sort-ico" id="sort-motherMoldCode"></i></th>
+                        <th onclick="sortBy('childPartcode')">Child Part Code <i class="fa-solid fa-sort sort-ico" id="sort-childPartcode"></i></th>
+                        <th onclick="sortBy('partName')">Part Name <i class="fa-solid fa-sort sort-ico" id="sort-partName"></i></th>
+                        <th onclick="sortBy('model')">Model <i class="fa-solid fa-sort sort-ico" id="sort-model"></i></th>
+                        <th onclick="sortBy('supplier')">Supplier <i class="fa-solid fa-sort sort-ico" id="sort-supplier"></i></th>
+                        <th onclick="sortBy('section')">Section <i class="fa-solid fa-sort sort-ico" id="sort-section"></i></th>
+                        <th onclick="sortBy('toolingType')">Tooling Type <i class="fa-solid fa-sort sort-ico" id="sort-toolingType"></i></th>
+                        <th onclick="sortBy('reasonOfChange')">Reason of Change <i class="fa-solid fa-sort sort-ico" id="sort-reasonOfChange"></i></th>
+                        <th onclick="sortBy('dateImported')">Date Imported <i class="fa-solid fa-sort sort-ico" id="sort-dateImported"></i></th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTbody"></tbody>
+            </table>
+        </div>
+
+        <div class="dcu-footer">
+            <span class="dcu-showing" id="showingText">Loading…</span>
+            <div class="dcu-pagination" id="pagination"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete modal -->
+<div class="dcu-modal-bd" id="deleteModal">
+    <div class="dcu-modal">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h5>Confirm Delete</h5>
+        <p id="deleteModalMsg">Are you sure you want to delete the selected records?</p>
+        <div class="dcu-modal-actions">
+            <button class="btn-pcs btn-pcs-danger" onclick="executeDelete()">
+                <i class="fa-solid fa-trash"></i> Yes, Delete
+            </button>
+            <button class="btn-pcs btn-pcs-navy" onclick="closeModal()">
+                <i class="fa-solid fa-xmark"></i> Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="dcu-toast-wrap" id="toastWrap"></div>
+
+<script>
+    let allRows      = [];
+    let filteredRows = [];
+    let selectedIds  = new Set();
+    let pendingDel   = [];
+    let editingId    = null;
+    let editingField = null;
+    let currentPage  = 1;
+    let pageSize     = 10;
+    let sortCol      = 'controlNo';
+    let sortDir      = 'asc';
+
+    /* ── INIT ── */
+    document.addEventListener('DOMContentLoaded', loadAll);
+
+    async function loadAll() {
+        try {
+            const res  = await fetch('/DateCodeUpdate/GetAll');
+            const data = await res.json();
+            if (data.success) { allRows = data.data; applyFilter(); }
+            else showToast('Failed to load records.', 'error');
+        } catch(e) { showToast('Network error loading records.', 'error'); }
+        finally {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('tableWrap').style.display    = '';
+        }
+    }
+
+    /* ── FILTER ── */
+    function applyFilter() {
+        const col     = document.getElementById('searchBy').value;
+        const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+
+        filteredRows = !keyword ? [...allRows]
+            : col
+                ? allRows.filter(r => (r[col] ?? '').toString().toLowerCase().includes(keyword))
+                : allRows.filter(r => Object.values(r).some(v => (v ?? '').toString().toLowerCase().includes(keyword)));
+
+        const badge = document.getElementById('filterBadge');
+        if (keyword) {
+            badge.style.display = '';
+            badge.textContent   = `(${filteredRows.length} of ${allRows.length} shown)`;
+        } else { badge.style.display = 'none'; }
+
+        currentPage = 1;
+        applySort();
+    }
+
+    /* ── SORT ── */
+    function sortBy(col) {
+        if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+        else { sortCol = col; sortDir = 'asc'; }
+        applySort();
+    }
+    function applySort() {
+        filteredRows = [...filteredRows].sort((a, b) => {
+            const av = (a[sortCol] ?? '').toString().toLowerCase();
+            const bv = (b[sortCol] ?? '').toString().toLowerCase();
+            return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+        });
+        document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
+        const ico = document.getElementById('sort-' + sortCol);
+        if (ico) {
+            ico.closest('th').classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+            ico.className = `fa-solid ${sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} sort-ico`;
+        }
+        renderTable();
+    }
+
+    /* ── PAGINATION ── */
+    function onPageSizeChange() { pageSize = parseInt(document.getElementById('pageSize').value); currentPage = 1; renderTable(); }
+    function goPage(p) { currentPage = p; renderTable(); }
+
+    /* ── RENDER ── */
+    function renderTable() {
+        const tbody    = document.getElementById('resultsTbody');
+        const total    = filteredRows.length;
+        const pages    = Math.max(1, Math.ceil(total / pageSize));
+        currentPage    = Math.min(currentPage, pages);
+        const start    = (currentPage - 1) * pageSize;
+        const pageRows = filteredRows.slice(start, start + pageSize);
+
+        document.getElementById('showingText').textContent = total === 0
+            ? 'Showing 0 records'
+            : `Showing ${start + 1} to ${Math.min(start + pageSize, total)} of ${total} record${total !== 1 ? 's' : ''}`;
+
+        if (!pageRows.length) {
+            tbody.innerHTML = `<tr><td colspan="12"><div class="dcu-empty">
+                <i class="fa-solid fa-inbox"></i>
+                <p>${allRows.length === 0 ? 'No records found.' : 'No records match your filter.'}</p>
+            </div></td></tr>`;
+            renderPagination(0, 1); return;
+        }
+
+        tbody.innerHTML = pageRows.map(r => {
+            const checked  = selectedIds.has(r.id) ? 'checked' : '';
+            const rowCls   = selectedIds.has(r.id) ? 'row-selected' : '';
+            const dateDisp = r.dateImported ? new Date(r.dateImported).toLocaleDateString('en-PH') : '—';
+            const dateIso  = r.dateImported ? new Date(r.dateImported).toISOString().split('T')[0] : '';
+
+            return `<tr class="${rowCls}" data-id="${r.id}">
+                    <td class="center"> <input type="checkbox" class="row-check" ${checked} onchange="toggleRow(${r.id}, '${esc2(r.activity)}', this)" /></td>
+                <td><strong style="font-size:.79rem">${esc(r.controlNo)}</strong></td>
+                <td><span class="pill-activity">${esc(r.activity)}</span></td>
+                <td>
+                    <span class="code-tag" onclick="openUpdate(${r.id},'mother','${esc2(r.motherMoldCode)}')" title="Edit Mother Mold Code">
+                        ${esc(r.motherMoldCode)}<i class="fa-solid fa-pen-line"></i>
+                    </span>
+                </td>
+                <td>
+                    <span class="code-tag" onclick="openUpdate(${r.id},'child','${esc2(r.childPartcode)}')" title="Edit Child Part Code">
+                        ${esc(r.childPartcode)}<i class="fa-solid fa-pen-line"></i>
+                    </span>
+                </td>
+                <td class="cell-trunc" title="${esc(r.partName)}">${esc(r.partName)}</td>
+                <td>${esc(r.model)}</td>
+                <td class="cell-trunc" title="${esc(r.supplier)}">${esc(r.supplier)}</td>
+                <td><span class="pill-section">${esc(r.section)}</span></td>
+                <td>${esc(r.toolingType)}</td>
+                <td class="cell-trunc" title="${esc(r.reasonOfChange)}">${esc(r.reasonOfChange)}</td>
+                <td>
+                    <span class="date-tag" onclick="openUpdate(${r.id},'date','${dateIso}')" title="Edit Date Imported">
+                        <i class="fa-regular fa-calendar"></i>
+                        ${dateDisp}<i class="fa-solid fa-pen-line"></i>
+                    </span>
+                </td>
+            </tr>`;
+        }).join('');
+        renderPagination(total, pages);
+        syncSelectAll();
+    }
+
+    function renderPagination(total, pages) {
+        const pg = document.getElementById('pagination');
+        if (total === 0) { pg.innerHTML = ''; return; }
+        let html = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Previous</button>`;
+        let s = Math.max(1, currentPage - 2), e = Math.min(pages, s + 4);
+        s = Math.max(1, e - 4);
+        for (let i = s; i <= e; i++)
+            html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+        html += `<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next</button>`;
+        pg.innerHTML = html;
+    }
+
+    /* ── SELECTION ── */
+      // ── Store selected rows as {id, activity} pairs instead of just ids ──
+    let selectedRows = new Map(); // key = "id_activity", value = {id, activity}
+
+    function toggleRow(id, activity, cb) {
+        const key = `${id}_${activity}`;
+        if (cb.checked) {
+            selectedRows.set(key, { id, activity });
+        } else {
+            selectedRows.delete(key);
+        }
+        cb.closest('tr').classList.toggle('row-selected', cb.checked);
+        syncSelectAll();
+        updateSelectionUI();
+    }
+
+    function toggleSelectAll(cb) {
+        const start    = (currentPage - 1) * pageSize;
+        const pageRows = filteredRows.slice(start, start + pageSize);
+
+        pageRows.forEach(r => {
+            const key = `${r.id}_${r.activity}`;
+            if (cb.checked) selectedRows.set(key, { id: r.id, activity: r.activity });
+            else selectedRows.delete(key);
+        });
+
+        document.querySelectorAll('#resultsTbody .row-check').forEach((c, i) => {
+            c.checked = cb.checked;
+            c.closest('tr').classList.toggle('row-selected', cb.checked);
+        });
+        updateSelectionUI();
+    }
+
+    function syncSelectAll() {
+        const checks = [...document.querySelectorAll('#resultsTbody .row-check')];
+        document.getElementById('selectAll').checked =
+            checks.length > 0 && checks.every(c => c.checked);
+    }
+
+    function updateSelectionUI() {
+        document.getElementById('btnDelete').disabled = selectedRows.size === 0;
+    }
+
+    function confirmDelete() {
+        if (!selectedRows.size) return;
+        pendingDel = [...selectedRows.values()];
+        document.getElementById('deleteModalMsg').textContent =
+            `Are you sure you want to delete ${pendingDel.length} selected activity row(s)? This cannot be undone.`;
+        document.getElementById('deleteModal').classList.add('open');
+    }
+
+        function closeModal() {
+        document.getElementById('deleteModal').classList.remove('open');
+    }
+
+    async function executeDelete() {
+        const itemsToDelete = [...pendingDel];
+        pendingDel = [];
+        closeModal();
+        try {
+            const res  = await fetch('/DateCodeUpdate/DeleteSelected', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body:    JSON.stringify(itemsToDelete) // [{id, activity}, ...]
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Remove deleted rows from allRows in memory
+                itemsToDelete.forEach(item => {
+                    const key = `${item.id}_${item.activity}`;
+                    selectedRows.delete(key);
+                    // Remove from allRows — match by both id and activity
+                    const idx = allRows.findIndex(r => r.id === item.id && r.activity === item.activity);
+                    if (idx !== -1) allRows.splice(idx, 1);
+                });
+                applyFilter();
+                updateSelectionUI();
+                showToast(data.message, 'success');
+            } else {
+                showToast(data.message || 'Delete failed.', 'error');
+            }
+        } catch (e) {
+            showToast('Network error.', 'error');
+        }
+    }
+    /* ── UPDATE (code or date) ── */
+    function openUpdate(id, field, current) {
+        editingId = id; editingField = field;
+
+        const isDate    = field === 'date';
+        const codeInput = document.getElementById('updateNewCode');
+        const dateInput = document.getElementById('updateNewDate');
+
+        codeInput.style.display = isDate ? 'none' : '';
+        dateInput.style.display = isDate ? ''     : 'none';
+
+        const labels = { mother: '— Mother Mold Code', child: '— Child Part Code', date: '— Date Imported' };
+        const titles = { mother: 'Update Correct Part Code', child: 'Update Correct Part Code', date: 'Update Date Imported' };
+        document.getElementById('updatePanelTitle').textContent = titles[field];
+        document.getElementById('updatePanelField').textContent = labels[field];
+        document.getElementById('updateNewLabel').textContent   = isDate ? 'New Date' : 'New Code';
+
+        document.getElementById('updateRecordId').value    = id;
+        document.getElementById('updateCurrentCode').value = isDate
+            ? (current ? new Date(current).toLocaleDateString('en-PH') : '—')
+            : current || '';
+
+        codeInput.value = '';
+        dateInput.value = isDate ? (current || '') : '';
+
+        document.getElementById('updatePanel').classList.add('visible');
+        (isDate ? dateInput : codeInput).focus();
+        document.getElementById('updatePanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+
+    function cancelUpdate() {
+        editingId = null; editingField = null;
+        document.getElementById('updatePanel').classList.remove('visible');
+    }
+
+    async function doUpdateCode() {
+        const isDate = editingField === 'date';
+        const newVal = isDate
+            ? document.getElementById('updateNewDate').value.trim()
+            : document.getElementById('updateNewCode').value.trim();
+
+        if (!newVal)    { showToast(`Please enter a new ${isDate ? 'date' : 'code'}.`, 'warn'); return; }
+        if (!editingId) { showToast('No record selected.', 'warn'); return; }
+
+        const endpointMap = {
+            mother: '/DateCodeUpdate/UpdateMoldCode',
+            child:  '/DateCodeUpdate/UpdatePartCode',
+            date:   '/DateCodeUpdate/UpdateDate'
+        };
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+        try {
+            const res  = await fetch(endpointMap[editingField], {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                body: JSON.stringify({ id: editingId, newPartCode: newVal })
+            });
+            const data = await res.json();
+            if (data.success) {
+                const row = allRows.find(r => r.id === editingId);
+                if (row) {
+                    if      (editingField === 'mother') row.motherMoldCode = data.newPartCode;
+                    else if (editingField === 'child')  row.childPartcode  = data.newPartCode;
+                    else if (editingField === 'date')   row.dateImported   = data.newPartCode;
+                }
+                applyFilter(); cancelUpdate(); showToast(data.message, 'success');
+            } else { showToast(data.message || 'Update failed.', 'error'); }
+        } catch(e) { showToast('Network error.', 'error'); }
+    }
+
+    /* ── HELPERS ── */
+    function esc(v)  { return (v ?? '—').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+    function esc2(v) { return (v ?? '').toString().replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+    function showToast(msg, type = 'success') {
+        const icons = { success:'fa-circle-check', error:'fa-circle-xmark', warn:'fa-circle-exclamation' };
+        const t = document.createElement('div');
+        t.className = `dcu-toast ${type}`;
+        t.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${msg}</span>`;
+        document.getElementById('toastWrap').appendChild(t);
+        setTimeout(() => t.remove(), 3800);
+    }
+</script>

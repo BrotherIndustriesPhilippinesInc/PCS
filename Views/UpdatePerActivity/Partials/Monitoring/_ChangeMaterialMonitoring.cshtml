@@ -1,0 +1,178 @@
+﻿@model IEnumerable<PartsControlSystem.Models.ViewChangeMaterialMonitoring>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0" id="cmMonitoringTable">
+                <thead>
+
+                    <!-- ROW 1: Section banners -->
+                    <tr class="text-center">
+                        <th rowspan="3" class="align-middle text-white text-nowrap"
+                            style="position:sticky;left:0;z-index:3;width:160px;min-width:160px;background:#4C4C4C;">
+                            STATUS<br /><small>(Pending Items)</small>
+                        </th>
+                        <th rowspan="3" class="align-middle text-white text-nowrap"
+                            style="position:sticky;left:160px;z-index:3;width:90px;min-width:90px;background:#4C4C4C;box-shadow:3px 0 6px -2px rgba(0,0,0,.25);">
+                            Pending<br />Section
+                        </th>
+                        <th colspan="3" class="text-white" style="background:#6AAF6A;">MP1</th>
+                        <th colspan="15" class="text-white" style="background:#450681;">
+                            IQC<br /><small>(PUT N/A IF NO NEED IN TARGET AND ACTUAL)</small>
+                        </th>
+                       @*  <th colspan="3" class="text-white" style="background:#E7941E;">
+                            QA<br /><small>(PUT N/A IF NO NEED IN TARGET AND ACTUAL)</small>
+                        </th>
+                        <th colspan="3" class="text-white" style="background:#E02525;">
+                            DE<br /><small>(PUT N/A IF NO NEED IN TARGET AND ACTUAL)</small>
+                        </th>
+                        <th colspan="3" class="text-white" style="background:#450681;">
+                            IQC<br /><small>(PUT N/A IF NO NEED IN TARGET AND ACTUAL)</small>
+                        </th> *@
+                        <th colspan="6" class="text-white" style="background:#6AAF6A;">MP1-PUR</th>
+                    </tr>
+
+                    <!-- ROW 2: Process names -->
+                    <tr class="text-center">
+                        <th colspan="3" class="text-white" style="background:#6AAF6A;">1. Material LOA</th>
+                        <th colspan="3" class="text-white" style="background:#450681;">2. Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-white" style="background:#450681;">3. Kataken Evaluation Approval</th>
+                        <th colspan="3" class="text-white" style="background:#450681;">4. QA Evaluation</th>
+                        <th colspan="3" class="text-white" style="background:#450681;">5. DE Evaluation</th>
+                        <th colspan="3" class="text-white" style="background:#450681;">6. Test Run</th>
+                        <th colspan="3" class="text-white" style="background:#6AAF6A;">7. Implementation Date</th>
+                        <th colspan="3" class="text-white" style="background:#6AAF6A;">8. First Delivery Date</th>
+                    </tr>
+
+                    <!-- ROW 3: Target / Actual / Status per step -->
+                    <tr class="text-center">
+                        @for (int i = 0; i < 8; i++)
+                        {
+                            <th class="text-nowrap" style="background:#FFEDA6;">Target</th>
+                            <th class="text-nowrap" style="background:#49CEDF;">Actual</th>
+                            <th class="text-nowrap" style="background:#67CC8E;">Status</th>
+                        }
+                    </tr>
+
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var processOrder = new Dictionary<string, int>
+                {
+                    ["Material LOA"] = 1,
+                    ["Kataken PH Sample Submission"] = 2,
+                    ["Kataken Evaluation Approval"] = 3,
+                    ["QA Evaluation"] = 4,
+                    ["DE Evaluation"] = 5,
+                    ["Test Run"] = 6,
+                    ["Implementation Date"] = 7,
+                    ["First Delivery Date"] = 8,
+                };
+
+                        int currentStepOrder = processOrder.ContainsKey(item.CurrentProcess ?? "Material LOA")
+                        ? processOrder[item.CurrentProcess]
+                        : 1;
+
+                        bool StepPassed(int stepNo) => currentStepOrder > stepNo;
+
+                        bool s1Done = StepPassed(1) || (currentStepOrder == 1 && item.MaterialLoaTargetDate.HasValue && item.MaterialLoaActualDate.HasValue);
+                        bool s2Done = StepPassed(2) || (currentStepOrder == 2 && item.KatakenPhTargetDate.HasValue && item.KatakenPhActualDate.HasValue);
+                        bool s3Done = StepPassed(3) || (currentStepOrder == 3 && item.KatakenEvalTargetDate.HasValue && item.KatakenEvalActualDate.HasValue);
+                        bool s4Done = StepPassed(4) || (currentStepOrder == 4 && item.QaEvalTargetDate.HasValue && item.QaEvalActualDate.HasValue);
+                        bool s5Done = StepPassed(5) || (currentStepOrder == 5 && item.DeEvalTargetDate.HasValue && item.DeEvalActualDate.HasValue);
+                        bool s6Done = StepPassed(6) || (currentStepOrder == 6 && item.TestRunTargetDate.HasValue && item.TestRunActualDate.HasValue);
+                        bool s7Done = StepPassed(7) || (currentStepOrder == 7 && item.ImplDateTargetDate.HasValue && item.ImplDateActualDate.HasValue);
+                        bool s8Done = currentStepOrder == 8 && item.FirstDelTargetDate.HasValue && item.FirstDelActualDate.HasValue;
+
+                        bool allDone = s1Done && s2Done && s3Done && s4Done
+                        && s5Done && s6Done && s7Done && s8Done;
+
+                        string overallStatus = allDone ? "COMPLETED" : (item.CurrentProcess ?? "Material LOA");
+
+                        string pendingSection;
+                        if (allDone) pendingSection = "DONE";
+                        else if (!s1Done) pendingSection = "MP1";
+                        else if (!s2Done) pendingSection = "IQC";
+                        else if (!s3Done) pendingSection = "IQC";
+                        else if (!s4Done) pendingSection = "QA";
+                        else if (!s5Done) pendingSection = "DE";
+                        else if (!s6Done) pendingSection = "IQC";
+                        else if (!s7Done) pendingSection = "MP1";
+                        else pendingSection = "MP1";
+
+                        string Fmt(DateTime? d, int stepNo) =>
+                        d.HasValue ? d.Value.ToLocalTime().ToString("yyyy/MM/dd")
+                        : StepPassed(stepNo) ? "N/A" : "";
+
+                        string StLabel(bool done) => done ? "<span class='badge bg-success'>COMPLETED</span>" : "";
+
+                        <tr>
+                            <!-- STATUS (sticky col 1) -->
+                            <td class="text-center fw-semibold text-nowrap"
+                                style="position:sticky;left:0;z-index:2;background:#fff;color:@(allDone ? "#198754" : "black");">
+                                @overallStatus
+                            </td>
+
+                            <!-- Pending Section (sticky col 2) -->
+                            <td class="text-center fw-semibold text-nowrap"
+                                style="position:sticky;left:160px;z-index:2;background:#fff;box-shadow:3px 0 6px -2px rgba(0,0,0,.25);color:@(allDone ? "#198754" : "black");">
+                                @pendingSection
+                            </td>
+
+                            <!-- Step 1: Material LOA -->
+                            <td class="text-center text-nowrap">@Fmt(item.MaterialLoaTargetDate, 1)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.MaterialLoaActualDate, 1)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s1Done))</td>
+
+                            <!-- Step 2: Kataken PH Sample Submission -->
+                            <td class="text-center text-nowrap">@Fmt(item.KatakenPhTargetDate, 2)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.KatakenPhActualDate, 2)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s2Done))</td>
+
+                            <!-- Step 3: Kataken Evaluation Approval -->
+                            <td class="text-center text-nowrap">@Fmt(item.KatakenEvalTargetDate, 3)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.KatakenEvalActualDate, 3)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s3Done))</td>
+
+                            <!-- Step 4: QA Evaluation -->
+                            <td class="text-center text-nowrap">@Fmt(item.QaEvalTargetDate, 4)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.QaEvalActualDate, 4)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s4Done))</td>
+
+                            <!-- Step 5: DE Evaluation -->
+                            <td class="text-center text-nowrap">@Fmt(item.DeEvalTargetDate, 5)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.DeEvalActualDate, 5)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s5Done))</td>
+
+                            <!-- Step 6: Test Run -->
+                            <td class="text-center text-nowrap">@Fmt(item.TestRunTargetDate, 6)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.TestRunActualDate, 6)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s6Done))</td>
+
+                            <!-- Step 7: Implementation Date -->
+                            <td class="text-center text-nowrap">@Fmt(item.ImplDateTargetDate, 7)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.ImplDateActualDate, 7)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s7Done))</td>
+
+                            <!-- Step 8: First Delivery Date -->
+                            <td class="text-center text-nowrap">@Fmt(item.FirstDelTargetDate, 8)</td>
+                            <td class="text-center text-nowrap">@Fmt(item.FirstDelActualDate, 8)</td>
+                            <td class="text-center text-nowrap">@Html.Raw(StLabel(s8Done))</td>
+                        </tr>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="26" class="text-center text-muted py-4">
+                                <i class="fa-solid fa-circle-info me-2"></i>
+                                No Change Material records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
