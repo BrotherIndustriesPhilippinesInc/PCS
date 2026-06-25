@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PartsControlSystem.Data;
@@ -11,9 +12,11 @@ using PartsControlSystem.Data;
 namespace PartsControlSystem.Migrations
 {
     [DbContext(typeof(PostgreAppDbContext))]
-    partial class PostgreAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624091331_AddActivityTypeToActivityCurrentProcess")]
+    partial class AddActivityTypeToActivityCurrentProcess
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

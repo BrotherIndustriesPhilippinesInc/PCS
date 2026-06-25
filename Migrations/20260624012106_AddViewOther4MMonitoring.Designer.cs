@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PartsControlSystem.Data;
@@ -11,9 +12,11 @@ using PartsControlSystem.Data;
 namespace PartsControlSystem.Migrations
 {
     [DbContext(typeof(PostgreAppDbContext))]
-    partial class PostgreAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260624012106_AddViewOther4MMonitoring")]
+    partial class AddViewOther4MMonitoring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,10 +33,6 @@ namespace PartsControlSystem.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ActivityType")
-                        .HasColumnType("text")
-                        .HasColumnName("activity_type");
 
                     b.Property<string>("ControlNumber")
                         .IsRequired()
@@ -3038,12 +3037,14 @@ namespace PartsControlSystem.Migrations
             modelBuilder.Entity("PartsControlSystem.Models.ViewOther4MMonitoring", b =>
                 {
                     b.Property<string>("ControlNumber")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("de_actual_finished_date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("de_eval_status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("de_parts_endorsement_date")
@@ -3053,12 +3054,15 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("de_reference_no")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("de_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("de_workflow_system_no")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("delivery_po_issuance_date")
@@ -3074,6 +3078,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ee_eval_status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("ee_parts_endorsement_date")
@@ -3083,6 +3088,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("ee_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("first_delivery_date")
@@ -3095,15 +3101,18 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("itf_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("itf_status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("kataken_approved_date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("kataken_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("kataken_request_actual")
@@ -3119,6 +3128,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("kataken_status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("kataken_submission_date")
@@ -3128,6 +3138,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("qa_eval_status")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("qa_parts_endorsement_date")
@@ -3137,15 +3148,18 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("qa_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("qa_target_delivery_date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("qa_workflow_no")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("test_result")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("test_run_actual_finished_date")
@@ -3161,6 +3175,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("test_run_no")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("test_run_po_issuance_date")
@@ -3170,6 +3185,7 @@ namespace PartsControlSystem.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("test_run_remarks")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.ToTable((string)null);

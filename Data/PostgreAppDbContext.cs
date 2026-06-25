@@ -48,9 +48,14 @@ namespace PartsControlSystem.Data
         public DbSet<ViewChangeMaterialMonitoring> ViewChangeMaterialMonitoring { get; set; }
 
 
-        public DbSet<Other4MProcessMapping> Other4MProcessMappings { get; set; }
         public DbSet<Other4MProcess> Other4MProcesses { get; set; }
- 
+        public DbSet<Other4MProcessMapping> Other4MProcessMappings { get; set; }
+
+
+        public DbSet<ViewOther4MMonitoring> ViewOther4MMonitoring { get; set; }
+
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -112,8 +117,14 @@ namespace PartsControlSystem.Data
                 .IsUnique();
 
             modelBuilder.Entity<Other4MProcessMapping>()
+                .ToTable("Other4MProcessMappings")
                 .HasData(Other4MProcessMappingSeed.GetSeedData());
-
+           
+            modelBuilder.Entity<ViewOther4MMonitoring>(e =>
+            {
+                e.HasNoKey();
+                e.ToView("view_other4m_monitoring", "public");
+            });
         }
 
     } 

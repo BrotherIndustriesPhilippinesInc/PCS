@@ -92,28 +92,35 @@ namespace PartsControlSystem.Controllers
                     switch (item.Activity)
                     {
                         case "Renewal / Additional Mold":
-                            record.RenewalAdditionalMold = null; break;
+                            record.RenewalAdditionalMold = "NO"; break;
                         case "New Tooling / Localization":
-                            record.NewToolingLocalization = null; break;
+                            record.NewToolingLocalization = "NO"; break;
                         case "Transfer Tooling":
-                            record.TransferTooling = null; break;
+                            record.TransferTooling = "NO"; break;
                         case "Change Material":
-                            record.ChangeMaterial = null; break;
+                            record.ChangeMaterial = "NO"; break;
                         case "New Model":
-                            record.NewModel = null; break;
+                            record.NewModel = "NO"; break;
                         case "Non-Concurrent":
-                            record.NonConcurrent = null; break;
+                            record.NonConcurrent = "NO"; break;
                         case "Supplier Change / Localization":
-                            record.SupplierChangeLocalization = null; break;
+                            record.SupplierChangeLocalization = "NO"; break;
                         case "Other 4M":
-                            record.Other4M = null; break;
+                            record.Other4M = "NO"; break;
                         case "Multiple Procurement / Localization":
-                            record.MultipleProcurementLocalization = null; break;
+                            record.MultipleProcurementLocalization = "NO"; break;
                         default:
                             continue;
                     }
 
                     flagsCleared++;
+
+                    var logsToUpdate = await _context.TransactionLogs
+                        .Where(t => t.TransactionNumber == record.ControlNo && t.Activity == item.Activity)
+                        .ToListAsync();
+                        foreach (var log in logsToUpdate)
+                        log.Status = "Deleted";
+
 
                     bool hasRemainingFlags =
                         record.RenewalAdditionalMold?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true ||
@@ -131,6 +138,7 @@ namespace PartsControlSystem.Controllers
                         _context.ImportDatas.Remove(record);
                         recordsDeleted++;
                     }
+                   
                 }
 
                 await _context.SaveChangesAsync();

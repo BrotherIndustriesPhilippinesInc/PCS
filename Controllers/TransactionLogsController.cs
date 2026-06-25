@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
 using PartsControlSystem.ViewModels;
+using PartsControlSystem.Helpers;
 
 namespace PartsControlSystem.Controllers
 {
@@ -28,6 +29,12 @@ namespace PartsControlSystem.Controllers
                 .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
                 .ToListAsync();
 
+            var leadTimes = await _dbContext.LeadTimes.ToListAsync();
+            var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var other4MMappings = await _dbContext.Other4MProcessMappings.ToListAsync();
+            var today = DateTime.UtcNow;
+
             var viewModel = logs
                 .OrderByDescending(x => x.InputDate)
                 .Select(x =>
@@ -36,6 +43,13 @@ namespace PartsControlSystem.Controllers
                         .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
 
                     string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+                    bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
+
+                    string resolvedStatus = x.Status == "Deleted"
+                        ? "Deleted"
+                        : ActivityComputationHelper.ResolveTransactionLogStatus(
+                            isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
+                            leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
                     return new TransactionLogViewModel
                     {
@@ -51,9 +65,7 @@ namespace PartsControlSystem.Controllers
                         ReceivedDate = x.ReceivedDate,
                         InputDate = x.InputDate,
                         CurrentProcess = x.CurrentProcess,
-                        Status = IsCompleted(x.Activity, actualCurrentProcess)
-                                                ? "Completed"
-                                                : "In Progress",
+                        Status = resolvedStatus,
                         Remarks = x.Remarks
                     };
                 })
@@ -82,6 +94,12 @@ namespace PartsControlSystem.Controllers
                 .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
                 .ToListAsync();
 
+            var leadTimes = await _dbContext.LeadTimes.ToListAsync();
+            var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var other4MMappings = await _dbContext.Other4MProcessMappings.ToListAsync();
+            var today = DateTime.UtcNow;
+
             var rows = logs
                 .OrderByDescending(x => x.InputDate)
                 .Select(x =>
@@ -89,6 +107,13 @@ namespace PartsControlSystem.Controllers
                     var latestProcess = latestProcesses
                         .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
                     string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+                    bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
+
+                    string resolvedStatus = x.Status == "Deleted"
+                        ? "Deleted"
+                        : ActivityComputationHelper.ResolveTransactionLogStatus(
+                            isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
+                            leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
                     return new TransactionLogViewModel
                     {
@@ -104,9 +129,7 @@ namespace PartsControlSystem.Controllers
                         ReceivedDate = x.ReceivedDate,
                         InputDate = x.InputDate,
                         CurrentProcess = x.CurrentProcess,
-                        Status = IsCompleted(x.Activity, actualCurrentProcess)
-                                                ? "Completed"
-                                                : "In Progress",
+                        Status = resolvedStatus,
                         Remarks = x.Remarks
                     };
                 })
@@ -138,7 +161,6 @@ namespace PartsControlSystem.Controllers
             using var workbook = new XLWorkbook();
             var ws = workbook.Worksheets.Add("Transaction Logs");
 
-            // ── Headers ───────────────────────────────────────────────────
             var headers = new[]
             {
                 "Transaction No", "Part Name", "Supplier", "Model",
@@ -162,7 +184,6 @@ namespace PartsControlSystem.Controllers
                 cell.Style.Border.OutsideBorderColor = XLColor.Black;
             }
 
-            // ── Data rows ─────────────────────────────────────────────────
             for (int i = 0; i < rows.Count; i++)
             {
                 var r = rows[i];
@@ -212,21 +233,29 @@ namespace PartsControlSystem.Controllers
                 statusCell.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
                 statusCell.Style.Border.OutsideBorderColor = XLColor.Black;
 
-                if (r.Status == "Completed")
+                switch (r.Status)
                 {
-                    statusCell.Style.Font.FontColor = XLColor.FromHtml("#166534");
-                    statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#dcfce7");
-                }
-                else
-                {
-                    statusCell.Style.Font.FontColor = XLColor.FromHtml("#92400e");
-                    statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#fef9c3");
+                    case "Completed":
+                        statusCell.Style.Font.FontColor = XLColor.FromHtml("#166534");
+                        statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#dcfce7");
+                        break;
+                    case "Delay":
+                        statusCell.Style.Font.FontColor = XLColor.FromHtml("#9a3412");
+                        statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#ffedd5");
+                        break;
+                    case "Deleted":
+                        statusCell.Style.Font.FontColor = XLColor.FromHtml("#991b1b");
+                        statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#fee2e2");
+                        break;
+                    default: // In Progress
+                        statusCell.Style.Font.FontColor = XLColor.FromHtml("#92400e");
+                        statusCell.Style.Fill.BackgroundColor = XLColor.FromHtml("#fef9c3");
+                        break;
                 }
 
                 ws.Row(rowNum).Height = 18;
             }
 
-            // ── Auto-fit columns ───────────────────────────────────────────
             ws.Columns().AdjustToContents();
             foreach (var col in ws.ColumnsUsed())
             {
@@ -234,7 +263,6 @@ namespace PartsControlSystem.Controllers
                 if (col.Width > 60) col.Width = 60;
             }
 
-            // ── Freeze header + auto-filter ────────────────────────────────
             ws.Row(1).Height = 28;
             ws.SheetView.FreezeRows(1);
             if (ws.RangeUsed() != null) ws.RangeUsed().SetAutoFilter();
@@ -276,37 +304,59 @@ namespace PartsControlSystem.Controllers
 
             string actualCurrentProcess = latestProcess?.CurrentProcess ?? string.Empty;
 
-            var result = history.Select((row, index) => new
+            var leadTimes = await _dbContext.LeadTimes.ToListAsync();
+            var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var other4MMappings = await _dbContext.Other4MProcessMappings.ToListAsync();
+            var today = DateTime.UtcNow;
+
+            var result = history.Select((row, index) =>
             {
-                row.TransactionNumber,
-                row.PartName,
-                row.Supplier,
-                row.Model,
-                row.Activity,
-                row.Source,
-                row.PIC,
+                string status;
+                if (row.Status == "Deleted")
+                {
+                    status = "Deleted";
+                }
+                else if (index == 0)
+                {
+                    bool isCompleted = IsCompleted(row.Activity, actualCurrentProcess);
+                    status = ActivityComputationHelper.ResolveTransactionLogStatus(
+                        isCompleted, actualCurrentProcess, row.InputDate, row.Activity,
+                        leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
+                }
+                else
+                {
+                    status = "Completed"; // historical/superseded rows are always treated as done
+                }
 
-                StartDate = row.StartDate.HasValue
-                    ? row.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
-                    : "—",
+                return new
+                {
+                    row.TransactionNumber,
+                    row.PartName,
+                    row.Supplier,
+                    row.Model,
+                    row.Activity,
+                    row.Source,
+                    row.PIC,
 
-                EndDate = row.EndDate.HasValue
-                    ? row.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
-                    : "—",
+                    StartDate = row.StartDate.HasValue
+                        ? row.StartDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
+                        : "—",
 
-                InputDate = row.InputDate.HasValue
-                    ? row.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm")
-                    : "—",
+                    EndDate = row.EndDate.HasValue
+                        ? row.EndDate.Value.ToLocalTime().ToString("MM/dd/yyyy")
+                        : "—",
 
-                row.CurrentProcess,
+                    InputDate = row.InputDate.HasValue
+                        ? row.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm")
+                        : "—",
 
-                Status = index == 0
-                    ? IsCompleted(row.Activity, actualCurrentProcess)
-                        ? "Completed"
-                        : "In Progress"
-                    : "Completed",
+                    row.CurrentProcess,
 
-                row.Remarks
+                    Status = status,
+
+                    row.Remarks
+                };
             }).ToList();
 
             return Json(result);
@@ -556,6 +606,83 @@ namespace PartsControlSystem.Controllers
             if (data.Other4M == "YES") return "Other 4M";
             if (data.MultipleProcurementLocalization == "YES") return "Multiple Procurement / Localization";
             return "Unknown";
+        }
+
+        // =====================================================================
+        // MISSING LOGS REPORT
+        // =====================================================================
+        [HttpGet]
+        public async Task<IActionResult> MissingLogsReport()
+        {
+            var importList = await _dbContext.ImportDatas.ToListAsync();
+
+            var loggedPairs = await _dbContext.TransactionLogs
+                .Select(x => new { x.TransactionNumber, x.Activity })
+                .Distinct()
+                .ToListAsync();
+
+            var loggedSet = loggedPairs
+                .Select(x => (x.TransactionNumber, x.Activity))
+                .ToHashSet();
+
+            var flaggedPairs = new List<(string ControlNo, string Activity, string Section, DateTime? DateImported)>();
+
+            foreach (var imp in importList)
+            {
+                var activityMap = new Dictionary<string, string>
+                {
+                    ["Renewal / Additional Mold"] = imp.RenewalAdditionalMold,
+                    ["New Tooling / Localization"] = imp.NewToolingLocalization,
+                    ["Transfer Tooling"] = imp.TransferTooling,
+                    ["Change Material"] = imp.ChangeMaterial,
+                    ["New Model"] = imp.NewModel,
+                    ["Non-Concurrent"] = imp.NonConcurrent,
+                    ["Supplier Change / Localization"] = imp.SupplierChangeLocalization,
+                    ["Other 4M"] = imp.Other4M,
+                    ["Multiple Procurement / Localization"] = imp.MultipleProcurementLocalization,
+                };
+
+                foreach (var (activityName, flag) in activityMap)
+                {
+                    if (string.Equals(flag, "YES", StringComparison.OrdinalIgnoreCase))
+                        flaggedPairs.Add((imp.ControlNo, activityName, imp.Section, imp.DateImported));
+                }
+            }
+
+            var missing = flaggedPairs
+                .Where(f => !loggedSet.Contains((f.ControlNo, f.Activity)))
+                .OrderBy(f => f.ControlNo)
+                .ThenBy(f => f.Activity)
+                .Select(f => new
+                {
+                    ControlNo = f.ControlNo,
+                    Activity = f.Activity,
+                    Section = f.Section,
+                    DateImported = f.DateImported.HasValue
+                        ? f.DateImported.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm")
+                        : "—"
+                })
+                .ToList();
+
+            var flaggedSet = flaggedPairs
+                .Select(f => (f.ControlNo, f.Activity))
+                .ToHashSet();
+
+            var orphanLoggedPairs = loggedPairs
+                .Where(l => !flaggedSet.Contains((l.TransactionNumber, l.Activity)))
+                .OrderBy(l => l.TransactionNumber)
+                .ThenBy(l => l.Activity)
+                .ToList();
+
+            return Json(new
+            {
+                totalFlagged = flaggedPairs.Count,
+                totalLoggedPairs = loggedSet.Count,
+                missingCount = missing.Count,
+                missing,
+                orphanLoggedCount = orphanLoggedPairs.Count,
+                orphanLoggedPairs
+            });
         }
     }
 }

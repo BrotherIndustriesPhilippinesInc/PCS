@@ -14,6 +14,9 @@ namespace PartsControlSystem.ViewModels
 
         // From change_material_process_mapping
         public List<ChangeMaterialProcessMapping> ChangeMaterialSteps { get; set; } = new();
+
+        // From Other4MProcessMappings table
+        public List<Other4MProcessMapping> Other4MSteps { get; set; } = new();
     }
 
     // Used for bulk-save JSON payloads

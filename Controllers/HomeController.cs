@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
+using PartsControlSystem.Helpers;
 
 namespace PartsControlSystem.Controllers
 {
@@ -25,7 +26,6 @@ namespace PartsControlSystem.Controllers
             _sqlServerAppDbContextCas = sqlServerAppDbContextCas;
         }
 
-
         [Authorize]
         public async Task<IActionResult> Dashboard(
      string? section = null,
@@ -33,8 +33,17 @@ namespace PartsControlSystem.Controllers
      string? endDate = null)
         {
             var allData = await _postgreAppDbContext.ImportDatas.ToListAsync();
-            var allCurrentProcesses = await _postgreAppDbContext.ActivityCurrentProcesses.ToListAsync();
             var leadTimes = await _postgreAppDbContext.LeadTimes.ToListAsync();
+            var other4MMappings = await _postgreAppDbContext.Other4MProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _postgreAppDbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var newToolingMappings = await _postgreAppDbContext.NewToolingProcessMappings.ToListAsync();
+
+            // ── Per-activity latest process step — single source of truth for status & display ──
+            var latestLogsPerActivity = await _postgreAppDbContext.TransactionLogs
+                .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                .ToListAsync();
+
             var today = DateTime.UtcNow;
 
             // ── Parse date range ─────────────────────────────────────────────────────
@@ -49,7 +58,6 @@ namespace PartsControlSystem.Controllers
                 : allData.Where(x => (x.Section ?? "N/A") == section).ToList();
 
             // ── Date filter ──────────────────────────────────────────────────────────
-            // Replace DateCreated with whatever your ImportData date field is called
             if (parsedStart.HasValue)
                 data = data.Where(x => x.DateImported >= parsedStart.Value).ToList();
             if (parsedEnd.HasValue)
@@ -73,18 +81,23 @@ namespace PartsControlSystem.Controllers
                 .Select(p => p.ControlNumber)
                 .ToHashSet();
 
+            var completedOther4M = _postgreAppDbContext.Other4MProcesses
+                .Where(p => p.FirstDeliveryDate != null && filteredControlNos.Contains(p.ControlNumber))
+                .Select(p => p.ControlNumber)
+                .ToHashSet();
+
             // ── Per-Activity Stats ───────────────────────────────────────────────────
             var activityStats = new Dictionary<string, (int Done, int Ongoing, int Delay)>
             {
-                ["Renewal / Additional Mold"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.RenewalAdditionalMold, completedIqc),
-                ["New Tooling / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NewToolingLocalization, completedNewTooling),
-                ["Supplier Change / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.SupplierChangeLocalization, completedNewTooling),
-                ["Multiple Procurement / Localization"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.MultipleProcurementLocalization, completedNewTooling),
-                ["Transfer Tooling"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.TransferTooling, new HashSet<string>()),
-                ["Change Material"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.ChangeMaterial, completedChangeMaterial),
-                ["New Model"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NewModel, new HashSet<string>()),
-                ["Non-Concurrent"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.NonConcurrent, new HashSet<string>()),
-                ["Other 4M"] = GetActivityStats(data, allCurrentProcesses, leadTimes, today, x => x.Other4M, new HashSet<string>()),
+                ["Renewal / Additional Mold"] = GetActivityStats("Renewal / Additional Mold", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.RenewalAdditionalMold, completedIqc),
+                ["New Tooling / Localization"] = GetActivityStats("New Tooling / Localization", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.NewToolingLocalization, completedNewTooling),
+                ["Supplier Change / Localization"] = GetActivityStats("Supplier Change / Localization", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.SupplierChangeLocalization, completedNewTooling),
+                ["Multiple Procurement / Localization"] = GetActivityStats("Multiple Procurement / Localization", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.MultipleProcurementLocalization, completedNewTooling),
+                ["Transfer Tooling"] = GetActivityStats("Transfer Tooling", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.TransferTooling, new HashSet<string>()),
+                ["Change Material"] = GetActivityStats("Change Material", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.ChangeMaterial, completedChangeMaterial),
+                ["New Model"] = GetActivityStats("New Model", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.NewModel, new HashSet<string>()),
+                ["Non-Concurrent"] = GetActivityStats("Non-Concurrent", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.NonConcurrent, new HashSet<string>()),
+                ["Other 4M"] = GetActivityStats("Other 4M", data, latestLogsPerActivity, leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today, x => x.Other4M, completedOther4M),
             };
 
             // ── Overall totals (summed from cards — single source of truth) ──────────
@@ -95,18 +108,18 @@ namespace PartsControlSystem.Controllers
             // ── Delay details per section (scoped to filtered data) ──────────────────
             var delayDetails = new List<(string Section, int DelayItems, int DaysDelay)>();
 
-            var activitySelectors = new List<Func<ImportData, string>>
-{
-    x => x.RenewalAdditionalMold,
-    x => x.NewToolingLocalization,
-    x => x.SupplierChangeLocalization,
-    x => x.MultipleProcurementLocalization,
-    x => x.TransferTooling,
-    x => x.ChangeMaterial,
-    x => x.NewModel,
-    x => x.NonConcurrent,
-    x => x.Other4M
-};
+            var activitySelectors = new List<(string Name, Func<ImportData, string> Selector)>
+            {
+                ("Renewal / Additional Mold", x => x.RenewalAdditionalMold),
+                ("New Tooling / Localization", x => x.NewToolingLocalization),
+                ("Supplier Change / Localization", x => x.SupplierChangeLocalization),
+                ("Multiple Procurement / Localization", x => x.MultipleProcurementLocalization),
+                ("Transfer Tooling", x => x.TransferTooling),
+                ("Change Material", x => x.ChangeMaterial),
+                ("New Model", x => x.NewModel),
+                ("Non-Concurrent", x => x.NonConcurrent),
+                ("Other 4M", x => x.Other4M)
+            };
 
             foreach (var group in data.GroupBy(x => x.Section ?? "N/A"))
             {
@@ -115,25 +128,24 @@ namespace PartsControlSystem.Controllers
 
                 foreach (var record in group)
                 {
-                    // Count once per YES activity flag, not once per record
-                    foreach (var selector in activitySelectors)
+                    foreach (var (activityName, selector) in activitySelectors)
                     {
                         if (!string.Equals(selector(record)?.Trim(), "YES", StringComparison.OrdinalIgnoreCase))
                             continue;
 
-                        var currentProcess = allCurrentProcesses
-                            .Where(acp => acp.ControlNumber == record.ControlNo)
-                            .OrderByDescending(acp => acp.UpdateAt)
-                            .FirstOrDefault();
+                        var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
+                            record.ControlNo, activityName, latestLogsPerActivity);
 
-                        if (currentProcess == null) continue;
+                        if (latestLog == null) continue;
 
-                        var leadTime = leadTimes
-                            .FirstOrDefault(lt => lt.Activity == currentProcess.CurrentProcess);
+                        var leadTimeDays = ActivityComputationHelper.ResolveLeadTimeDays(
+                            activityName, latestLog.CurrentProcess,
+                            leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings);
 
-                        if (leadTime == null) continue;
+                        if (leadTimeDays == null || leadTimeDays <= 0) continue;
+                        if (latestLog.InputDate == null) continue;
 
-                        var deadline = currentProcess.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
+                        var deadline = latestLog.InputDate.Value.AddDays(leadTimeDays.Value);
                         if (deadline < today)
                         {
                             sectionDelayItems++;
@@ -161,7 +173,7 @@ namespace PartsControlSystem.Controllers
             ViewBag.ActivityStats = activityStats;
             ViewBag.Sections = sections;
             ViewBag.SelectedSection = section;
-            ViewBag.SelectedStartDate = startDate;   // raw string — view echoes it into value=""
+            ViewBag.SelectedStartDate = startDate;
             ViewBag.SelectedEndDate = endDate;
 
             return View();
@@ -169,77 +181,68 @@ namespace PartsControlSystem.Controllers
 
         // ── Helper ───────────────────────────────────────────────────────────────────
         private (int Done, int Ongoing, int Delay) GetActivityStats(
-            List<ImportData> data,
-            List<ActivityCurrentProcess> allCurrentProcesses,
-            List<LeadTime> leadTimes,
-            DateTime today,
-            Func<ImportData, string> activitySelector,
-            HashSet<string> completedControlNos)
+       string activityName,
+       List<ImportData> data,
+       List<TransactionLogs> latestLogsPerActivity,
+       List<LeadTime> leadTimes,
+       List<NewToolingProcessMapping> newToolingMappings,
+       List<ChangeMaterialProcessMapping> changeMaterialMappings,
+       List<Other4MProcessMapping> other4MMappings,
+       DateTime today,
+       Func<ImportData, string> activitySelector,
+       HashSet<string> completedControlNos)
         {
             var activityRecords = data
                 .Where(x => activitySelector(x)
                     ?.Trim().Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 .ToList();
 
-            int done = activityRecords.Count(x => completedControlNos.Contains(x.ControlNo));
-            int delayed = 0;
+            int done = 0, delayed = 0;
 
             foreach (var record in activityRecords)
             {
-                if (completedControlNos.Contains(record.ControlNo)) continue;
+                bool isCompleted = completedControlNos.Contains(record.ControlNo);
 
-                var currentProcess = allCurrentProcesses
-                    .Where(acp => acp.ControlNumber == record.ControlNo)
-                    .OrderByDescending(acp => acp.UpdateAt)
-                    .FirstOrDefault();
+                var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
+                    record.ControlNo, activityName, latestLogsPerActivity);
 
-                if (currentProcess == null) continue;
+                var status = ActivityComputationHelper.ResolveStatus(
+                    isCompleted, latestLog, activityName,
+                    leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
-                var leadTime = leadTimes
-                    .FirstOrDefault(lt => lt.Activity == currentProcess.CurrentProcess);
-
-                if (leadTime == null) continue;
-
-                var deadline = currentProcess.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
-                if (deadline < today) delayed++;
+                if (status == "Finished") done++;
+                else if (status == "Delay") delayed++;
             }
 
             int ongoing = Math.Max(activityRecords.Count - done - delayed, 0);
             return (done, ongoing, delayed);
         }
 
-
         [HttpGet]
         [AllowAnonymous]
         public IActionResult IportalConfirmationForm(string? ip = null)
         {
-            ViewData["HideFullLayout"] = true; // ✅ hide navbar + sidebar
-            // Use the passed IP or fallback to server-side IP
+            ViewData["HideFullLayout"] = true;
             string userIP = GetClientIp(HttpContext);
-
             return View(model: userIP);
         }
 
         public string GetClientIp(HttpContext context)
         {
-            // 1️ Check for X-Forwarded-For header (for proxies/load balancers)
             var forwardedHeader = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
             if (!string.IsNullOrWhiteSpace(forwardedHeader))
             {
                 return forwardedHeader.Split(',')[0].Trim();
             }
 
-            // 2️ Get the remote IP from the connection
             var remoteIp = context.Connection.RemoteIpAddress;
 
             if (remoteIp != null)
             {
-                // Convert IPv6 loopback (::1) to LAN IP for local debugging
                 if (remoteIp.IsIPv6LinkLocal || remoteIp.ToString() == "::1" || remoteIp.ToString() == "127.0.0.1")
                 {
-                    // Try to get actual LAN IP of this machine
                     string lanIp = GetLocalLanIp();
-                    return lanIp ?? "127.0.0.1"; // fallback to localhost
+                    return lanIp ?? "127.0.0.1";
                 }
 
                 if (remoteIp.IsIPv4MappedToIPv6)
@@ -253,7 +256,6 @@ namespace PartsControlSystem.Controllers
             return "IP Not Found";
         }
 
-        // Helper to get LAN IP of current machine
         private string? GetLocalLanIp()
         {
             foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
@@ -280,37 +282,31 @@ namespace PartsControlSystem.Controllers
         {
             string localIP = GetClientIp(HttpContext);
 
-            // Force IPv4 format
             if (IPAddress.TryParse(localIP, out var ip) && ip.IsIPv4MappedToIPv6)
                 localIP = ip.MapToIPv4().ToString();
 
-            long systemId = 81; // System ID in i-portal
+            long systemId = 81;
 
-            // Try to get the latest login request for the IP
             var loginEntry = await _sqlServerAppDbContextCas.Tbl_LOGIN_Request
                 .Where(x => x.IpAddress == localIP && x.SystemId == systemId)
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync();
 
-            // If no login request found, redirect to confirmation
             if (loginEntry == null)
             {
                 Console.WriteLine("No login request found for IP: " + localIP);
                 return RedirectToAction("IportalConfirmationForm", "Home");
             }
 
-            // Lookup user in PostgreSQL
             var user = await _postgreAppDbContext.Users
                 .FirstOrDefaultAsync(x => x.EmployeeId == loginEntry.EmployeeId);
 
-            // If user not found, redirect to confirmation
             if (user == null)
             {
                 Console.WriteLine("Employee not found for EmployeeId: " + loginEntry.EmployeeId);
                 return RedirectToAction("IportalConfirmationForm", "Home");
             }
 
-            // Sign-in with claims
             var claims = new List<Claim>
             {
                 new Claim("EmployeeId", user.EmployeeId ?? ""),
@@ -321,7 +317,6 @@ namespace PartsControlSystem.Controllers
                 new Claim("Section", user.Section ?? ""),
                 new Claim("UserRole", user.Authority ?? ""),
                 new Claim("ApproverRole", user.ApproverRole ?? "")
-
             };
 
             var identity = new ClaimsIdentity(claims, "MyCookieAuth");
@@ -331,7 +326,6 @@ namespace PartsControlSystem.Controllers
             Console.WriteLine("Login successful for EmployeeId: " + user.EmployeeId);
             return RedirectToAction("Dashboard", "Home");
         }
-
 
         public IActionResult Privacy()
         {

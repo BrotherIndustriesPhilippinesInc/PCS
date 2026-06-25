@@ -12,7 +12,7 @@ namespace PartsControlSystem.Models
         public string ProcessStep { get; set; }
         public int StepOrder { get; set; }
         public string Section { get; set; }
-        public decimal LeadTime { get; set; }
+        public int LeadTime { get; set; }
     }
 }
 

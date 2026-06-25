@@ -54,6 +54,9 @@ namespace PartsControlSystem.Controllers
                 case "change":
                     BuildChangeMaterialSheet(workbook, vm.ChangeMaterialRows);
                     break;
+                case "o4m":
+                    BuildOther4MSheet(workbook, vm.Other4MRows);
+                    break;
                 default:
                     BuildRenewalSheet(workbook, vm.RenewalRows);
                     break;
@@ -80,14 +83,17 @@ namespace PartsControlSystem.Controllers
             // ── shared lookups ──────────────────────────────────────────────
             var importDatas = await _db.ImportDatas.AsNoTracking().ToListAsync();
 
+            // FIXED - gets latest per control number AND activity type
             var latestProcesses = await _db.ActivityCurrentProcesses
                 .AsNoTracking()
-                .GroupBy(x => x.ControlNumber)
+                .GroupBy(x => new { x.ControlNumber, x.ActivityType }) // ← group by both
                 .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
                 .ToListAsync();
 
-            string GetPending(string controlNo)
-                => latestProcesses.FirstOrDefault(p => p.ControlNumber == controlNo)?.CurrentProcess ?? "—";
+            string GetPending(string controlNo, string activityType)
+                => latestProcesses.FirstOrDefault(p =>
+                    p.ControlNumber == controlNo &&
+                    p.ActivityType == activityType)?.CurrentProcess ?? "—";
 
             // ── RENEWAL / ADDITIONAL MOLD ───────────────────────────────────
             var renewalImports = importDatas.Where(x => x.RenewalAdditionalMold == "YES").ToList();
@@ -109,17 +115,17 @@ namespace PartsControlSystem.Controllers
                     Category = imp.ToolingCategory,
                     Model = imp.Model,
                     PartCode = imp.ChildPartcode,
-                    PendingItems = GetPending(imp.ControlNo),
-
-                    KatakenFinishTarget = kf?.ActualFinishDate,
-                    KatakenFinishActual = kf?.ActualFinishDate,
-                    KatakenFinishStatus = kf != null ? kf.Result : null,
-                    KatakenFinishRemarks = kf?.Remarks,
+                    PendingItems = GetPending(imp.ControlNo, "Renewal"),
 
                     KatakenSubTarget = ks?.ActualSubmissionDate,
                     KatakenSubActual = ks?.ActualSubmissionDate,
                     KatakenSubStatus = ks != null ? "Done" : null,
                     KatakenSubRemarks = ks?.Remarks,
+
+                    KatakenFinishTarget = kf?.ActualFinishDate,
+                    KatakenFinishActual = kf?.ActualFinishDate,
+                    KatakenFinishStatus = kf != null ? kf.Result : null,
+                    KatakenFinishRemarks = kf?.Remarks,
 
                     TestRunTarget = tr?.ActualFinishDate,
                     TestRunActual = tr?.ActualFinishDate,
@@ -143,7 +149,7 @@ namespace PartsControlSystem.Controllers
                     Category = imp.ToolingCategory,
                     Model = imp.Model,
                     PartCode = imp.ChildPartcode,
-                    PendingItems = GetPending(imp.ControlNo),
+                    PendingItems = GetPending(imp.ControlNo, "MultipleProcurement"),
 
                     KatakenSubTarget = row?.kataken_sub_target,
                     KatakenSubActual = row?.kataken_sub_actual,
@@ -192,7 +198,7 @@ namespace PartsControlSystem.Controllers
                     Category = imp.ToolingCategory,
                     Model = imp.Model,
                     PartCode = imp.ChildPartcode,
-                    PendingItems = GetPending(imp.ControlNo),
+                    PendingItems = GetPending(imp.ControlNo, "SupplierChange"),
 
                     KatakenSubTarget = row?.kataken_sub_target,
                     KatakenSubActual = row?.kataken_sub_actual,
@@ -246,7 +252,7 @@ namespace PartsControlSystem.Controllers
                     Category = imp.ToolingCategory,
                     Model = imp.Model,
                     PartCode = imp.ChildPartcode,
-                    PendingItems = GetPending(imp.ControlNo),
+                    PendingItems = GetPending(imp.ControlNo, "Localization"),
 
                     KatakenSubTarget = row?.kataken_sub_target,
                     KatakenSubActual = row?.kataken_sub_actual,
@@ -295,7 +301,7 @@ namespace PartsControlSystem.Controllers
                     Category = imp.ToolingCategory,
                     Model = imp.Model,
                     PartCode = imp.ChildPartcode,
-                    PendingItems = GetPending(imp.ControlNo),
+                    PendingItems = GetPending(imp.ControlNo, "ChangeMaterial"),
 
                     KatakenSubTarget = row?.KatakenPhTargetDate,
                     KatakenSubActual = row?.KatakenPhActualDate,
@@ -321,6 +327,83 @@ namespace PartsControlSystem.Controllers
                     TestRunActual = row?.TestRunActualDate,
                     TestRunStatus = row?.TestRunActualDate.HasValue == true ? "Done" : null,
                     TestRunRemarks = null,
+                });
+            }
+            // ── OTHER 4M ─────────────────────────────────────────────────────
+            // All 13 steps are IQC-owned, so every step is shown here.
+            var o4mImports = importDatas.Where(x => x.Other4M == "YES").ToList();
+            var o4mProcesses = await _db.Other4MProcesses.AsNoTracking().ToListAsync();
+
+            foreach (var imp in o4mImports)
+            {
+                var p = o4mProcesses.FirstOrDefault(x => x.ControlNumber == imp.ControlNo);
+
+                vm.Other4MRows.Add(new IQCOther4MMonitoringRow
+                {
+                    TransactionNumber = imp.ControlNo,
+                    ToolingType = imp.ToolingType,
+                    Category = imp.ToolingCategory,
+                    Model = imp.Model,
+                    PartCode = imp.ChildPartcode,
+                    PendingItems = GetPending(imp.ControlNo, "Other4M"),
+
+                    TestRunMeetingTarget = p?.TestRunMeetingTargetDate,
+                    TestRunMeetingActual = p?.TestRunMeetingActualDate,
+                    TestRunMeetingRemarks = null,
+
+                    KatakenRequestTarget = p?.KatakenRequestTargetDate,
+                    KatakenRequestActual = p?.KatakenRequestActualDate,
+                    KatakenRequestRemarks = null,
+
+                    KatakenSubTarget = p?.KatakenSampleSubmissionDate,
+                    KatakenSubActual = p?.KatakenSampleSubmissionDate,
+                    KatakenSubRemarks = null,
+
+                    KatakenEvalTarget = p?.KatakenRequestedDate,
+                    KatakenEvalActual = p?.KatakenApprovedDate,
+                    KatakenEvalStatus = p?.KatakenStatus,
+                    KatakenEvalRemarks = p?.KatakenRemarks,
+
+                    DEEvalTarget = p?.DEPartsReceivedDate,
+                    DEEvalActual = p?.DEActualFinishedDate,
+                    DEEvalStatus = p?.DEEvalStatus,
+                    DEEvalRemarks = p?.DERemarks,
+
+                    EEEvalTarget = p?.EEPartsReceivedDate,
+                    EEEvalActual = p?.EEActualFinishedDate,
+                    EEEvalStatus = p?.EEEvalStatus,
+                    EEEvalRemarks = p?.EERemarks,
+
+                    QAEvalTarget = p?.QATargetDeliveryDate,
+                    QAEvalActual = p?.QAActualFinishedDate,
+                    QAEvalStatus = p?.QAEvalStatus,
+                    QAEvalRemarks = p?.QARemarks,
+
+                    ITFTarget = p?.ITFActualFinishedDate,
+                    ITFActual = p?.ITFActualFinishedDate,
+                    ITFStatus = p?.ITFStatus,
+                    ITFRemarks = p?.ITFRemarks,
+
+                    DeliveryPOTarget = p?.DeliveryPOTargetDate,
+                    DeliveryPOActual = p?.DeliveryPOIssuanceDate,
+                    DeliveryPORemarks = null,
+
+                    TestRunPOTarget = p?.TestRunPORequestDate,
+                    TestRunPOActual = p?.TestRunPOIssuanceDate,
+                    TestRunPORemarks = null,
+
+                    TestRunTarget = p?.TestRunActualReceivedDate,
+                    TestRunActual = p?.TestRunActualFinishedDate,
+                    TestResult = p?.TestResult,
+                    TestRunRemarks = p?.TestRunRemarks,
+
+                    ImplementationTarget = p?.ImplementationDate,
+                    ImplementationActual = p?.ImplementationDate,
+                    ImplementationRemarks = null,
+
+                    FirstDeliveryTarget = p?.FirstDeliveryDate,
+                    FirstDeliveryActual = p?.FirstDeliveryDate,
+                    FirstDeliveryRemarks = null,
                 });
             }
 
@@ -501,16 +584,16 @@ namespace PartsControlSystem.Controllers
         {
             var ws = wb.Worksheets.Add("Renewal");
             WriteInfoHeaders(ws);
-            WriteActivityHeaders(ws,
-                "Renewal / Additional Mold",
-                bandHex: "92d050", groupHex: "70ad47", subHdrHex: "d4edda",
-                darkText: false,
-                groupNames: new[] {
-                    "Kataken Finish (Local Trial)",
-                    "Kataken Submission (Local Trial)",
-                    "Test Run"
-                },
-                startCol: 7);
+                    WriteActivityHeaders(ws,
+            "Renewal / Additional Mold",
+            bandHex: "92d050", groupHex: "70ad47", subHdrHex: "d4edda",
+            darkText: false,
+            groupNames: new[] {
+                "Kataken Submission (Local Trial)",
+                "Kataken Finish (Local Trial)",
+                "Test Run"
+            },
+            startCol: 7);
             SetColumnWidths(ws, 3);
 
             for (int i = 0; i < rows.Count; i++)
@@ -519,8 +602,8 @@ namespace PartsControlSystem.Controllers
                 WriteDataRow(ws, 4 + i,
                     r.TransactionNumber, r.ToolingType, r.Category, r.Model, r.PartCode,
                     r.PendingItems ?? "",
-                    Fmt(r.KatakenFinishTarget), Fmt(r.KatakenFinishActual), r.KatakenFinishRemarks ?? "",
                     Fmt(r.KatakenSubTarget), Fmt(r.KatakenSubActual), r.KatakenSubRemarks ?? "",
+                    Fmt(r.KatakenFinishTarget), Fmt(r.KatakenFinishActual), r.KatakenFinishRemarks ?? "",
                     Fmt(r.TestRunTarget), Fmt(r.TestRunActual), r.TestRunRemarks ?? "");
             }
 
@@ -674,6 +757,58 @@ namespace PartsControlSystem.Controllers
                     Fmt(r.QAEvalTarget), Fmt(r.QAEvalActual), r.QAEvalRemarks ?? "",
                     Fmt(r.DEEvalTarget), Fmt(r.DEEvalActual), r.DEEvalRemarks ?? "",
                     Fmt(r.TestRunTarget), Fmt(r.TestRunActual), r.TestRunRemarks ?? "");
+            }
+
+            ws.SheetView.FreezeRows(3);
+            if (ws.RangeUsed() != null) ws.RangeUsed().SetAutoFilter();
+        }
+
+        // ── OTHER 4M ───────────────────────────────────────────────────────────
+        private static void BuildOther4MSheet(XLWorkbook wb, List<IQCOther4MMonitoringRow> rows)
+        {
+            var ws = wb.Worksheets.Add("Other 4M");
+            WriteInfoHeaders(ws);
+            WriteActivityHeaders(ws,
+                "Other 4M",
+                bandHex: "2e75b6", groupHex: "9dc3e6", subHdrHex: "deeaf6",
+                darkText: true,
+                groupNames: new[] {
+                    "Test Run Meeting Date",
+                    "Kataken Request Date",
+                    "Kataken PH Sample Submission",
+                    "Kataken Evaluation Approval",
+                    "DE Evaluation",
+                    "EE Evaluation",
+                    "Special QA Evaluation",
+                    "ITF Process",
+                    "Delivery PO Requisition",
+                    "Test Run PO Request",
+                    "Test Run",
+                    "Implementation Date",
+                    "First Delivery Date"
+                },
+                startCol: 7);
+            SetColumnWidths(ws, 13);
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var r = rows[i];
+                WriteDataRow(ws, 4 + i,
+                    r.TransactionNumber, r.ToolingType, r.Category, r.Model, r.PartCode,
+                    r.PendingItems ?? "",
+                    Fmt(r.TestRunMeetingTarget), Fmt(r.TestRunMeetingActual), r.TestRunMeetingRemarks ?? "",
+                    Fmt(r.KatakenRequestTarget), Fmt(r.KatakenRequestActual), r.KatakenRequestRemarks ?? "",
+                    Fmt(r.KatakenSubTarget), Fmt(r.KatakenSubActual), r.KatakenSubRemarks ?? "",
+                    Fmt(r.KatakenEvalTarget), Fmt(r.KatakenEvalActual), r.KatakenEvalRemarks ?? "",
+                    Fmt(r.DEEvalTarget), Fmt(r.DEEvalActual), r.DEEvalRemarks ?? "",
+                    Fmt(r.EEEvalTarget), Fmt(r.EEEvalActual), r.EEEvalRemarks ?? "",
+                    Fmt(r.QAEvalTarget), Fmt(r.QAEvalActual), r.QAEvalRemarks ?? "",
+                    Fmt(r.ITFTarget), Fmt(r.ITFActual), r.ITFRemarks ?? "",
+                    Fmt(r.DeliveryPOTarget), Fmt(r.DeliveryPOActual), r.DeliveryPORemarks ?? "",
+                    Fmt(r.TestRunPOTarget), Fmt(r.TestRunPOActual), r.TestRunPORemarks ?? "",
+                    Fmt(r.TestRunTarget), Fmt(r.TestRunActual), r.TestRunRemarks ?? "",
+                    Fmt(r.ImplementationTarget), Fmt(r.ImplementationActual), r.ImplementationRemarks ?? "",
+                    Fmt(r.FirstDeliveryTarget), Fmt(r.FirstDeliveryActual), r.FirstDeliveryRemarks ?? "");
             }
 
             ws.SheetView.FreezeRows(3);

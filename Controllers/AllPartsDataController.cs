@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
+using PartsControlSystem.Helpers;
 using System.Text;
 
 namespace PartsControlSystem.Controllers
@@ -33,7 +34,6 @@ namespace PartsControlSystem.Controllers
         {
             var rows = await FetchRows(activity, status);
 
-            // Apply month/year filter to match what's visible on screen
             if (!string.IsNullOrEmpty(month) && month != "All" && int.TryParse(month, out int m))
                 rows = rows.Where(r => r.InputDate.HasValue && r.InputDate.Value.ToLocalTime().Month == m).ToList();
 
@@ -43,12 +43,11 @@ namespace PartsControlSystem.Controllers
             using var workbook = new ClosedXML.Excel.XLWorkbook();
             var ws = workbook.Worksheets.Add("All Parts Data");
 
-            // ── Header row ─────────────────────────────────────────────
             var headers = new[]
             {
-        "Transaction Number", "Part Name", "Part Code", "Supplier",
-        "Model", "Activity", "Input Date", "Status", "Current Process", "Remarks"
-    };
+                "Transaction Number", "Part Name", "Part Code", "Supplier",
+                "Model", "Activity", "Input Date", "Status", "Current Process", "Remarks"
+            };
 
             for (int i = 0; i < headers.Length; i++)
             {
@@ -62,13 +61,11 @@ namespace PartsControlSystem.Controllers
                 cell.Style.Border.BottomBorderColor = ClosedXML.Excel.XLColor.White;
             }
 
-            // ── Data rows ───────────────────────────────────────────────
             for (int i = 0; i < rows.Count; i++)
             {
                 var r = rows[i];
                 var row = ws.Row(i + 2);
 
-                // Alternating row color
                 if (i % 2 == 1)
                 {
                     row.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromHtml("#f0f4f8");
@@ -87,7 +84,6 @@ namespace PartsControlSystem.Controllers
                 ws.Cell(i + 2, 9).Value = r.CurrentProcess ?? "";
                 ws.Cell(i + 2, 10).Value = r.Remarks ?? "";
 
-                // Status cell color
                 var statusCell = ws.Cell(i + 2, 8);
                 statusCell.Style.Font.Bold = true;
                 statusCell.Style.Alignment.Horizontal = ClosedXML.Excel.XLAlignmentHorizontalValues.Center;
@@ -108,20 +104,15 @@ namespace PartsControlSystem.Controllers
                 }
             }
 
-            // ── Auto-fit all columns ────────────────────────────────────
             ws.Columns().AdjustToContents();
 
-            // ── Set minimum column widths ───────────────────────────────
             foreach (var col in ws.ColumnsUsed())
             {
                 if (col.Width < 12) col.Width = 12;
                 if (col.Width > 60) col.Width = 60;
             }
 
-            // ── Freeze header row ───────────────────────────────────────
             ws.SheetView.FreezeRows(1);
-
-            // ── Add auto-filter ─────────────────────────────────────────
             ws.RangeUsed().SetAutoFilter();
 
             using var stream = new MemoryStream();
@@ -134,6 +125,7 @@ namespace PartsControlSystem.Controllers
                 $"AllPartsData_{DateTime.Now:yyyyMMdd_HHmm}.xlsx"
             );
         }
+
         // ── Private helpers ────────────────────────────────────────
 
         private async Task<AllPartsDataViewModel> BuildViewModel()
@@ -152,9 +144,18 @@ namespace PartsControlSystem.Controllers
         {
             // ── Load all tables needed ─────────────────────────────
             var importList = await _context.ImportDatas.ToListAsync();
-            var procList = await _context.ActivityCurrentProcesses.ToListAsync();
             var leadTimes = await _context.LeadTimes.ToListAsync();
+            var newToolingMappings = await _context.NewToolingProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _context.ChangeMaterialProcessMappings.ToListAsync();
+            var other4MMappings = await _context.Other4MProcessMappings.ToListAsync();
             var today = DateTime.UtcNow;
+
+            // Latest TransactionLogs entry PER (ControlNo, Activity) — single source of truth
+            // for BOTH display (CurrentProcess shown on screen) AND status computation (Finished/Ongoing/Delay).
+            var latestLogsPerActivity = await _context.TransactionLogs
+                .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                .ToListAsync();
 
             // Load remarks from each activity-specific process table
             var quotations = await _context.ToolingQuotationRequestApproval.ToListAsync();
@@ -168,6 +169,29 @@ namespace PartsControlSystem.Controllers
             var deEvals = await _context.DEEvaluation.ToListAsync();
             var qaEvals = await _context.QASpecialEvaluations.ToListAsync();
             var testRuns = await _context.IQCTestRuns.ToListAsync();
+
+            // ── Completed sets — SAME source-of-truth tables as the Dashboard ──
+            var completedRenewal = testRuns
+                .Select(t => t.ControlNumber)
+                .ToHashSet();
+
+            var completedNewTooling = await _context.NewToolingLocalizationProcesses
+                .Where(p => p.CurrentProcess == "Completed")
+                .Select(p => p.ControlNumber)
+                .ToListAsync();
+            var completedNewToolingSet = completedNewTooling.ToHashSet();
+
+            var completedChangeMaterial = await _context.ChangeMaterialProcesses
+                .Where(p => p.ProcessStep == "First Delivery Date")
+                .Select(p => p.ControlNumber)
+                .ToListAsync();
+            var completedChangeMaterialSet = completedChangeMaterial.ToHashSet();
+
+            var completedOther4M = await _context.Other4MProcesses
+                .Where(p => p.FirstDeliveryDate != null)
+                .Select(p => p.ControlNumber)
+                .ToListAsync();
+            var completedOther4MSet = completedOther4M.ToHashSet();
 
             // ── Expand: one row per YES flag ───────────────────────
             var expandedRows = new List<(ImportData imp, string activity)>();
@@ -200,44 +224,31 @@ namespace PartsControlSystem.Controllers
                 var imp = pair.imp;
                 var resolvedActivity = pair.activity;
 
-                // Latest process entry for this control number
-                var latestProc = procList
-                    .Where(p => p.ControlNumber == imp.ControlNo)
-                    .OrderByDescending(p => p.UpdateAt)
-                    .FirstOrDefault();
+                // ── Single source of truth for display: latest log scoped to THIS activity ──
+                var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
+                    imp.ControlNo, resolvedActivity, latestLogsPerActivity);
 
-                var currentProcess = latestProc?.CurrentProcess ?? "N/A";
+                string displayCurrentProcess = latestLog?.CurrentProcess ?? "N/A";
 
-                // ── Status logic — mirrors HomeController exactly ──
-                string resolvedStatus;
-
-                if (latestProc == null)
+                // ── Completed check — dedicated table per activity, SAME as Dashboard ──
+                bool isCompleted = resolvedActivity switch
                 {
-                    resolvedStatus = "Ongoing";
-                }
-                else if (IsCompleted(resolvedActivity, currentProcess))
-                {
-                    resolvedStatus = "Finished";
-                }
-                else
-                {
-                    // Check deadline: UpdateAt + LeadTimeValue < today → Delay
-                    var leadTime = leadTimes
-                        .FirstOrDefault(lt => lt.Activity == currentProcess);
+                    "Renewal / Additional Mold" => completedRenewal.Contains(imp.ControlNo),
+                    "New Tooling / Localization" => completedNewToolingSet.Contains(imp.ControlNo),
+                    "Supplier Change / Localization" => completedNewToolingSet.Contains(imp.ControlNo),
+                    "Multiple Procurement / Localization" => completedNewToolingSet.Contains(imp.ControlNo),
+                    "Change Material" => completedChangeMaterialSet.Contains(imp.ControlNo),
+                    "Other 4M" => completedOther4MSet.Contains(imp.ControlNo),
+                    _ => false
+                };
 
-                    if (leadTime != null)
-                    {
-                        var deadline = latestProc.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
-                        resolvedStatus = deadline < today ? "Delay" : "Ongoing";
-                    }
-                    else
-                    {
-                        resolvedStatus = "Ongoing";
-                    }
-                }
+                // ── Status — identical helper call as Dashboard, guaranteed to match ──
+                string resolvedStatus = ActivityComputationHelper.ResolveStatus(
+                    isCompleted, latestLog, resolvedActivity,
+                    leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
                 // ── Remarks: pick from the latest process table ────
-                var remarks = GetLatestRemarks(imp.ControlNo, currentProcess,
+                var remarks = GetLatestRemarks(imp.ControlNo, displayCurrentProcess,
                     quotations, requestOrders, poIssuances, dfmApprovals,
                     fabrications, transfers, katakenSubs, katakenFinish,
                     deEvals, qaEvals, testRuns);
@@ -251,7 +262,7 @@ namespace PartsControlSystem.Controllers
                     Model = imp.Model,
                     Activity = resolvedActivity,
                     InputDate = imp.DateImported,
-                    CurrentProcess = currentProcess,
+                    CurrentProcess = displayCurrentProcess,
                     Remarks = remarks,
                     Status = resolvedStatus
                 };
@@ -314,20 +325,6 @@ namespace PartsControlSystem.Controllers
             if (entity == null) return null;
             var val = selector(entity);
             return string.IsNullOrWhiteSpace(val) ? null : val;
-        }
-
-        // ── Mirrors IsCompleted from TransactionLogsController ─────
-        private static bool IsCompleted(string? activity, string currentProcess)
-        {
-            if (string.IsNullOrWhiteSpace(currentProcess)) return false;
-
-            if (activity == "Renewal / Additional Mold")
-                return currentProcess == "MP2-PDC";
-
-            if (activity == "Change Material")
-                return currentProcess == "First Delivery Date";
-
-            return currentProcess == "Completed";
         }
     }
 }

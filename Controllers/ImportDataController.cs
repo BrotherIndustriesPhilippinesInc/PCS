@@ -104,47 +104,44 @@ namespace PartsControlSystem.Controllers
         {
             var entries = new List<ActivityCurrentProcess>();
 
-            // Renewal / Additional Mold
             if (data.RenewalAdditionalMold?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "Renewal"));
 
             if (data.NewToolingLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Tooling PO Issued Date"));
+                entries.Add(Make(data.ControlNo, "Tooling PO Issued Date", "Localization"));
 
-            // Supplier Change / Localization (Supplier Change category) → starts at Mold LOA
             if (data.SupplierChangeLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Mold LOA"));
+                entries.Add(Make(data.ControlNo, "Mold LOA", "SupplierChange"));
 
-            // Multiple Procurement / Localization → starts at Mold LOA
             if (data.MultipleProcurementLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Mold LOA"));
+                entries.Add(Make(data.ControlNo, "Mold LOA", "MultipleProcurement"));
 
-            // Other activities — update these when their flows are implemented
             if (data.TransferTooling?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "TransferTooling"));
 
             if (data.ChangeMaterial?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Material LOA"));
+                entries.Add(Make(data.ControlNo, "Material LOA", "ChangeMaterial"));
 
             if (data.NewModel?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "NewModel"));
 
             if (data.NonConcurrent?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval"));
+                entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "NonConcurrent"));
 
             if (data.Other4M?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
-                entries.Add(Make(data.ControlNo, "Test Run meeting date"));
+                entries.Add(Make(data.ControlNo, "Test Run meeting date", "Other4M"));
 
             return entries;
         }
 
-        private static ActivityCurrentProcess Make(string controlNo, string process) =>
-            new ActivityCurrentProcess
-            {
-                ControlNumber = controlNo,
-                CurrentProcess = process,
-                UpdateAt = DateTime.UtcNow
-            };
+        private static ActivityCurrentProcess Make(string controlNo, string process, string activityType) =>
+     new ActivityCurrentProcess
+     {
+         ControlNumber = controlNo,
+         CurrentProcess = process,
+         UpdateAt = DateTime.UtcNow,
+         ActivityType = activityType
+     };
 
         // ================================================================
         // HELPER: builds TransactionLog rows per selected activity
@@ -252,16 +249,18 @@ namespace PartsControlSystem.Controllers
                 var supplierMoldNo = reader.GetValue(6)?.ToString()?.Trim();
                 var biphMoldNo = reader.GetValue(7)?.ToString()?.Trim();
                 var toolingManagement = reader.GetValue(8)?.ToString()?.Trim();
-                var renewalAdditionalMold = reader.GetValue(9)?.ToString()?.Trim();
-                var newTooling = reader.GetValue(10)?.ToString()?.Trim();
-                var supplierChange = reader.GetValue(11)?.ToString()?.Trim();
-                var multipleProcurement = reader.GetValue(12)?.ToString()?.Trim(); // ← NEW column
-                var transferTooling = reader.GetValue(13)?.ToString()?.Trim();
-                var changeMaterial = reader.GetValue(14)?.ToString()?.Trim();
-                var newModel = reader.GetValue(15)?.ToString()?.Trim();
-                var nonConcurrent = reader.GetValue(16)?.ToString()?.Trim();
-                var other4m = reader.GetValue(17)?.ToString()?.Trim();
-                var reasonOfChange = reader.GetValue(18)?.ToString()?.Trim();
+                var toolingType = reader.GetValue(9)?.ToString()?.Trim();       // ← add
+                var toolingCategory = reader.GetValue(10)?.ToString()?.Trim();  // ← add
+                var renewalAdditionalMold = reader.GetValue(11)?.ToString()?.Trim();
+                var newTooling = reader.GetValue(12)?.ToString()?.Trim();
+                var supplierChange = reader.GetValue(13)?.ToString()?.Trim();
+                var multipleProcurement = reader.GetValue(14)?.ToString()?.Trim();
+                var transferTooling = reader.GetValue(15)?.ToString()?.Trim();
+                var changeMaterial = reader.GetValue(16)?.ToString()?.Trim();
+                var newModel = reader.GetValue(17)?.ToString()?.Trim();
+                var nonConcurrent = reader.GetValue(18)?.ToString()?.Trim();
+                var other4m = reader.GetValue(19)?.ToString()?.Trim();
+                var reasonOfChange = reader.GetValue(20)?.ToString()?.Trim();
 
                 // Skip blank rows
                 if (string.IsNullOrEmpty(motherMoldCode) && string.IsNullOrEmpty(partName) &&
@@ -283,6 +282,8 @@ namespace PartsControlSystem.Controllers
                     SupplierMoldNo = supplierMoldNo,
                     BIPHMoldNo = biphMoldNo,
                     ToolingManagement = toolingManagement,
+                    ToolingType = string.IsNullOrWhiteSpace(toolingType) ? "N/A" : toolingType,
+                    ToolingCategory = string.IsNullOrWhiteSpace(toolingCategory) ? "N/A" : toolingCategory,
                     RenewalAdditionalMold = IsYes(renewalAdditionalMold) ? "YES" : "NO",
                     NewToolingLocalization = IsYes(newTooling) ? "YES" : "NO",
                     SupplierChangeLocalization = IsYes(supplierChange) ? "YES" : "NO",
@@ -329,8 +330,8 @@ namespace PartsControlSystem.Controllers
                     item.SupplierChangeLocalization ??= "NO";
                     item.Other4M ??= "NO";
                     item.MultipleProcurementLocalization ??= "NO";
+                
                     item.DateImported = DateTime.UtcNow;
-
                     // Correct initial CurrentProcess per activity
                     var acpEntries = BuildActivityCurrentProcesses(item);
                     foreach (var acp in acpEntries)

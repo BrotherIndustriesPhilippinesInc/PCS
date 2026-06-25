@@ -208,6 +208,8 @@
                                         <th>Supplier Mold No.</th>
                                         <th>BIPH Mold No.</th>
                                         <th>Tooling Management</th>
+                                        <th>Tooling Type</th>
+                                        <th>Tooling Category</th>
                                         <th>Renewal / Additional Mold</th>
                                         <th>New Tooling / Localization</th>
                                         <th>Supplier Change / Localization</th>
@@ -450,7 +452,9 @@
                                     <td>${item.moldMaker ?? ''}</td>
                                     <td>${item.supplierMoldNo ?? ''}</td>
                                     <td>${item.biphMoldNo ?? ''}</td>
-                                    <td>${item.toolingManagement ?? ''}</td>
+                                   <td>${item.toolingManagement ?? ''}</td>
+                                    <td>${item.toolingType ?? ''}</td>
+                                    <td>${item.toolingCategory ?? ''}</td>
                                     <td>${item.renewalAdditionalMold ?? ''}</td>
                                     <td>${item.newToolingLocalization ?? ''}</td>
                                     <td>${item.supplierChangeLocalization ?? ''}</td>
@@ -498,16 +502,18 @@
                     SupplierMoldNo:                 cells[8].innerText.trim(),
                     BIPHMoldNo:                     cells[9].innerText.trim(),
                     ToolingManagement:              cells[10].innerText.trim(),
-                    RenewalAdditionalMold:          cells[11].innerText.trim(),
-                    NewToolingLocalization:         cells[12].innerText.trim(),
-                    SupplierChangeLocalization:     cells[13].innerText.trim(),
-                    MultipleProcurementLocalization: cells[14].innerText.trim(),
-                    TransferTooling:                cells[15].innerText.trim(),
-                    ChangeMaterial:                 cells[16].innerText.trim(),
-                    NewModel:                       cells[17].innerText.trim(),
-                    NonConcurrent:                  cells[18].innerText.trim(),
-                    Other4M:                        cells[19].innerText.trim(),
-                    ReasonOfChange:                 cells[20].innerText.trim()
+                    ToolingType:                    cells[11].innerText.trim(),
+                    ToolingCategory:                cells[12].innerText.trim(),
+                    RenewalAdditionalMold:          cells[13].innerText.trim(),
+                    NewToolingLocalization:         cells[14].innerText.trim(),
+                    SupplierChangeLocalization:     cells[15].innerText.trim(),
+                    MultipleProcurementLocalization: cells[16].innerText.trim(),
+                    TransferTooling:                cells[17].innerText.trim(),
+                    ChangeMaterial:                 cells[18].innerText.trim(),
+                    NewModel:                       cells[19].innerText.trim(),
+                    NonConcurrent:                  cells[20].innerText.trim(),
+                    Other4M:                        cells[21].innerText.trim(),
+                    ReasonOfChange:                 cells[22].innerText.trim()
                 };
             });
 

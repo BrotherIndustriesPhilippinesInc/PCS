@@ -35,7 +35,6 @@
 
   <ItemGroup>
     <Folder Include="AppFiles\4mforms\" />
-    <Folder Include="Helper\" />
     <Folder Include="PDFForms\" />
     <Folder Include="wwwroot\Tempates\" />
   </ItemGroup>

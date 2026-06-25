@@ -177,6 +177,7 @@
                 <option value="supplier">Supplier Change / Localization</option>
                 <option value="local">New Tooling / Localization</option>
                 <option value="change">Change Material</option>
+                <option value="o4m">Other 4M</option>
             </select>
             <label class="fw-semibold mb-0 ms-2">Search by</label>
             <select id="ddlSearchColumn" class="form-select form-select-sm" style="width:200px">
@@ -199,9 +200,9 @@
         @{
             var rRows = Model.RenewalRows;
         }
-        <div class="summary-card"><div class="card-label">Kataken Finish (Local Trial)</div><div class="card-circle circle-blue">@rRows.Count(r => r.KatakenFinishActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Submission (Local Trial)</div><div class="card-circle circle-green">@rRows.Count(r => r.KatakenSubActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-orange">@rRows.Count(r => r.TestRunActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Submission (Local Trial)</div><div class="card-circle circle-blue">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Finish (Local Trial)</div><div class="card-circle circle-green">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenFinish))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-orange">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_TestRun))</div></div>
         <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@rRows.Count</div></div>
     </div>
 
@@ -210,12 +211,12 @@
         @{
             var mRows = Model.MultipleProcurementRows;
         }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@mRows.Count(r => r.KatakenSubActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@mRows.Count(r => r.KatakenApprActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@mRows.Count(r => r.PPSActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@mRows.Count(r => r.TestRunPOReqActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@mRows.Count(r => r.TestRunSchedFinish == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@mRows.Count(r => r.TestRunApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenAppr))</div></div>
+        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_PPS))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunPOReq))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunSched))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunAppr))</div></div>
         <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@mRows.Count</div></div>
     </div>
 
@@ -224,13 +225,13 @@
         @{
             var sRows = Model.SupplierChangeRows;
         }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@sRows.Count(r => r.KatakenSubActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@sRows.Count(r => r.KatakenApprActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@sRows.Count(r => r.PPSActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@sRows.Count(r => r.TestRunPOReqActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@sRows.Count(r => r.TestRunSchedFinish == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@sRows.Count(r => r.TestRunApprActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@sRows.Count(r => r.FourMApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenAppr))</div></div>
+        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_PPS))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunPOReq))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunSched))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunAppr))</div></div>
+        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_FourMAppr))</div></div>
         <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@sRows.Count</div></div>
     </div>
 
@@ -239,12 +240,12 @@
         @{
             var lRows = Model.LocalizationRows;
         }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@lRows.Count(r => r.KatakenSubActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@lRows.Count(r => r.KatakenApprActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@lRows.Count(r => r.TestRunPOReqActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@lRows.Count(r => r.TestRunSchedFinish == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@lRows.Count(r => r.TestRunApprActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@lRows.Count(r => r.FourMApprActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenAppr))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunPOReq))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunSched))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunAppr))</div></div>
+        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_FourMAppr))</div></div>
         <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@lRows.Count</div></div>
     </div>
 
@@ -253,12 +254,33 @@
         @{
             var cRows = Model.ChangeMaterialRows;
         }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@cRows.Count(r => r.KatakenSubActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-teal">@cRows.Count(r => r.KatakenEvalActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">QA Evaluation</div><div class="card-circle circle-green">@cRows.Count(r => r.QAEvalActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@cRows.Count(r => r.DEEvalActual == null)</div></div>
-        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-purple">@cRows.Count(r => r.TestRunActual == null)</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-teal">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenEval))</div></div>
+        <div class="summary-card"><div class="card-label">QA Evaluation</div><div class="card-circle circle-green">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_QAEval))</div></div>
+        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_DEEval))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-purple">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_TestRun))</div></div>
         <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@cRows.Count</div></div>
+    </div>
+
+    <!-- OTHER 4M CARDS -->
+    <div id="cards-o4m" class="summary-cards" style="display:none">
+        @{
+            var oRows = Model.Other4MRows;
+        }
+        <div class="summary-card"><div class="card-label">Test Run Meeting Date</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunMeeting))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Request Date</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenRequest))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenSub))</div></div>
+        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenEval))</div></div>
+        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DEEval))</div></div>
+        <div class="summary-card"><div class="card-label">EE Evaluation</div><div class="card-circle circle-yellow">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_EEEval))</div></div>
+        <div class="summary-card"><div class="card-label">Special QA Evaluation</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_QAEval))</div></div>
+        <div class="summary-card"><div class="card-label">ITF Process</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_ITF))</div></div>
+        <div class="summary-card"><div class="card-label">Delivery PO Requisition</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DeliveryPO))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run PO Request</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunPO))</div></div>
+        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRun))</div></div>
+        <div class="summary-card"><div class="card-label">Implementation Date</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_Implementation))</div></div>
+        <div class="summary-card"><div class="card-label">First Delivery Date</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_FirstDelivery))</div></div>
+        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@oRows.Count</div></div>
     </div>
 
     <!-- ══ PANEL 1 — RENEWAL ══ -->
@@ -277,8 +299,8 @@
                         <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
                         <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
                         <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
-                        <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Kataken Finish (Local Trial)</th>
                         <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Kataken Submission (Local Trial)</th>
+                        <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Kataken Finish (Local Trial)</th>
                         <th colspan="3" class="text-white text-center fw-bold" style="background:#70ad47">Test Run</th>
                     </tr>
                     <tr>
@@ -301,12 +323,12 @@
                             <td>@row.Model</td>
                             <td>@row.PartCode</td>
                             <td style="background:#ffcdff!important">@row.PendingItems</td>
-                            <td class="text-center">@Fmt(row.KatakenFinishTarget)</td>
-                            <td class="text-center">@Fmt(row.KatakenFinishActual)</td>
-                            <td>@row.KatakenFinishRemarks</td>
                             <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
                             <td class="text-center">@Fmt(row.KatakenSubActual)</td>
                             <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenFinishTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenFinishActual)</td>
+                            <td>@row.KatakenFinishRemarks</td>
                             <td class="text-center">@Fmt(row.TestRunTarget)</td>
                             <td class="text-center">@Fmt(row.TestRunActual)</td>
                             <td>@row.TestRunRemarks</td>
@@ -608,6 +630,107 @@
             </table>
         </div>
     </div>
+
+    <!-- ══ PANEL 6 — OTHER 4M ══ -->
+    <div id="panel-o4m" class="activity-panel">
+        <div class="iqc-scroll">
+            <table id="tbl-o4m" class="iqc-table table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th rowspan="3" class="col-txn text-white text-center align-middle" style="background:#1f3864 !important">Transaction<br />Number</th>
+                        <th colspan="4" class="text-white text-center fw-bold" style="background:#00b0f0">Information</th>
+                        <th rowspan="3" class="col-pending text-white text-center align-middle fw-bold" style="background:#ff00ff">Pending<br />Items</th>
+                        <th colspan="39" class="text-center fw-bold" style="background:#2e75b6; color:#fff">Other 4M</th>
+                    </tr>
+                    <tr>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Tooling Type</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Category</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Model</th>
+                        <th rowspan="2" class="text-white text-center fw-bold" style="background:#00b0f0">Part Code</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Test Run Meeting Date</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Kataken Request Date</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Kataken PH Sample Submission</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Kataken Evaluation Approval</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">DE Evaluation</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">EE Evaluation</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Special QA Evaluation</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">ITF Process</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Delivery PO Requisition</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Test Run PO Request</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Test Run</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">Implementation Date</th>
+                        <th colspan="3" class="text-center fw-bold" style="background:#9dc3e6">First Delivery Date</th>
+                    </tr>
+                    <tr>
+                        @for (int i = 0; i < 13; i++)
+                        {
+                            <th class="text-center fw-semibold" style="background:#deeaf6 !important">Target</th>
+                            <th class="text-center fw-semibold" style="background:#deeaf6 !important">Actual</th>
+                            <th class="text-center fw-semibold" style="background:#deeaf6 !important">Remarks</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model.Other4MRows)
+                    {
+                        <tr data-txn="@row.TransactionNumber" data-type="@row.ToolingType" data-cat="@row.Category"
+                            data-part="@row.PartCode" data-model="@row.Model" data-pending="@row.PendingItems">
+                            <td class="col-txn">@row.TransactionNumber</td>
+                            <td>@row.ToolingType</td>
+                            <td>@row.Category</td>
+                            <td>@row.Model</td>
+                            <td>@row.PartCode</td>
+                            <td style="background:#ffcdff !important">@row.PendingItems</td>
+                            <td class="text-center">@Fmt(row.TestRunMeetingTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunMeetingActual)</td>
+                            <td>@row.TestRunMeetingRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenRequestTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenRequestActual)</td>
+                            <td>@row.KatakenRequestRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenSubTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenSubActual)</td>
+                            <td>@row.KatakenSubRemarks</td>
+                            <td class="text-center">@Fmt(row.KatakenEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.KatakenEvalActual)</td>
+                            <td>@row.KatakenEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.DEEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.DEEvalActual)</td>
+                            <td>@row.DEEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.EEEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.EEEvalActual)</td>
+                            <td>@row.EEEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.QAEvalTarget)</td>
+                            <td class="text-center">@Fmt(row.QAEvalActual)</td>
+                            <td>@row.QAEvalRemarks</td>
+                            <td class="text-center">@Fmt(row.ITFTarget)</td>
+                            <td class="text-center">@Fmt(row.ITFActual)</td>
+                            <td>@row.ITFRemarks</td>
+                            <td class="text-center">@Fmt(row.DeliveryPOTarget)</td>
+                            <td class="text-center">@Fmt(row.DeliveryPOActual)</td>
+                            <td>@row.DeliveryPORemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunPOTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunPOActual)</td>
+                            <td>@row.TestRunPORemarks</td>
+                            <td class="text-center">@Fmt(row.TestRunTarget)</td>
+                            <td class="text-center">@Fmt(row.TestRunActual)</td>
+                            <td>@row.TestRunRemarks</td>
+                            <td class="text-center">@Fmt(row.ImplementationTarget)</td>
+                            <td class="text-center">@Fmt(row.ImplementationActual)</td>
+                            <td>@row.ImplementationRemarks</td>
+                            <td class="text-center">@Fmt(row.FirstDeliveryTarget)</td>
+                            <td class="text-center">@Fmt(row.FirstDeliveryActual)</td>
+                            <td>@row.FirstDeliveryRemarks</td>
+                        </tr>
+                    }
+                    @if (!Model.Other4MRows.Any())
+                    {
+                        <tr><td colspan="45" class="text-center text-muted py-3">No data available.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 @functions {
@@ -615,8 +738,8 @@
 }
 
 <script>
-    const panelMap = { renewal:'panel-renewal', multi:'panel-multi', supplier:'panel-supplier', local:'panel-local', change:'panel-change' };
-    const cardMap  = { renewal:'cards-renewal', multi:'cards-multi', supplier:'cards-supplier', local:'cards-local', change:'cards-change' };
+       const panelMap = { renewal:'panel-renewal', multi:'panel-multi', supplier:'panel-supplier', local:'panel-local', change:'panel-change', o4m:'panel-o4m' };
+    const cardMap  = { renewal:'cards-renewal', multi:'cards-multi', supplier:'cards-supplier', local:'cards-local', change:'cards-change', o4m:'cards-o4m' };
 
     function switchActivity(val) {
         Object.values(panelMap).forEach(id => document.getElementById(id)?.classList.remove('active'));

@@ -81,6 +81,14 @@ namespace PartsControlSystem.Controllers
                             .ToListAsync();
                         return PartialView("Partials/Monitoring/_ChangeMaterialMonitoring", data);
                     }
+                case "Other 4M":
+                    {
+                        var data = await _dbContext.ViewOther4MMonitoring
+                            .AsNoTracking()
+                            .OrderBy(x => x.ControlNumber)
+                            .ToListAsync();
+                        return PartialView("Partials/Monitoring/_Other4MMonitoring", data);
+                    }
                 default:
                     return Content(@"
                 <div class='alert alert-info text-center mt-4'>
@@ -757,11 +765,19 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = nextProcess;
                 }
 
+                // SaveNewToolingLocalizationProcess — activity type comes from dto.ActivityName
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = nextProcess,
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = dto.ActivityName switch  // ← add
+                    {
+                        "New Tooling / Localization" => "Localization",
+                        "Supplier Change / Localization" => "SupplierChange",
+                        "Multiple Procurement / Localization" => "MultipleProcurement",
+                        _ => dto.ActivityName
+                    }
                 });
 
                 WriteTransactionLog(
@@ -906,11 +922,13 @@ namespace PartsControlSystem.Controllers
                     entity.InputBy = User.Identity?.Name ?? "SYSTEM";
                 }
 
+                // SaveChangeMaterialProcess
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = nextProcess,
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "ChangeMaterial"   // ← add
                 });
 
                 WriteTransactionLog(
@@ -984,11 +1002,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "Tooling Request-Order";
                 }
 
+                // SaveMP2ToolingQuotationRequestApprovalUpdate
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Tooling Request-Order",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1055,11 +1075,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "Tooling PO Issuance";
                 }
 
+                // SaveMP2ActivityUpdate
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Tooling PO Issuance",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1127,8 +1149,9 @@ namespace PartsControlSystem.Controllers
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
-                    CurrentProcess = "DFM/QCD Approval",
-                    UpdateAt = DateTime.UtcNow
+                    CurrentProcess = "DFM/QCD Approval",   // ✅ fixed
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1264,11 +1287,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "Tooling Transfer (Arrival in PH)";
                 }
 
+                // SaveMP2ToolingFabrication
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Tooling Transfer (Arrival in PH)",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1335,11 +1360,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "Kataken Submission (Local Trial)";
                 }
 
+                // SaveMP2ToolingTransfer
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Kataken Submission (Local Trial)",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1406,7 +1433,8 @@ namespace PartsControlSystem.Controllers
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Kataken Finish (Local Trial)",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← fix
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1471,11 +1499,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "DE Evaluation";
                 }
 
+                // SaveIQCKatakenFinish
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "DE Evaluation",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1544,11 +1574,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "QA Special Evaluation";
                 }
 
+                // SaveDEEvaluation
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "QA Special Evaluation",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1617,11 +1649,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "Test Run";
                 }
 
+                // SaveQASpecialEvaluation
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "Test Run",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -1688,11 +1722,13 @@ namespace PartsControlSystem.Controllers
                     entity.CurrentProcess = "MP2-PDC";
                 }
 
+                // SaveIQCTestRun
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = "MP2-PDC",
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Renewal"   // ← add
                 });
 
                 WriteTransactionLog(importData, activity,
@@ -2018,7 +2054,7 @@ namespace PartsControlSystem.Controllers
                         entity.TestRunPOIssuanceDate = ToUtc(dto.TestRunPOIssuanceDate);
                         break;
 
-                    case "TEST RUN":
+                    case "Test Run":
                         entity.TestRunNo = dto.TestRunNo;
                         entity.TestRunActualReceivedDate = ToUtc(dto.TestRunActualReceivedDate);
                         entity.TestRunActualFinishedDate = ToUtc(dto.TestRunActualFinishedDate);
@@ -2026,11 +2062,11 @@ namespace PartsControlSystem.Controllers
                         entity.TestRunRemarks = dto.TestRunRemarks ?? string.Empty;
                         break;
 
-                    case "IMPLEMENTATION DATE":
+                    case "Implementation Date":
                         entity.ImplementationDate = ToUtc(dto.ImplementationDate);
                         break;
 
-                    case "FIRST DELIVERY DATE":
+                    case "First Delivery Date":
                         entity.FirstDeliveryDate = ToUtc(dto.FirstDeliveryDate);
                         break;
 
@@ -2043,11 +2079,13 @@ namespace PartsControlSystem.Controllers
                 entity.InputBy = User.Identity?.Name ?? "SYSTEM";
                 entity.UpdateDate = DateTime.UtcNow;
 
+                // SaveOther4MProcess
                 _dbContext.ActivityCurrentProcesses.Add(new ActivityCurrentProcess
                 {
                     ControlNumber = dto.ControlNumber,
                     CurrentProcess = nextProcess,
-                    UpdateAt = DateTime.UtcNow
+                    UpdateAt = DateTime.UtcNow,
+                    ActivityType = "Other4M"   // ← add
                 });
 
                 WriteTransactionLog(
@@ -2078,7 +2116,7 @@ namespace PartsControlSystem.Controllers
             "EE Evaluation" => dto.EERemarks ?? string.Empty,
             "QA Evaluation" => dto.QARemarks ?? string.Empty,
             "ITF Process" => dto.ITFRemarks ?? string.Empty,
-            "TEST RUN" => dto.TestRunRemarks ?? string.Empty,
+            "Test Run" => dto.TestRunRemarks ?? string.Empty,
             _ => string.Empty
         };
     }

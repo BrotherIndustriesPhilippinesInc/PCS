@@ -19,5 +19,8 @@ namespace PartsControlSystem.Models
 
         [Column("is_delay")]
         public bool IsDelay { get; set; } = false;
+
+        [Column("activity_type")]
+        public string? ActivityType { get; set; }
     }
 }

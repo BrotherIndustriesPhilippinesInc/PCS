@@ -45,6 +45,10 @@ namespace PartsControlSystem.Controllers
                 ChangeMaterialSteps = await _context.ChangeMaterialProcessMappings
                     .OrderBy(x => x.StepOrder)
                     .ToListAsync(),
+
+                Other4MSteps = await _context.Other4MProcessMappings
+                    .OrderBy(x => x.StepOrder)
+                    .ToListAsync(),
             };
 
             return View(viewModel);
@@ -129,11 +133,29 @@ namespace PartsControlSystem.Controllers
             {
                 var record = await _context.ChangeMaterialProcessMappings.FindAsync(update.Id);
                 if (record != null)
-                    record.LeadTime = update.Value;
+                    record.LeadTime = (int)update.Value;
             }
 
             await _context.SaveChangesAsync();
             return Json(new { success = true, message = $"{updates.Count} Change Material lead time(s) saved." });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveAllOther4M([FromBody] List<LeadTimeUpdateDto> updates)
+        {
+            if (updates == null || !updates.Any())
+                return Json(new { success = false, message = "No data received." });
+
+            foreach (var update in updates)
+            {
+                var record = await _context.Other4MProcessMappings.FindAsync(update.Id);
+                if (record != null)
+                    record.LeadTimeDays = (int)update.Value;
+            }
+
+            await _context.SaveChangesAsync();
+            return Json(new { success = true, message = $"{updates.Count} Other 4M lead time(s) saved." });
         }
     }
 }

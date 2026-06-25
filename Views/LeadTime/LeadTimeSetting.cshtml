@@ -441,6 +441,10 @@
             <i class="fa-solid fa-rotate"></i> Change Material
             <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.ChangeMaterialSteps.Count</span>
         </button>
+        <button class="lt-tab-btn" onclick="switchTab('o4m', this)">
+            <i class="fa-solid fa-rotate"></i> Other 4M
+            <span class="badge bg-secondary ms-1" style="font-size:.7rem">@Model.Other4MSteps.Count</span>
+        </button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════
@@ -715,8 +719,62 @@
             </div>
         </div>
     </div>
-</div>
 
+    <!-- ═══════════════════════════════════════════════════════════
+             TAB 6 — OTHER 4M
+        ═══════════════════════════════════════════════════════════ -->
+    <div id="tab-o4m" class="lt-tab-pane">
+        <div class="lt-card">
+            <div class="lt-toolbar">
+                <div class="lt-toolbar-left">
+                    <span class="lt-count-badge" id="o4m-count">@Model.Other4MSteps.Count steps</span>
+                    <input type="text" class="lt-search" placeholder="Search step…"
+                           oninput="filterTable('o4m-tbody', this.value, 'o4m-count', @Model.Other4MSteps.Count)" />
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn-lt-reset" onclick="resetDirty('o4m-tbody', 'o4m')">
+                        <i class="fa-solid fa-xmark me-1"></i> Discard
+                    </button>
+                    <button class="btn-lt-save" id="btn-save-o4m" onclick="saveAll('o4m')">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+
+            <div class="lt-table-wrap">
+                <table class="lt-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Process Step</th>
+                            <th>Section</th>
+                            <th style="text-align:center">Lead Time (Days)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="o4m-tbody">
+                        @foreach (var item in Model.Other4MSteps)
+                        {
+                            var displayValue = item.LeadTimeDays ?? 0;
+                            <tr data-id="@item.Id" data-original="@displayValue" data-type="other4m">
+                                <td><span class="step-badge">@item.StepOrder</span></td>
+                                <td>@item.ProcessStep</td>
+                                <td><span class="section-pill">IQC</span></td>
+                                <td>
+                                    <div class="lt-input-wrap">
+                                        <input type="number" class="lt-input lt-val" min="0" step="0.5"
+                                               value="@displayValue"
+                                               onchange="markDirty(this)" />
+                                        <span class="lt-unit">days</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Toast container -->
 <div class="lt-toast-container" id="toastContainer"></div>
 
@@ -770,7 +828,7 @@
 
         // ── Bulk save ──────────────────────────────────────────────────
         async function saveAll(tabKey) {
-            const tbodyMap = { renewal: 'renewal-tbody', mp: 'mp-tbody', sc: 'sc-tbody', loc: 'loc-tbody', cm: 'cm-tbody' };
+            const tbodyMap = { renewal: 'renewal-tbody', mp: 'mp-tbody', sc: 'sc-tbody', loc: 'loc-tbody', cm: 'cm-tbody', o4m: 'o4m-tbody' };
             const tbody = document.getElementById(tbodyMap[tabKey]);
             const rows  = tbody.querySelectorAll('tr[data-id]');
 
@@ -791,14 +849,16 @@
             }
 
             // Determine endpoint
-            let endpoint;
-                if (tabKey === 'renewal') {
-                    endpoint = '/LeadTime/SaveAllRenewal';
-                } else if (tabKey === 'cm') {
-                    endpoint = '/LeadTime/SaveAllChangeMaterial';
-                } else {
-                    endpoint = '/LeadTime/SaveAllTooling';
-                }
+                let endpoint;
+                    if (tabKey === 'renewal') {
+                        endpoint = '/LeadTime/SaveAllRenewal';
+                    } else if (tabKey === 'cm') {
+                        endpoint = '/LeadTime/SaveAllChangeMaterial';
+                    } else if (tabKey === 'o4m') {
+                        endpoint = '/LeadTime/SaveAllOther4M';
+                    } else {
+                        endpoint = '/LeadTime/SaveAllTooling';
+                    }
             const saveBtn    = document.getElementById(`btn-save-${tabKey}`);
 
             saveBtn.disabled = true;
