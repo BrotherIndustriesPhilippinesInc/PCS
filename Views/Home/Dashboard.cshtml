@@ -32,6 +32,9 @@
 
 @Html.AntiForgeryToken()
 
+<!-- Add this anywhere in Dashboard.cshtml, outside any form -->
+<input type="hidden" id="notifySectionUrl" value="@Url.Action("NotifySection", "Home")" />
+
 <div class="card mb-4 shadow">
     <div class="card-header">
         <i class="fa-solid fa-table-list"></i>
@@ -204,44 +207,45 @@
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.btn-notify').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const section = this.dataset.section;
+           document.querySelectorAll('.btn-notify').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const section = this.dataset.section;
+            const url = document.getElementById('notifySectionUrl').value; // ← dynamic
 
-                Swal.fire({
-                    icon: 'question',
-                    title: 'Send Notification?',
-                    text: `Send delay notification email to section: ${section}?`,
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Notify',
-                    cancelButtonText: 'Cancel'
-                }).then(result => {
-                    if (!result.isConfirmed) return;
+            Swal.fire({
+                icon: 'question',
+                title: 'Send Notification?',
+                text: `Send delay notification email to section: ${section}?`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Notify',
+                cancelButtonText: 'Cancel'
+            }).then(result => {
+                if (!result.isConfirmed) return;
 
-                    fetch('/Home/NotifySection', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded',
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                        },
-                        body: `section=${encodeURIComponent(section)}`
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        Swal.fire({
-                            icon: data.success ? 'success' : 'error',
-                            title: data.success ? 'Sent!' : 'Failed',
-                            text: data.message,
-                            timer: 3000,
-                            showConfirmButton: false
-                        });
-                    })
-                    .catch(() => {
-                        Swal.fire({ icon: 'error', title: 'Error', text: 'Request failed.' });
+                fetch(url, {  // ← uses the razor-generated url
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: `section=${encodeURIComponent(section)}`
+                })
+                .then(r => r.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: data.success ? 'success' : 'error',
+                        title: data.success ? 'Sent!' : 'Failed',
+                        text: data.message,
+                        timer: 3000,
+                        showConfirmButton: false
                     });
+                })
+                .catch(() => {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'Request failed.' });
                 });
             });
         });
+    });
           (async function() {
           const viz = document.getElementById("tableau-viz");
 
