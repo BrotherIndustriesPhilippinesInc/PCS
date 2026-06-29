@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
 using PartsControlSystem.Helpers;
+using PartsControlSystem.Services;
 
 namespace PartsControlSystem.Controllers
 {
@@ -17,13 +18,15 @@ namespace PartsControlSystem.Controllers
         private readonly PostgreAppDbContext _postgreAppDbContext;
         private readonly SqlServerAppDbContext _sqlServerAppDbContext;
         private readonly SqlServerAppDbContextCas _sqlServerAppDbContextCas;
+        private readonly MailService _mailService;
 
-        public HomeController(ILogger<HomeController> logger, PostgreAppDbContext postgreAppDbContext, SqlServerAppDbContext sqlServerAppDbContext, SqlServerAppDbContextCas sqlServerAppDbContextCas)
+        public HomeController(ILogger<HomeController> logger, PostgreAppDbContext postgreAppDbContext, SqlServerAppDbContext sqlServerAppDbContext, SqlServerAppDbContextCas sqlServerAppDbContextCas, MailService mailService)  
         {
             _logger = logger;
             _sqlServerAppDbContext = sqlServerAppDbContext;
             _postgreAppDbContext = postgreAppDbContext;
             _sqlServerAppDbContextCas = sqlServerAppDbContextCas;
+            _mailService = mailService;
         }
 
         [Authorize]
@@ -177,6 +180,141 @@ namespace PartsControlSystem.Controllers
             ViewBag.SelectedEndDate = endDate;
 
             return View();
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> NotifySection(string section)
+        {
+            if (string.IsNullOrWhiteSpace(section))
+                return Json(new { success = false, message = "Section is required." });
+
+            if (!SectionEmails.TryGetValue(section, out var email))
+                return Json(new { success = false, message = $"No email configured for section: {section}" });
+
+            // ── Recompute delay details for this section ──────────────────────────
+            var allData = await _postgreAppDbContext.ImportDatas.ToListAsync();
+            var leadTimes = await _postgreAppDbContext.LeadTimes.ToListAsync();
+            var other4MMappings = await _postgreAppDbContext.Other4MProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _postgreAppDbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var newToolingMappings = await _postgreAppDbContext.NewToolingProcessMappings.ToListAsync();
+
+            var latestLogsPerActivity = await _postgreAppDbContext.TransactionLogs
+                .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                .ToListAsync();
+
+            var today = DateTime.UtcNow;
+
+            var activitySelectors = new List<(string Name, Func<ImportData, string> Selector)>
+    {
+        ("Renewal / Additional Mold",           x => x.RenewalAdditionalMold),
+        ("New Tooling / Localization",           x => x.NewToolingLocalization),
+        ("Supplier Change / Localization",       x => x.SupplierChangeLocalization),
+        ("Multiple Procurement / Localization",  x => x.MultipleProcurementLocalization),
+        ("Transfer Tooling",                     x => x.TransferTooling),
+        ("Change Material",                      x => x.ChangeMaterial),
+        ("New Model",                            x => x.NewModel),
+        ("Non-Concurrent",                       x => x.NonConcurrent),
+        ("Other 4M",                             x => x.Other4M),
+    };
+
+            var sectionData = allData.Where(x => (x.Section ?? "N/A") == section).ToList();
+
+            // Build delay rows for email table
+            var delayRows = new List<(string ControlNo, string Activity, string CurrentProcess, int DaysLate)>();
+
+            foreach (var record in sectionData)
+            {
+                foreach (var (activityName, selector) in activitySelectors)
+                {
+                    if (!string.Equals(selector(record)?.Trim(), "YES", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
+                        record.ControlNo, activityName, latestLogsPerActivity);
+
+                    if (latestLog == null) continue;
+
+                    var leadTimeDays = ActivityComputationHelper.ResolveLeadTimeDays(
+                        activityName, latestLog.CurrentProcess,
+                        leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings);
+
+                    if (leadTimeDays == null || leadTimeDays <= 0) continue;
+                    if (latestLog.InputDate == null) continue;
+
+                    var deadline = latestLog.InputDate.Value.AddDays(leadTimeDays.Value);
+                    if (deadline < today)
+                    {
+                        int daysLate = (int)(today - deadline).TotalDays;
+                        delayRows.Add((record.ControlNo, activityName, latestLog.CurrentProcess, daysLate));
+                    }
+                }
+            }
+
+            if (!delayRows.Any())
+                return Json(new { success = false, message = $"No delay items found for section {section}." });
+
+            // ── Build email ───────────────────────────────────────────────────────
+            var tableRows = string.Join("", delayRows.Select((r, i) => $@"
+        <tr>
+            <td style='text-align:center;'>{i + 1}</td>
+            <td style='text-align:center;'>{r.ControlNo}</td>
+            <td>{r.Activity}</td>
+            <td>{r.CurrentProcess}</td>
+            <td style='text-align:center;color:red;font-weight:bold;'>{r.DaysLate} day(s)</td>
+        </tr>"));
+
+            string subject = $"[PCS] Delayed Items Notification – Section {section} ({DateTime.Now:yyyy-MM-dd})";
+
+            string body = $@"
+        <p>Dear <strong>{section}</strong> Section,</p>
+
+        <p>Good day!</p>
+
+        <p>
+            This is to inform you that the following parts under your section
+            have <strong style='color:red;'>exceeded their lead time</strong>
+            and are currently marked as <strong>DELAYED</strong>.
+        </p>
+
+        <p>Please find the details below:</p>
+
+        <table border='1' cellpadding='8' cellspacing='0'
+               style='border-collapse:collapse;width:100%;font-family:Arial;font-size:13px;'>
+            <thead>
+                <tr style='background-color:#f2f2f2;'>
+                    <th>#</th>
+                    <th>Control No.</th>
+                    <th>Activity</th>
+                    <th>Current Process</th>
+                    <th>Days Delayed</th>
+                </tr>
+            </thead>
+            <tbody>
+                {tableRows}
+            </tbody>
+        </table>
+
+        <br/>
+
+        <p>
+            Kindly coordinate with the responsible PIC to resolve the delays at the soonest possible time.
+        </p>
+
+        <p>Thank you.</p>
+
+        <br/>
+
+        <p>
+            <strong>Parts Control System Notification</strong><br/>
+            <i>This is a system-generated email. Please do not reply.</i>
+        </p>";
+
+            await _mailService.SendEmailAsync(email, subject, body);
+
+            return Json(new { success = true, message = $"Notification sent to section {section}." });
         }
 
         // ── Helper ───────────────────────────────────────────────────────────────────
@@ -337,5 +475,21 @@ namespace PartsControlSystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        private static readonly Dictionary<string, string> SectionEmails = new()
+        {
+            ["DE"] = "johncarlo.asi@brother-biph.com.ph",
+            ["IQC"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP2"] = "johncarlo.asi@brother-biph.com.ph",
+            ["QA"] = "johncarlo.asi@brother-biph.com.ph",
+            ["SQC"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP1-PUR"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP2-TOOLING"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP2-DOM"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP2-TOOL"] = "johncarlo.asi@brother-biph.com.ph",
+            ["PC-DCI"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP2-OVR"] = "johncarlo.asi@brother-biph.com.ph",
+            ["MP1"] = "johncarlo.asi@brother-biph.com.ph",
+        };
     }
 }

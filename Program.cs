@@ -51,6 +51,8 @@ builder.Services.AddAuthentication("MyCookieAuth")
         options.SlidingExpiration = true;
     });
 
+builder.Services.AddHostedService<StatusSyncBackgroundService>();
+
 var app = builder.Build();
 
 // Configure pipeline

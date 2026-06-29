@@ -51,7 +51,7 @@
         const OTHER4M_ACTIVITIES = ['Other 4M']
 
         // ── On page load ────────────────────────────────────────────────────
-        document.addEventListener("DOMContentLoaded", () => {
+                document.addEventListener("DOMContentLoaded", () => {
             const params       = new URLSearchParams(window.location.search);
             const activityName = params.get('activityName');
 
@@ -60,13 +60,14 @@
             }
 
             if (NEW_TOOLING_ACTIVITIES.includes(activityName)) {
-                } else if (CHANGE_MATERIAL_ACTIVITIES.includes(activityName)) {
-                    loadChangeMaterialProcesses();
-                } else if (OTHER4M_ACTIVITIES.includes(activityName)) {
-                    loadOther4MProcesses();
-                } else {
-                    loadProcessesBySection();
-                }
+                loadProcessesByActivity(activityName);   // ← ADD THIS — was missing
+            } else if (CHANGE_MATERIAL_ACTIVITIES.includes(activityName)) {
+                loadChangeMaterialProcesses();
+            } else if (OTHER4M_ACTIVITIES.includes(activityName)) {
+                loadOther4MProcesses();
+            } else {
+                loadProcessesBySection();
+            }
         });
 
         // ── Renewal path: load from LeadTimes by section ────────────────────

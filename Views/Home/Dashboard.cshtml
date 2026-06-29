@@ -30,6 +30,8 @@
     };
 }
 
+@Html.AntiForgeryToken()
+
 <div class="card mb-4 shadow">
     <div class="card-header">
         <i class="fa-solid fa-table-list"></i>
@@ -192,19 +194,83 @@
     }
 </div>
 
+<div class="border border-dark border-5">
+    <script type='module' src='https://bi.datalake.brother.co.jp/javascripts/api/tableau.embedding.3.latest.min.js'></script>
+    <div class="h-100 w-100">
+        <tableau-viz id='tableau-viz' src='https://bi.datalake.brother.co.jp/t/biph/views/PartsControlSystemStatus/Dashboard1/55f04bda-8fe1-4c61-b493-4e5cfdc8b355/05a8c1c5-c0d6-4572-b4c7-e9af26119d75' width="100%" height="100vh" hide-tabs toolbar='bottom'></tableau-viz>
+    </div>
+</div>
+<script type="module" src="https://embedding.tableau.com/api/tableau.embedding.3.latest.min.js"></script>
+
 @section Scripts {
     <script>
         document.querySelectorAll('.btn-notify').forEach(btn => {
             btn.addEventListener('click', function () {
                 const section = this.dataset.section;
+
                 Swal.fire({
-                    icon: 'info',
-                    title: 'Notify Section',
-                    text: `Notification sent to section: ${section}`,
-                    timer: 2000,
-                    showConfirmButton: false
+                    icon: 'question',
+                    title: 'Send Notification?',
+                    text: `Send delay notification email to section: ${section}?`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Yes, Notify',
+                    cancelButtonText: 'Cancel'
+                }).then(result => {
+                    if (!result.isConfirmed) return;
+
+                    fetch('/Home/NotifySection', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: `section=${encodeURIComponent(section)}`
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        Swal.fire({
+                            icon: data.success ? 'success' : 'error',
+                            title: data.success ? 'Sent!' : 'Failed',
+                            text: data.message,
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                    })
+                    .catch(() => {
+                        Swal.fire({ icon: 'error', title: 'Error', text: 'Request failed.' });
+                    });
                 });
             });
         });
+          (async function() {
+          const viz = document.getElementById("tableau-viz");
+
+            async function refreshTableauVizData() {
+              swal.fire({
+                title: "Refreshing Tableau Data...",
+                allowOutsideClick: false,
+                didOpen: () => {
+                  swal.showLoading();
+                }
+              });
+
+              try {
+                await viz.refreshDataAsync();
+                swal.close();
+
+                console.log("Tableau data refreshed successfully");
+              } catch (e) {
+                console.error("Tableau refresh failed:", e);
+                swal.fire("Error", "Failed to refresh Tableau data.", "error");
+              }
+            }
+
+            // Example: auto refresh every 5 minutes
+            setInterval(refreshTableauVizData, 5 * 60 * 1000);
+
+            // Or manual button
+            window.refreshTableauVizData = refreshTableauVizData;
+        })();
+
     </script>
 }

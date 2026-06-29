@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.DTO;
+using PartsControlSystem.Helpers;
 using PartsControlSystem.Models;
 using PartsControlSystem.Services;
 using PartsControlSystem.ViewModels;
@@ -131,9 +132,17 @@ namespace PartsControlSystem.Controllers
 
             var today = DateTime.UtcNow;
             var leadTimes = await _dbContext.LeadTimes.ToListAsync();
-            var allCurrentProcesses = await _dbContext.ActivityCurrentProcesses.ToListAsync();
+            var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
+            var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
+            var other4MMappings = await _dbContext.Other4MProcessMappings.ToListAsync();
 
-            int GetDelayCount(Func<ImportData, string> activitySelector, Func<string, bool> isCompleted)
+            // Single source of truth — same as Dashboard/AllPartsData/TransactionLogs
+            var latestLogsPerActivity = await _dbContext.TransactionLogs
+                .GroupBy(x => new { x.TransactionNumber, x.Activity })
+                .Select(g => g.OrderByDescending(x => x.InputDate).First())
+                .ToListAsync();
+
+            int GetDelayCount(string activityName, Func<ImportData, string> activitySelector, Func<string, bool> isCompleted)
             {
                 var activityRecords = data
                     .Where(x => activitySelector(x)
@@ -146,22 +155,16 @@ namespace PartsControlSystem.Controllers
                 {
                     if (isCompleted(record.ControlNo)) continue;
 
-                    var currentProcess = allCurrentProcesses
-                        .Where(acp => acp.ControlNumber == record.ControlNo)
-                        .OrderByDescending(acp => acp.UpdateAt)
-                        .FirstOrDefault();
+                    var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
+                        record.ControlNo, activityName, latestLogsPerActivity);
 
-                    if (currentProcess == null) continue;
+                    var status = ActivityComputationHelper.ResolveStatus(
+                        isCompleted: false,
+                        latestLog,
+                        activityName,
+                        leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
-                    var leadTime = leadTimes
-                        .FirstOrDefault(lt => lt.Activity == currentProcess.CurrentProcess);
-
-                    if (leadTime == null) continue;
-
-                    var deadline = currentProcess.UpdateAt.AddDays((double)leadTime.LeadTimeValue);
-
-                    if (deadline < today)
-                        delayCount++;
+                    if (status == "Delay") delayCount++;
                 }
 
                 return delayCount;
@@ -174,6 +177,7 @@ namespace PartsControlSystem.Controllers
                     ActivityName  = "Renewal / Additional Mold",
                     SectionCounts = GetSectionCounts(x => x.RenewalAdditionalMold),
                     TotalDelay    = GetDelayCount(
+                        "Renewal / Additional Mold",
                         x => x.RenewalAdditionalMold,
                         controlNo => _dbContext.IQCTestRuns.Any(x => x.ControlNumber == controlNo))
                 },
@@ -182,6 +186,7 @@ namespace PartsControlSystem.Controllers
                     ActivityName  = "New Tooling / Localization",
                     SectionCounts = GetSectionCounts(x => x.NewToolingLocalization),
                     TotalDelay    = GetDelayCount(
+                        "New Tooling / Localization",
                         x => x.NewToolingLocalization,
                         controlNo => _dbContext.NewToolingLocalizationProcesses
                             .Any(x => x.ControlNumber == controlNo && x.CurrentProcess == "Completed"))
@@ -191,6 +196,7 @@ namespace PartsControlSystem.Controllers
                     ActivityName  = "Supplier Change / Localization",
                     SectionCounts = GetSectionCounts(x => x.SupplierChangeLocalization),
                     TotalDelay    = GetDelayCount(
+                        "Supplier Change / Localization",
                         x => x.SupplierChangeLocalization,
                         controlNo => _dbContext.NewToolingLocalizationProcesses
                             .Any(x => x.ControlNumber == controlNo && x.CurrentProcess == "Completed"))
@@ -200,28 +206,37 @@ namespace PartsControlSystem.Controllers
                     ActivityName  = "Multiple Procurement / Localization",
                     SectionCounts = GetSectionCounts(x => x.MultipleProcurementLocalization),
                     TotalDelay    = GetDelayCount(
+                        "Multiple Procurement / Localization",
                         x => x.MultipleProcurementLocalization,
                         controlNo => _dbContext.NewToolingLocalizationProcesses
                             .Any(x => x.ControlNumber == controlNo && x.CurrentProcess == "Completed"))
                 },
                 new ActivityCardViewModel { ActivityName = "Transfer Tooling", SectionCounts = GetSectionCounts(x => x.TransferTooling), TotalDelay = 0 },
 
-                // ── Change Material — now with real delay count ──────────────
                 new ActivityCardViewModel
-{
+                {
                     ActivityName  = "Change Material",
                     SectionCounts = GetSectionCounts(x => x.ChangeMaterial),
                     TotalDelay    = GetDelayCount(
+                        "Change Material",
                         x => x.ChangeMaterial,
-                        controlNo => _dbContext.ActivityCurrentProcesses
-                            .Any(x => x.ControlNumber == controlNo
-                                   && x.CurrentProcess == "First Delivery Date"))  // ← CORRECT
+                        controlNo => _dbContext.ChangeMaterialProcesses
+                            .Any(x => x.ControlNumber == controlNo && x.ProcessStep == "First Delivery Date"))
                 },
-                // ─────────────────────────────────────────────────────────────
 
                 new ActivityCardViewModel { ActivityName = "New Model",      SectionCounts = GetSectionCounts(x => x.NewModel),      TotalDelay = 0 },
                 new ActivityCardViewModel { ActivityName = "Non-Concurrent", SectionCounts = GetSectionCounts(x => x.NonConcurrent), TotalDelay = 0 },
-                new ActivityCardViewModel { ActivityName = "Other 4M",       SectionCounts = GetSectionCounts(x => x.Other4M),       TotalDelay = 0 }
+
+                new ActivityCardViewModel
+                {
+                    ActivityName  = "Other 4M",
+                    SectionCounts = GetSectionCounts(x => x.Other4M),
+                    TotalDelay    = GetDelayCount(
+                        "Other 4M",
+                        x => x.Other4M,
+                        controlNo => _dbContext.Other4MProcesses
+                            .Any(x => x.ControlNumber == controlNo && x.FirstDeliveryDate != null))
+                }
             };
 
             ViewBag.TotalEntries = totalEntries;
