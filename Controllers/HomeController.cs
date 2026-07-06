@@ -266,7 +266,7 @@ namespace PartsControlSystem.Controllers
             <td style='text-align:center;color:red;font-weight:bold;'>{r.DaysLate} day(s)</td>
         </tr>"));
 
-            string subject = $"[PCS] Delayed Items Notification – Section {section} ({DateTime.Now:yyyy-MM-dd})";
+            string subject = $"[PCS] Follow-up on Pending Parts Status – {section} Section ({DateTime.Now:yyyy-MM-dd})";
 
             string body = $@"
         <p>Dear <strong>{section}</strong> Section,</p>
@@ -274,12 +274,13 @@ namespace PartsControlSystem.Controllers
         <p>Good day!</p>
 
         <p>
+            This is a kind reminder to provide the latest status of the pending parts.
             This is to inform you that the following parts under your section
             have <strong style='color:red;'>exceeded their lead time</strong>
             and are currently marked as <strong>DELAYED</strong>.
         </p>
 
-        <p>Please find the details below:</p>
+        <p>Please find the details below for the list of parts requiring your update.:</p>
 
         <table border='1' cellpadding='8' cellspacing='0'
                style='border-collapse:collapse;width:100%;font-family:Arial;font-size:13px;'>
@@ -300,7 +301,10 @@ namespace PartsControlSystem.Controllers
         <br/>
 
         <p>
-            Kindly coordinate with the responsible PIC to resolve the delays at the soonest possible time.
+            We would appreciate it if you could update the status at your earliest convenience 
+            to help us monitor the progress and maintain the project schedule.
+            Thank you for your continued support. We look forward to your prompt response.
+
         </p>
 
         <p>Thank you.</p>
@@ -308,7 +312,7 @@ namespace PartsControlSystem.Controllers
         <br/>
 
         <p>
-            <strong>Parts Control System Notification</strong><br/>
+            <strong>Parts Control System </strong><br/>
             <i>This is a system-generated email. Please do not reply.</i>
         </p>";
 
