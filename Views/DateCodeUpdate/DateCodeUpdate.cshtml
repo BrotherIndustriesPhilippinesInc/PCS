@@ -21,7 +21,7 @@
     }
 
     .dcu-page {
-        padding: 24px 28px;
+        padding: 0 28px 20px;
         min-height: 100vh;
     }
 
@@ -509,113 +509,6 @@
         .dcu-input[readonly] {
             background: var(--pcs-bg);
         }
-
-    .dcu-toast-wrap {
-        position: fixed;
-        top: 18px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .dcu-toast {
-        background: var(--pcs-white);
-        border-radius: var(--pcs-radius);
-        padding: 11px 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,.18);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 270px;
-        font-size: .85rem;
-        font-weight: 500;
-        color: var(--pcs-text);
-        border-left: 4px solid var(--pcs-success);
-        animation: toastIn .22s ease;
-    }
-
-        .dcu-toast.error {
-            border-left-color: var(--pcs-danger);
-        }
-
-        .dcu-toast.warn {
-            border-left-color: var(--pcs-warn);
-        }
-
-        .dcu-toast.success i {
-            color: var(--pcs-success);
-        }
-
-        .dcu-toast.error i {
-            color: var(--pcs-danger);
-        }
-
-        .dcu-toast.warn i {
-            color: var(--pcs-warn);
-        }
-
-    @@keyframes toastIn {
-        from {
-            transform: translateX(50px);
-            opacity: 0;
-        }
-
-        to {
-            transform: none;
-            opacity: 1;
-        }
-    }
-
-    .dcu-modal-bd {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,.45);
-        z-index: 1050;
-        align-items: center;
-        justify-content: center;
-    }
-
-        .dcu-modal-bd.open {
-            display: flex;
-        }
-
-    .dcu-modal {
-        background: var(--pcs-white);
-        border-radius: var(--pcs-radius);
-        padding: 28px 32px;
-        max-width: 400px;
-        width: 90%;
-        box-shadow: 0 10px 40px rgba(0,0,0,.22);
-        text-align: center;
-    }
-
-        .dcu-modal > i {
-            font-size: 2.4rem;
-            color: var(--pcs-danger);
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .dcu-modal h5 {
-            margin: 0 0 8px;
-            font-weight: 700;
-            color: var(--pcs-navy);
-        }
-
-        .dcu-modal p {
-            color: var(--pcs-muted);
-            font-size: .87rem;
-            margin-bottom: 20px;
-        }
-
-    .dcu-modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: center;
-    }
 </style>
 
 <div class="dcu-page">
@@ -669,7 +562,7 @@
             <option value="motherMoldCode">Mother Mold Code</option>
             <option value="childPartcode">Child Part Code</option>
             <option value="partName">Part Name</option>
-           
+
         </select>
         <div class="dcu-search-wrap">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -736,333 +629,347 @@
     </div>
 </div>
 
-<!-- Delete modal -->
-<div class="dcu-modal-bd" id="deleteModal">
-    <div class="dcu-modal">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <h5>Confirm Delete</h5>
-        <p id="deleteModalMsg">Are you sure you want to delete the selected records?</p>
-        <div class="dcu-modal-actions">
-            <button class="btn-pcs btn-pcs-danger" onclick="executeDelete()">
-                <i class="fa-solid fa-trash"></i> Yes, Delete
-            </button>
-            <button class="btn-pcs btn-pcs-navy" onclick="closeModal()">
-                <i class="fa-solid fa-xmark"></i> Cancel
-            </button>
-        </div>
-    </div>
-</div>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div class="dcu-toast-wrap" id="toastWrap"></div>
+    <script>
+        let allRows      = [];
+        let filteredRows = [];
+        let selectedIds  = new Set();
+        let pendingDel   = [];
+        let editingId    = null;
+        let editingField = null;
+        let currentPage  = 1;
+        let pageSize     = 10;
+        let sortCol      = 'controlNo';
+        let sortDir      = 'asc';
 
-<script>
-    let allRows      = [];
-    let filteredRows = [];
-    let selectedIds  = new Set();
-    let pendingDel   = [];
-    let editingId    = null;
-    let editingField = null;
-    let currentPage  = 1;
-    let pageSize     = 10;
-    let sortCol      = 'controlNo';
-    let sortDir      = 'asc';
-
-    /* ── INIT ── */
-    document.addEventListener('DOMContentLoaded', loadAll);
-
-    async function loadAll() {
-        try {
-            const res  = await fetch('/DateCodeUpdate/GetAll');
-            const data = await res.json();
-            if (data.success) { allRows = data.data; applyFilter(); }
-            else showToast('Failed to load records.', 'error');
-        } catch(e) { showToast('Network error loading records.', 'error'); }
-        finally {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('tableWrap').style.display    = '';
-        }
-    }
-
-    /* ── FILTER ── */
-    function applyFilter() {
-        const col     = document.getElementById('searchBy').value;
-        const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
-
-        filteredRows = !keyword ? [...allRows]
-            : col
-                ? allRows.filter(r => (r[col] ?? '').toString().toLowerCase().includes(keyword))
-                : allRows.filter(r => Object.values(r).some(v => (v ?? '').toString().toLowerCase().includes(keyword)));
-
-        const badge = document.getElementById('filterBadge');
-        if (keyword) {
-            badge.style.display = '';
-            badge.textContent   = `(${filteredRows.length} of ${allRows.length} shown)`;
-        } else { badge.style.display = 'none'; }
-
-        currentPage = 1;
-        applySort();
-    }
-
-    /* ── SORT ── */
-    function sortBy(col) {
-        if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-        else { sortCol = col; sortDir = 'asc'; }
-        applySort();
-    }
-    function applySort() {
-        filteredRows = [...filteredRows].sort((a, b) => {
-            const av = (a[sortCol] ?? '').toString().toLowerCase();
-            const bv = (b[sortCol] ?? '').toString().toLowerCase();
-            return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-        });
-        document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
-        const ico = document.getElementById('sort-' + sortCol);
-        if (ico) {
-            ico.closest('th').classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-            ico.className = `fa-solid ${sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} sort-ico`;
-        }
-        renderTable();
-    }
-
-    /* ── PAGINATION ── */
-    function onPageSizeChange() { pageSize = parseInt(document.getElementById('pageSize').value); currentPage = 1; renderTable(); }
-    function goPage(p) { currentPage = p; renderTable(); }
-
-    /* ── RENDER ── */
-    function renderTable() {
-        const tbody    = document.getElementById('resultsTbody');
-        const total    = filteredRows.length;
-        const pages    = Math.max(1, Math.ceil(total / pageSize));
-        currentPage    = Math.min(currentPage, pages);
-        const start    = (currentPage - 1) * pageSize;
-        const pageRows = filteredRows.slice(start, start + pageSize);
-
-        document.getElementById('showingText').textContent = total === 0
-            ? 'Showing 0 records'
-            : `Showing ${start + 1} to ${Math.min(start + pageSize, total)} of ${total} record${total !== 1 ? 's' : ''}`;
-
-        if (!pageRows.length) {
-            tbody.innerHTML = `<tr><td colspan="12"><div class="dcu-empty">
-                <i class="fa-solid fa-inbox"></i>
-                <p>${allRows.length === 0 ? 'No records found.' : 'No records match your filter.'}</p>
-            </div></td></tr>`;
-            renderPagination(0, 1); return;
-        }
-
-        tbody.innerHTML = pageRows.map(r => {
-            const checked  = selectedIds.has(r.id) ? 'checked' : '';
-            const rowCls   = selectedIds.has(r.id) ? 'row-selected' : '';
-            const dateDisp = r.dateImported ? new Date(r.dateImported).toLocaleDateString('en-PH') : '—';
-            const dateIso  = r.dateImported ? new Date(r.dateImported).toISOString().split('T')[0] : '';
-
-            return `<tr class="${rowCls}" data-id="${r.id}">
-                    <td class="center"> <input type="checkbox" class="row-check" ${checked} onchange="toggleRow(${r.id}, '${esc2(r.activity)}', this)" /></td>
-                <td><strong style="font-size:.79rem">${esc(r.controlNo)}</strong></td>
-                <td><span class="pill-activity">${esc(r.activity)}</span></td>
-                <td>
-                    <span class="code-tag" onclick="openUpdate(${r.id},'mother','${esc2(r.motherMoldCode)}')" title="Edit Mother Mold Code">
-                        ${esc(r.motherMoldCode)}<i class="fa-solid fa-pen-line"></i>
-                    </span>
-                </td>
-                <td>
-                    <span class="code-tag" onclick="openUpdate(${r.id},'child','${esc2(r.childPartcode)}')" title="Edit Child Part Code">
-                        ${esc(r.childPartcode)}<i class="fa-solid fa-pen-line"></i>
-                    </span>
-                </td>
-                <td class="cell-trunc" title="${esc(r.partName)}">${esc(r.partName)}</td>
-                <td>${esc(r.model)}</td>
-                <td class="cell-trunc" title="${esc(r.supplier)}">${esc(r.supplier)}</td>
-                <td><span class="pill-section">${esc(r.section)}</span></td>
-                <td>${esc(r.toolingType)}</td>
-                <td class="cell-trunc" title="${esc(r.reasonOfChange)}">${esc(r.reasonOfChange)}</td>
-                <td>
-                    <span class="date-tag" onclick="openUpdate(${r.id},'date','${dateIso}')" title="Edit Date Imported">
-                        <i class="fa-regular fa-calendar"></i>
-                        ${dateDisp}<i class="fa-solid fa-pen-line"></i>
-                    </span>
-                </td>
-            </tr>`;
-        }).join('');
-        renderPagination(total, pages);
-        syncSelectAll();
-    }
-
-    function renderPagination(total, pages) {
-        const pg = document.getElementById('pagination');
-        if (total === 0) { pg.innerHTML = ''; return; }
-        let html = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Previous</button>`;
-        let s = Math.max(1, currentPage - 2), e = Math.min(pages, s + 4);
-        s = Math.max(1, e - 4);
-        for (let i = s; i <= e; i++)
-            html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
-        html += `<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next</button>`;
-        pg.innerHTML = html;
-    }
-
-    /* ── SELECTION ── */
-      // ── Store selected rows as {id, activity} pairs instead of just ids ──
-    let selectedRows = new Map(); // key = "id_activity", value = {id, activity}
-
-    function toggleRow(id, activity, cb) {
-        const key = `${id}_${activity}`;
-        if (cb.checked) {
-            selectedRows.set(key, { id, activity });
-        } else {
-            selectedRows.delete(key);
-        }
-        cb.closest('tr').classList.toggle('row-selected', cb.checked);
-        syncSelectAll();
-        updateSelectionUI();
-    }
-
-    function toggleSelectAll(cb) {
-        const start    = (currentPage - 1) * pageSize;
-        const pageRows = filteredRows.slice(start, start + pageSize);
-
-        pageRows.forEach(r => {
-            const key = `${r.id}_${r.activity}`;
-            if (cb.checked) selectedRows.set(key, { id: r.id, activity: r.activity });
-            else selectedRows.delete(key);
-        });
-
-        document.querySelectorAll('#resultsTbody .row-check').forEach((c, i) => {
-            c.checked = cb.checked;
-            c.closest('tr').classList.toggle('row-selected', cb.checked);
-        });
-        updateSelectionUI();
-    }
-
-    function syncSelectAll() {
-        const checks = [...document.querySelectorAll('#resultsTbody .row-check')];
-        document.getElementById('selectAll').checked =
-            checks.length > 0 && checks.every(c => c.checked);
-    }
-
-    function updateSelectionUI() {
-        document.getElementById('btnDelete').disabled = selectedRows.size === 0;
-    }
-
-    function confirmDelete() {
-        if (!selectedRows.size) return;
-        pendingDel = [...selectedRows.values()];
-        document.getElementById('deleteModalMsg').textContent =
-            `Are you sure you want to delete ${pendingDel.length} selected activity row(s)? This cannot be undone.`;
-        document.getElementById('deleteModal').classList.add('open');
-    }
-
-        function closeModal() {
-        document.getElementById('deleteModal').classList.remove('open');
-    }
-
-    async function executeDelete() {
-        const itemsToDelete = [...pendingDel];
-        pendingDel = [];
-        closeModal();
-        try {
-            const res  = await fetch('/DateCodeUpdate/DeleteSelected', {
-                method:  'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body:    JSON.stringify(itemsToDelete) // [{id, activity}, ...]
-            });
-            const data = await res.json();
-            if (data.success) {
-                // Remove deleted rows from allRows in memory
-                itemsToDelete.forEach(item => {
-                    const key = `${item.id}_${item.activity}`;
-                    selectedRows.delete(key);
-                    // Remove from allRows — match by both id and activity
-                    const idx = allRows.findIndex(r => r.id === item.id && r.activity === item.activity);
-                    if (idx !== -1) allRows.splice(idx, 1);
-                });
-                applyFilter();
-                updateSelectionUI();
-                showToast(data.message, 'success');
-            } else {
-                showToast(data.message || 'Delete failed.', 'error');
-            }
-        } catch (e) {
-            showToast('Network error.', 'error');
-        }
-    }
-    /* ── UPDATE (code or date) ── */
-    function openUpdate(id, field, current) {
-        editingId = id; editingField = field;
-
-        const isDate    = field === 'date';
-        const codeInput = document.getElementById('updateNewCode');
-        const dateInput = document.getElementById('updateNewDate');
-
-        codeInput.style.display = isDate ? 'none' : '';
-        dateInput.style.display = isDate ? ''     : 'none';
-
-        const labels = { mother: '— Mother Mold Code', child: '— Child Part Code', date: '— Date Imported' };
-        const titles = { mother: 'Update Correct Part Code', child: 'Update Correct Part Code', date: 'Update Date Imported' };
-        document.getElementById('updatePanelTitle').textContent = titles[field];
-        document.getElementById('updatePanelField').textContent = labels[field];
-        document.getElementById('updateNewLabel').textContent   = isDate ? 'New Date' : 'New Code';
-
-        document.getElementById('updateRecordId').value    = id;
-        document.getElementById('updateCurrentCode').value = isDate
-            ? (current ? new Date(current).toLocaleDateString('en-PH') : '—')
-            : current || '';
-
-        codeInput.value = '';
-        dateInput.value = isDate ? (current || '') : '';
-
-        document.getElementById('updatePanel').classList.add('visible');
-        (isDate ? dateInput : codeInput).focus();
-        document.getElementById('updatePanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
-    }
-
-    function cancelUpdate() {
-        editingId = null; editingField = null;
-        document.getElementById('updatePanel').classList.remove('visible');
-    }
-
-    async function doUpdateCode() {
-        const isDate = editingField === 'date';
-        const newVal = isDate
-            ? document.getElementById('updateNewDate').value.trim()
-            : document.getElementById('updateNewCode').value.trim();
-
-        if (!newVal)    { showToast(`Please enter a new ${isDate ? 'date' : 'code'}.`, 'warn'); return; }
-        if (!editingId) { showToast('No record selected.', 'warn'); return; }
-
-        const endpointMap = {
-            mother: '/DateCodeUpdate/UpdateMoldCode',
-            child:  '/DateCodeUpdate/UpdatePartCode',
-            date:   '/DateCodeUpdate/UpdateDate'
+        /* ── API ENDPOINTS ── */
+        /* window.appBaseUrl is set in _Layout.cshtml via @Url.Content("~/"),
+           so this resolves correctly whether the app is hosted at root or in an IIS sub-application/virtual path */
+        const API = {
+            getAll:         `${window.appBaseUrl}DateCodeUpdate/GetAll`,
+            deleteSelected: `${window.appBaseUrl}DateCodeUpdate/DeleteSelected`,
+            updateMoldCode: `${window.appBaseUrl}DateCodeUpdate/UpdateMoldCode`,
+            updatePartCode: `${window.appBaseUrl}DateCodeUpdate/UpdatePartCode`,
+            updateDate:     `${window.appBaseUrl}DateCodeUpdate/UpdateDate`
         };
 
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
-        try {
-            const res  = await fetch(endpointMap[editingField], {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
-                body: JSON.stringify({ id: editingId, newPartCode: newVal })
-            });
-            const data = await res.json();
-            if (data.success) {
-                const row = allRows.find(r => r.id === editingId);
-                if (row) {
-                    if      (editingField === 'mother') row.motherMoldCode = data.newPartCode;
-                    else if (editingField === 'child')  row.childPartcode  = data.newPartCode;
-                    else if (editingField === 'date')   row.dateImported   = data.newPartCode;
-                }
-                applyFilter(); cancelUpdate(); showToast(data.message, 'success');
-            } else { showToast(data.message || 'Update failed.', 'error'); }
-        } catch(e) { showToast('Network error.', 'error'); }
-    }
+        /* ── INIT ── */
+        document.addEventListener('DOMContentLoaded', loadAll);
 
-    /* ── HELPERS ── */
-    function esc(v)  { return (v ?? '—').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-    function esc2(v) { return (v ?? '').toString().replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
-    function showToast(msg, type = 'success') {
-        const icons = { success:'fa-circle-check', error:'fa-circle-xmark', warn:'fa-circle-exclamation' };
-        const t = document.createElement('div');
-        t.className = `dcu-toast ${type}`;
-        t.innerHTML = `<i class="fa-solid ${icons[type]}"></i> <span>${msg}</span>`;
-        document.getElementById('toastWrap').appendChild(t);
-        setTimeout(() => t.remove(), 3800);
-    }
-</script>
+        async function loadAll() {
+            try {
+                const res  = await fetch(API.getAll);
+                const data = await res.json();
+                if (data.success) { allRows = data.data; applyFilter(); }
+                else showToast('Failed to load records.', 'error');
+            } catch(e) { showToast('Network error loading records.', 'error'); }
+            finally {
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('tableWrap').style.display    = '';
+            }
+        }
+
+        /* ── FILTER ── */
+        function applyFilter() {
+            const col     = document.getElementById('searchBy').value;
+            const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
+
+            filteredRows = !keyword ? [...allRows]
+                : col
+                    ? allRows.filter(r => (r[col] ?? '').toString().toLowerCase().includes(keyword))
+                    : allRows.filter(r => Object.values(r).some(v => (v ?? '').toString().toLowerCase().includes(keyword)));
+
+            const badge = document.getElementById('filterBadge');
+            if (keyword) {
+                badge.style.display = '';
+                badge.textContent   = `(${filteredRows.length} of ${allRows.length} shown)`;
+            } else { badge.style.display = 'none'; }
+
+            currentPage = 1;
+            applySort();
+        }
+
+        /* ── SORT ── */
+        function sortBy(col) {
+            if (sortCol === col) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            else { sortCol = col; sortDir = 'asc'; }
+            applySort();
+        }
+        function applySort() {
+            filteredRows = [...filteredRows].sort((a, b) => {
+                const av = (a[sortCol] ?? '').toString().toLowerCase();
+                const bv = (b[sortCol] ?? '').toString().toLowerCase();
+                return sortDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+            });
+            document.querySelectorAll('thead th').forEach(th => th.classList.remove('sorted-asc','sorted-desc'));
+            const ico = document.getElementById('sort-' + sortCol);
+            if (ico) {
+                ico.closest('th').classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                ico.className = `fa-solid ${sortDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down'} sort-ico`;
+            }
+            renderTable();
+        }
+
+        /* ── PAGINATION ── */
+        function onPageSizeChange() { pageSize = parseInt(document.getElementById('pageSize').value); currentPage = 1; renderTable(); }
+        function goPage(p) { currentPage = p; renderTable(); }
+
+        /* ── RENDER ── */
+        function renderTable() {
+            const tbody    = document.getElementById('resultsTbody');
+            const total    = filteredRows.length;
+            const pages    = Math.max(1, Math.ceil(total / pageSize));
+            currentPage    = Math.min(currentPage, pages);
+            const start    = (currentPage - 1) * pageSize;
+            const pageRows = filteredRows.slice(start, start + pageSize);
+
+            document.getElementById('showingText').textContent = total === 0
+                ? 'Showing 0 records'
+                : `Showing ${start + 1} to ${Math.min(start + pageSize, total)} of ${total} record${total !== 1 ? 's' : ''}`;
+
+            if (!pageRows.length) {
+                tbody.innerHTML = `<tr><td colspan="12"><div class="dcu-empty">
+                    <i class="fa-solid fa-inbox"></i>
+                    <p>${allRows.length === 0 ? 'No records found.' : 'No records match your filter.'}</p>
+                </div></td></tr>`;
+                renderPagination(0, 1); return;
+            }
+
+            tbody.innerHTML = pageRows.map(r => {
+                const checked  = selectedIds.has(r.id) ? 'checked' : '';
+                const rowCls   = selectedIds.has(r.id) ? 'row-selected' : '';
+                const dateDisp = r.dateImported ? new Date(r.dateImported).toLocaleDateString('en-PH') : '—';
+                const dateIso  = r.dateImported ? new Date(r.dateImported).toISOString().split('T')[0] : '';
+
+                return `<tr class="${rowCls}" data-id="${r.id}">
+                        <td class="center"> <input type="checkbox" class="row-check" ${checked} onchange="toggleRow(${r.id}, '${esc2(r.activity)}', this)" /></td>
+                    <td><strong style="font-size:.79rem">${esc(r.controlNo)}</strong></td>
+                    <td><span class="pill-activity">${esc(r.activity)}</span></td>
+                    <td>
+                        <span class="code-tag" onclick="openUpdate(${r.id},'mother','${esc2(r.motherMoldCode)}')" title="Edit Mother Mold Code">
+                            ${esc(r.motherMoldCode)}<i class="fa-solid fa-pen-line"></i>
+                        </span>
+                    </td>
+                    <td>
+                        <span class="code-tag" onclick="openUpdate(${r.id},'child','${esc2(r.childPartcode)}')" title="Edit Child Part Code">
+                            ${esc(r.childPartcode)}<i class="fa-solid fa-pen-line"></i>
+                        </span>
+                    </td>
+                    <td class="cell-trunc" title="${esc(r.partName)}">${esc(r.partName)}</td>
+                    <td>${esc(r.model)}</td>
+                    <td class="cell-trunc" title="${esc(r.supplier)}">${esc(r.supplier)}</td>
+                    <td><span class="pill-section">${esc(r.section)}</span></td>
+                    <td>${esc(r.toolingType)}</td>
+                    <td class="cell-trunc" title="${esc(r.reasonOfChange)}">${esc(r.reasonOfChange)}</td>
+                    <td>
+                        <span class="date-tag" onclick="openUpdate(${r.id},'date','${dateIso}')" title="Edit Date Imported">
+                            <i class="fa-regular fa-calendar"></i>
+                            ${dateDisp}<i class="fa-solid fa-pen-line"></i>
+                        </span>
+                    </td>
+                </tr>`;
+            }).join('');
+            renderPagination(total, pages);
+            syncSelectAll();
+        }
+
+        function renderPagination(total, pages) {
+            const pg = document.getElementById('pagination');
+            if (total === 0) { pg.innerHTML = ''; return; }
+            let html = `<button class="pg-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>Previous</button>`;
+            let s = Math.max(1, currentPage - 2), e = Math.min(pages, s + 4);
+            s = Math.max(1, e - 4);
+            for (let i = s; i <= e; i++)
+                html += `<button class="pg-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+            html += `<button class="pg-btn" onclick="goPage(${currentPage+1})" ${currentPage===pages?'disabled':''}>Next</button>`;
+            pg.innerHTML = html;
+        }
+
+        /* ── SELECTION ── */
+          // ── Store selected rows as {id, activity} pairs instead of just ids ──
+        let selectedRows = new Map(); // key = "id_activity", value = {id, activity}
+
+        function toggleRow(id, activity, cb) {
+            const key = `${id}_${activity}`;
+            if (cb.checked) {
+                selectedRows.set(key, { id, activity });
+            } else {
+                selectedRows.delete(key);
+            }
+            cb.closest('tr').classList.toggle('row-selected', cb.checked);
+            syncSelectAll();
+            updateSelectionUI();
+        }
+
+        function toggleSelectAll(cb) {
+            const start    = (currentPage - 1) * pageSize;
+            const pageRows = filteredRows.slice(start, start + pageSize);
+
+            pageRows.forEach(r => {
+                const key = `${r.id}_${r.activity}`;
+                if (cb.checked) selectedRows.set(key, { id: r.id, activity: r.activity });
+                else selectedRows.delete(key);
+            });
+
+            document.querySelectorAll('#resultsTbody .row-check').forEach((c, i) => {
+                c.checked = cb.checked;
+                c.closest('tr').classList.toggle('row-selected', cb.checked);
+            });
+            updateSelectionUI();
+        }
+
+        function syncSelectAll() {
+            const checks = [...document.querySelectorAll('#resultsTbody .row-check')];
+            document.getElementById('selectAll').checked =
+                checks.length > 0 && checks.every(c => c.checked);
+        }
+
+        function updateSelectionUI() {
+            document.getElementById('btnDelete').disabled = selectedRows.size === 0;
+        }
+
+        /* ── DELETE (SweetAlert2 confirm + result modal) ── */
+        function confirmDelete() {
+            if (!selectedRows.size) return;
+            pendingDel = [...selectedRows.values()];
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Confirm Delete',
+                text: `Are you sure you want to delete ${pendingDel.length} selected activity row(s)? This cannot be undone.`,
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#e53935',
+                cancelButtonColor: '#1a2332'
+            }).then(result => {
+                if (result.isConfirmed) executeDelete();
+                else pendingDel = [];
+            });
+        }
+
+        async function executeDelete() {
+            const itemsToDelete = [...pendingDel];
+            pendingDel = [];
+            try {
+                const res  = await fetch(API.deleteSelected, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(itemsToDelete) // [{id, activity}, ...]
+                });
+                const data = await res.json();
+                if (data.success) {
+                    // Remove deleted rows from allRows in memory
+                    itemsToDelete.forEach(item => {
+                        const key = `${item.id}_${item.activity}`;
+                        selectedRows.delete(key);
+                        // Remove from allRows — match by both id and activity
+                        const idx = allRows.findIndex(r => r.id === item.id && r.activity === item.activity);
+                        if (idx !== -1) allRows.splice(idx, 1);
+                    });
+                    applyFilter();
+                    updateSelectionUI();
+                    showToast(data.message || 'Selected record(s) deleted successfully.', 'success');
+                } else {
+                    showToast(data.message || 'Delete failed.', 'error');
+                }
+            } catch (e) {
+                showToast('Network error.', 'error');
+            }
+        }
+        /* ── UPDATE (code or date) ── */
+        function openUpdate(id, field, current) {
+            editingId = id; editingField = field;
+
+            const isDate    = field === 'date';
+            const codeInput = document.getElementById('updateNewCode');
+            const dateInput = document.getElementById('updateNewDate');
+
+            codeInput.style.display = isDate ? 'none' : '';
+            dateInput.style.display = isDate ? ''     : 'none';
+
+            const labels = { mother: '— Mother Mold Code', child: '— Child Part Code', date: '— Date Imported' };
+            const titles = { mother: 'Update Correct Part Code', child: 'Update Correct Part Code', date: 'Update Date Imported' };
+            document.getElementById('updatePanelTitle').textContent = titles[field];
+            document.getElementById('updatePanelField').textContent = labels[field];
+            document.getElementById('updateNewLabel').textContent   = isDate ? 'New Date' : 'New Code';
+
+            document.getElementById('updateRecordId').value    = id;
+            document.getElementById('updateCurrentCode').value = isDate
+                ? (current ? new Date(current).toLocaleDateString('en-PH') : '—')
+                : current || '';
+
+            codeInput.value = '';
+            dateInput.value = isDate ? (current || '') : '';
+
+            document.getElementById('updatePanel').classList.add('visible');
+            (isDate ? dateInput : codeInput).focus();
+            document.getElementById('updatePanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+        }
+
+        function cancelUpdate() {
+            editingId = null; editingField = null;
+            document.getElementById('updatePanel').classList.remove('visible');
+        }
+
+        async function doUpdateCode() {
+            const isDate = editingField === 'date';
+            const newVal = isDate
+                ? document.getElementById('updateNewDate').value.trim()
+                : document.getElementById('updateNewCode').value.trim();
+
+            if (!newVal)    { showToast(`Please enter a new ${isDate ? 'date' : 'code'}.`, 'warn'); return; }
+            if (!editingId) { showToast('No record selected.', 'warn'); return; }
+
+            const endpointMap = {
+                mother: API.updateMoldCode,
+                child:  API.updatePartCode,
+                date:   API.updateDate
+            };
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+            try {
+                const res  = await fetch(endpointMap[editingField], {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ id: editingId, newPartCode: newVal })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const row = allRows.find(r => r.id === editingId);
+                    if (row) {
+                        if      (editingField === 'mother') row.motherMoldCode = data.newPartCode;
+                        else if (editingField === 'child')  row.childPartcode  = data.newPartCode;
+                        else if (editingField === 'date')   row.dateImported   = data.newPartCode;
+                    }
+                    applyFilter(); cancelUpdate();
+                    showToast(data.message || 'Record updated successfully.', 'success');
+                } else { showToast(data.message || 'Update failed.', 'error'); }
+            } catch(e) { showToast('Network error.', 'error'); }
+        }
+
+        /* ── HELPERS ── */
+        function esc(v)  { return (v ?? '—').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function esc2(v) { return (v ?? '').toString().replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+        /* ── Notification helper (SweetAlert2 modal) ── */
+        function showToast(msg, type = 'success') {
+            const config = {
+                success: { icon: 'success', title: 'Success' },
+                error:   { icon: 'error',   title: 'Error' },
+                warn:    { icon: 'warning', title: 'Notice' }
+            };
+            const { icon, title } = config[type] || config.success;
+
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: msg,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#1a2332'
+            });
+        }
+    </script>
+}

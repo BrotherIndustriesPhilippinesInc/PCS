@@ -14,17 +14,22 @@
     <link rel="stylesheet" href="~/css/4mStyle.css" asp-append-version="true" />
 
     <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
 
     <!-- Toastr CSS + JS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    
+
+    <!-- Base URL for AJAX calls — resolves correctly whether app is hosted at root or in an IIS sub-application/virtual path -->
+    <script>
+        window.appBaseUrl = '@Url.Content("~/")';
+    </script>
+
 </head>
 
 
@@ -41,7 +46,7 @@
         <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
             <!-- Navbar Brand-->
             <a class="navbar-brand ps-3" asp-controller="Home" asp-action="Index">
-                <img class="system-logo" src="~/images/PCS-logo.png" alt="Parts Control System" />    
+                <img class="system-logo" src="~/images/PCS-logo.png" alt="Parts Control System" />
             </a>
 
             <!-- Sidebar Toggle-->
@@ -68,7 +73,7 @@
                             <div class="nav">
                                 <div class="sb-sidenav-menu-heading">Module</div>
 
-                                <a class="nav-link"  asp-controller="Home" asp-action="Dashboard">
+                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">
                                     <div class="sb-nav-link-icon text-light"><i class="fas fa-tachometer-alt"></i></div>
                                     Dashboard
                                 </a>
@@ -78,10 +83,10 @@
                                     Import File
                                 </a>
 
-                                
+
                                 <li class="nav-item">
                                     <a class="nav-link  d-flex justify-content-between align-items-center"
-                                    href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                       href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
                                         <span>
                                             <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
                                             Update Per Activity
@@ -126,7 +131,7 @@
 
                                 <li class="nav-item">
                                     <a class="nav-link  justify-content-between align-items-center"
-                                    href="#fourMFormDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                       href="#fourMFormDropdown" data-bs-toggle="collapse" aria-expanded="false">
                                         <span>
                                             <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
                                             4M Form
@@ -160,7 +165,7 @@
                                 {
                                     <li class="nav-item">
                                         <a class="nav-link  d-flex justify-content-between align-items-center "
-                                        href="#AdminDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                           href="#AdminDropdown" data-bs-toggle="collapse" aria-expanded="false">
                                             <span>
                                                 <i class="fa-solid fa-user-lock text-light"></i>
                                                 Admin Access
@@ -193,77 +198,77 @@
                                     </li>
                                 }
 
-                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                        Authentication
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="login.html">Login</a> 
-                                            <a class="nav-link" href="register.html">Register</a>
-                                            <a class="nav-link" href="password.html">Forgot Password</a>
-                                        </nav>
-                                    </div>
-                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                        Error
-                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                    </a>
-                                    <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                        <nav class="sb-sidenav-menu-nested nav">
-                                            <a class="nav-link" href="401.html">401 Page</a>
-                                            <a class="nav-link" href="404.html">404 Page</a>
-                                            <a class="nav-link" href="500.html">500 Page</a>
-                                        </nav>
-                                    </div>
-                                </nav>
-                            </div>
+                                <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                                            Authentication
+                                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                        </a>
+                                        <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                            <nav class="sb-sidenav-menu-nested nav">
+                                                <a class="nav-link" href="login.html">Login</a>
+                                                <a class="nav-link" href="register.html">Register</a>
+                                                <a class="nav-link" href="password.html">Forgot Password</a>
+                                            </nav>
+                                        </div>
+                                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                            Error
+                                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                        </a>
+                                        <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                            <nav class="sb-sidenav-menu-nested nav">
+                                                <a class="nav-link" href="401.html">401 Page</a>
+                                                <a class="nav-link" href="404.html">404 Page</a>
+                                                <a class="nav-link" href="500.html">500 Page</a>
+                                            </nav>
+                                        </div>
+                                    </nav>
+                                </div>
 
                                 <a class="nav-link" asp-controller="DateCodeUpdate" asp-action="DateCodeUpdate">
                                     <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
                                     Updating of Dates / Part Codes
                                 </a>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="sb-sidenav-footer">
-                        <div class="small">Date: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
+                        <div class="sb-sidenav-footer">
+                            <div class="small">Date: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
 
-                        @* Display logged-in user *@
-                        @{
-                            string userName = User.Identity.IsAuthenticated
+                            @* Display logged-in user *@
+                            @{
+                                string userName = User.Identity.IsAuthenticated
                                 ? User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown"
                                 : "Guest";
 
-                            string userSection = User.Identity.IsAuthenticated
+                                string userSection = User.Identity.IsAuthenticated
                                 ? User.FindFirst("Section")?.Value ?? ""
                                 : "";
-                        }
+                            }
 
-                        <div>User: @userName - @userSection</div>
-                    </div>
-                </nav>
-            </div>
-            }
-            
-            <div id="layoutSidenav_content" style="background-color: #FFF;">
-                <main class="mb-4">
-                    <div class="container-fluid px-4">
-                        <h5 class="mt-4 mb-4">@ViewData["Title"]</h5>
-                        @* <ol class="breadcrumb mb-4"> *@
-                        @*     <li class="breadcrumb-item active">@ViewData["Title"]</li> *@
-                        @* </ol> *@
-
-                        <div class="container-fluid">
-                            <main role="main" class="pb-3">
-                                @RenderBody()
-                            </main>
+                            <div>User: @userName - @userSection</div>
                         </div>
-                    </div>
-                </main>
+                    </nav>
+                </div>
+                }
+
+                <div id="layoutSidenav_content" style="background-color: #FFF;">
+                    <main class="mb-4">
+                        <div class="container-fluid px-4">
+                            <h5 class="mt-4 mb-4">@ViewData["Title"]</h5>
+                            @* <ol class="breadcrumb mb-4"> *@
+                            @*     <li class="breadcrumb-item active">@ViewData["Title"]</li> *@
+                            @* </ol> *@
+
+                            <div class="container-fluid">
+                                <main role="main" class="pb-3">
+                                    @RenderBody()
+                                </main>
+                            </div>
+                        </div>
+                    </main>
+                </div>
             </div>
-        </div>
         }
         else
         {
@@ -279,19 +284,19 @@
         <!--  NO SIDEBAR, BODY ONLY -->
         @RenderBody()
     }
-    
+
     <footer class="d-flex align-items-center justify-content-end pt-3 bg-light footer-fix">
-            <p class="small"><i>&copy; 2026 Brother Industries (Philippines) Inc. | Developed by: BPS Developer</i></p>
+        <p class="small"><i>&copy; 2026 Brother Industries (Philippines) Inc. | Developed by: BPS Developer</i></p>
     </footer>
 
-    
+
     @* built in script *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-@*     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script> *@
+    @*     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script> *@
     <script src="~/assets/js/scripts.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
     @* <script src="~/assets/demo/chart-area-demo.js"></script> *@

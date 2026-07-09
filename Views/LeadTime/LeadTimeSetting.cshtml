@@ -1,6 +1,6 @@
 ﻿@model PartsControlSystem.ViewModels.LeadTimeSettingViewModel
 @{
-    // ViewData["Title"] = "Lead Time Setting";
+    ViewData["Title"] = "Lead Time Setting";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -21,8 +21,7 @@
 
     /* ── Page shell ── */
     .lt-page {
-        padding: 24px 28px;
-        background: var(--lt-bg);
+        padding: 0 28px 20px;
         min-height: 100vh;
     }
 
@@ -48,8 +47,8 @@
 
     .lt-header h4 {
         margin: 0;
-        color: var(--lt-primary);
-        font-weight: 700;
+        color: black;
+        /* font-weight: 700; */
         font-size: 1.25rem;
     }
 
@@ -324,61 +323,6 @@
             color: var(--lt-danger);
         }
 
-    /* ── Toast ── */
-    .lt-toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .lt-toast {
-        background: white;
-        border-radius: var(--lt-radius);
-        padding: 12px 18px;
-        box-shadow: 0 4px 20px rgba(0,0,0,.18);
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        min-width: 280px;
-        font-size: .875rem;
-        font-weight: 500;
-        border-left: 4px solid var(--lt-success);
-        animation: slideIn .25s ease;
-        color: var(--lt-text);
-    }
-
-        .lt-toast.error {
-            border-left-color: var(--lt-danger);
-        }
-
-        .lt-toast i {
-            font-size: 1rem;
-        }
-
-        .lt-toast.success i {
-            color: var(--lt-success);
-        }
-
-        .lt-toast.error i {
-            color: var(--lt-danger);
-        }
-
-    @@keyframes slideIn {
-        from {
-            transform: translateX(60px);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
     /* ── Changed row highlight ── */
     @@keyframes rowFlash {
         0% {
@@ -410,14 +354,6 @@
 </style>
 
 <div class="lt-page">
-    <!-- Header -->
-    <div class="lt-header">
-        <div class="lt-header-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-        <div>
-            <h4>Lead Time Setting</h4>
-            <p>Configure lead time (days) for each process step across all categories</p>
-        </div>
-    </div>
 
     <!-- Tab Nav -->
     <div class="lt-tabs">
@@ -775,9 +711,9 @@
         </div>
     </div>
 </div>
-<!-- Toast container -->
-<div class="lt-toast-container" id="toastContainer"></div>
 
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         // ── Tab switching ──────────────────────────────────────────────
@@ -844,7 +780,7 @@
             });
 
             if (!updates.length) {
-                showToast('Nothing to save.', false, 'info');
+                showToast('There is no data to save.', false, 'nodata');
                 return;
             }
 
@@ -889,10 +825,10 @@
                     });
                     showToast(data.message, true);
                 } else {
-                    showToast(data.message || 'Save failed.', false);
+                    showToast(data.message || 'Save failed.', false, 'error');
                 }
             } catch (err) {
-                showToast('Network error. Please try again.', false);
+                showToast('Network error. Please try again.', false, 'error');
                 console.error(err);
             } finally {
                 saveBtn.disabled = false;
@@ -900,22 +836,34 @@
             }
         }
 
-        // ── Toast helper ───────────────────────────────────────────────
+        // ── Notification helper (SweetAlert2 modal) ─────────────────────
         function showToast(message, success = true, type = null) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const isSuccess = type === 'info' ? null : success;
+            let icon, title;
 
-            toast.className = `lt-toast ${type === 'info' ? '' : (success ? 'success' : 'error')}`;
+            if (type === 'info') {
+                icon  = 'info';
+                title = 'Info';
+            } else if (type === 'nodata') {
+                icon  = 'warning';
+                title = 'No Data';
+            } else if (type === 'error') {
+                icon  = 'error';
+                title = 'Error';
+            } else if (success) {
+                icon  = 'success';
+                title = 'Success';
+            } else {
+                icon  = 'warning';
+                title = 'Notice';
+            }
 
-            let icon = success
-                ? '<i class="fa-solid fa-circle-check"></i>'
-                : '<i class="fa-solid fa-circle-xmark"></i>';
-            if (type === 'info') icon = '<i class="fa-solid fa-circle-info" style="color:var(--lt-primary)"></i>';
-
-            toast.innerHTML = `${icon} <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3500);
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: message,
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#1a3c5e'
+            });
         }
     </script>
-
+}

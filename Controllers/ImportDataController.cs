@@ -157,7 +157,7 @@ namespace PartsControlSystem.Controllers
         ("New Model",                           x => x.NewModel,                        "Tooling Quotation Request~Approval"),
         ("Non-Concurrent",                      x => x.NonConcurrent,                   "Tooling Quotation Request~Approval"),
         ("Supplier Change / Localization",      x => x.SupplierChangeLocalization,      "Mold LOA"),
-        ("Other 4M",                            x => x.Other4M,                         "Testing Run meeting date"),
+        ("Other 4M",                            x => x.Other4M,                         "Test Run meeting date"),
         ("Multiple Procurement / Localization", x => x.MultipleProcurementLocalization, "Mold LOA"),
     };
 

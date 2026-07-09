@@ -24,11 +24,6 @@ namespace PartsControlSystem.Controllers
                  .Select(g => g.OrderByDescending(x => x.InputDate).First())
                  .ToListAsync();
 
-            var latestProcesses = await _dbContext.ActivityCurrentProcesses
-                .GroupBy(x => x.ControlNumber)
-                .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
-                .ToListAsync();
-
             var leadTimes = await _dbContext.LeadTimes.ToListAsync();
             var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
             var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
@@ -39,10 +34,9 @@ namespace PartsControlSystem.Controllers
                 .OrderByDescending(x => x.InputDate)
                 .Select(x =>
                 {
-                    var latestProcess = latestProcesses
-                        .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
-
-                    string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+                    // ✅ ginagamit na yung CurrentProcess ng row mismo — tama na ito
+                    // dahil naka-scope na siya per (TransactionNumber, Activity) mula sa GroupBy sa taas
+                    string actualCurrentProcess = x.CurrentProcess;
                     bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
 
                     string resolvedStatus = x.Status == "Deleted"
@@ -79,20 +73,21 @@ namespace PartsControlSystem.Controllers
         // =====================================================================
         [HttpGet]
         public async Task<IActionResult> Download(
-            string? searchField,
-            string? searchValue,
-            string? startDate,
-            string? endDate)
+     string? searchField,
+     string? searchValue,
+     string? startDate,
+     string? endDate)
         {
             var logs = await _dbContext.TransactionLogs
                 .GroupBy(x => new { x.TransactionNumber, x.Activity })
                 .Select(g => g.OrderByDescending(x => x.InputDate).First())
                 .ToListAsync();
 
-            var latestProcesses = await _dbContext.ActivityCurrentProcesses
-                .GroupBy(x => x.ControlNumber)
-                .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
-                .ToListAsync();
+            // ❌ REMOVED — ito yung nagdudulot ng cross-activity contamination:
+            // var latestProcesses = await _dbContext.ActivityCurrentProcesses
+            //     .GroupBy(x => x.ControlNumber)
+            //     .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
+            //     .ToListAsync();
 
             var leadTimes = await _dbContext.LeadTimes.ToListAsync();
             var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
@@ -104,9 +99,9 @@ namespace PartsControlSystem.Controllers
                 .OrderByDescending(x => x.InputDate)
                 .Select(x =>
                 {
-                    var latestProcess = latestProcesses
-                        .FirstOrDefault(p => p.ControlNumber == x.TransactionNumber);
-                    string actualCurrentProcess = latestProcess?.CurrentProcess ?? x.CurrentProcess;
+                    // ✅ x.CurrentProcess na mismo — tama na ito dahil naka-scope na
+                    // per (TransactionNumber, Activity) mula sa GroupBy sa taas
+                    string actualCurrentProcess = x.CurrentProcess;
                     bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
 
                     string resolvedStatus = x.Status == "Deleted"
@@ -297,13 +292,6 @@ namespace PartsControlSystem.Controllers
                 .OrderByDescending(x => x.InputDate)
                 .ToListAsync();
 
-            var latestProcess = await _dbContext.ActivityCurrentProcesses
-                .Where(x => x.ControlNumber == transactionNumber)
-                .OrderByDescending(x => x.UpdateAt)
-                .FirstOrDefaultAsync();
-
-            string actualCurrentProcess = latestProcess?.CurrentProcess ?? string.Empty;
-
             var leadTimes = await _dbContext.LeadTimes.ToListAsync();
             var newToolingMappings = await _dbContext.NewToolingProcessMappings.ToListAsync();
             var changeMaterialMappings = await _dbContext.ChangeMaterialProcessMappings.ToListAsync();
@@ -319,14 +307,14 @@ namespace PartsControlSystem.Controllers
                 }
                 else if (index == 0)
                 {
-                    bool isCompleted = IsCompleted(row.Activity, actualCurrentProcess);
+                    bool isCompleted = IsCompleted(row.Activity, row.CurrentProcess);
                     status = ActivityComputationHelper.ResolveTransactionLogStatus(
-                        isCompleted, actualCurrentProcess, row.InputDate, row.Activity,
+                        isCompleted, row.CurrentProcess, row.InputDate, row.Activity,
                         leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
                 }
                 else
                 {
-                    status = "Completed"; // historical/superseded rows are always treated as done
+                    status = "Completed";
                 }
 
                 return new
@@ -361,7 +349,6 @@ namespace PartsControlSystem.Controllers
 
             return Json(result);
         }
-
         // =====================================================================
         // IS COMPLETED
         // =====================================================================

@@ -411,23 +411,35 @@
     </script>
 
     <script>
+           
         document.addEventListener("DOMContentLoaded", function() {
             const searchInput = document.getElementById("search4M");
             const container = document.getElementById("formUpdateContainer");
+            let debounceTimer;
 
             function loadTable(keyword = "") {
                 fetch(`@Url.Action("LoadFormUpdatePartial", "_4mForm")?keyword=${encodeURIComponent(keyword)}`)
                     .then(response => response.text())
                     .then(html => {
-                   
                         container.innerHTML = html;
                     })
                     .catch(err => console.error("Error loading table:", err));
             }
 
+            // 🔴 LIVE SEARCH — nagfi-filter habang nagta-type, may debounce
+            searchInput.addEventListener("input", function() {
+                clearTimeout(debounceTimer);
+
+                debounceTimer = setTimeout(() => {
+                    loadTable(searchInput.value.trim());
+                }, 400); // 400ms delay pagkatapos huminto sa pag-type
+            });
+
+            // Optional: Enter key still works instantly (skip debounce delay)
             searchInput.addEventListener("keydown", function(e) {
                 if (e.key === "Enter") {
                     e.preventDefault();
+                    clearTimeout(debounceTimer);
                     loadTable(searchInput.value.trim());
                 }
             });
@@ -435,8 +447,9 @@
             // load initial table
             loadTable();
         });
-
     </script>
+
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

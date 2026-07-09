@@ -391,52 +391,54 @@
         let userDataTable; // global variable to hold the instance
 
         // Function to load users from the database
-        async function loadUserTable() {
+                   async function loadUserTable() {
             const tableElement = document.getElementById('userTable');
-            const response = await fetch('@Url.Action("GetUsers", "Admin")');
+            const response = await fetch('@Url.Action("GetUsers", "Admin")', {
+                method: 'GET',
+                cache: 'no-store'
+            });
             const json = await response.json();
             const users = json.data;
 
-            // Destroy and re-create if table already exists
             if (userDataTable) {
                 userDataTable.destroy();
             }
 
-            // Recreate the DataTable
             userDataTable = new simpleDatatables.DataTable(tableElement, {
                 data: {
                     headings: [
-                        "Select",
-                        "Employee ID",
-                        "ADID",
-                        "Full Name",
-                        "Email",
-                        "Section",
-                        "Department",
-                        "Authority",
-                        "Created"
+                        "Select", "Employee ID", "ADID", "Full Name",
+                        "Email", "Section", "Department", "Authority", "Created"
                     ],
                     data: users.map(u => [
-                         `<input type="checkbox" class="row-check form-check-input" value="${u.employeeId}" />`,
-                        u.employeeId,
-                        u.adid,
-                        u.fullName,
-                        u.email,
-                        u.section,
-                        u.department,
-                        u.authority,
-                        u.created
+                        `<input type="checkbox" class="row-check form-check-input" value="${u.employeeId}" />`,
+                        u.employeeId, u.adid, u.fullName, u.email,
+                        u.section, u.department, u.authority, u.created
                     ])
                 },
                 searchable: true,
                 fixedHeight: true,
                 perPage: 10
             });
+
+            // 👇 Auto-reset once cleared ang search bar
+            attachAutoResetSearch();
         }
 
-        // // Load on page start
-        window.addEventListener('DOMContentLoaded', loadUserTable);
+        function attachAutoResetSearch() {
+            // Hanapin yung auto-generated search input ng simple-datatables
+            const searchInput = document.querySelector("#userTable_wrapper .datatable-input, .dataTable-input");
 
+            if (searchInput) {
+                searchInput.addEventListener("input", function () {
+                    if (this.value.trim() === "") {
+                        userDataTable.search(""); // reset filter, ipapakita ulit lahat ng rows
+                    }
+                });
+            }
+        }
+            // 👇 IDAGDAG MO ITO — para mag-auto load pag pumasok sa page
+        window.addEventListener('DOMContentLoaded', loadUserTable);
     </script>
 
     <script>
