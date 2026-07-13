@@ -6,7 +6,7 @@ using PartsControlSystem.Helpers;
 using PartsControlSystem.Models;
 using PartsControlSystem.Services;
 using PartsControlSystem.ViewModels;
-using static Syncfusion.XlsIO.Parser.Biff_Records.Charts.ChartAlrunsRecord;
+//using static Syncfusion.XlsIO.Parser.Biff_Records.Charts.ChartAlrunsRecord;
 
 namespace PartsControlSystem.Controllers
 {
@@ -29,17 +29,45 @@ namespace PartsControlSystem.Controllers
         [HttpGet("ActivityMonitoring")]
         public async Task<IActionResult> ActivityMonitoring()
         {
+            var section = User.FindFirst("Section")?.Value;
+            var allowedActivities = GetAllowedActivitiesForSection(section);
+
+            ViewBag.AllowedActivities = allowedActivities;
+            ViewBag.CurrentSection = section;
+
+            // Load default activity's data — first allowed activity, or empty if none
+            if (!allowedActivities.Contains("Renewal / Additional Mold"))
+            {
+                // Section has no access to Renewal — don't preload it, view will handle empty state
+                ViewBag.DefaultActivity = allowedActivities.FirstOrDefault();
+                var emptyData = new List<ViewActivityMonitoring>();
+                return View(emptyData);
+            }
+
             var data = await _dbContext.ViewActivityMonitoring
                 .AsNoTracking()
                 .OrderBy(x => x.ControlNumber)
                 .ToListAsync();
 
+            ViewBag.DefaultActivity = "Renewal / Additional Mold";
             return View(data);
         }
 
         [HttpGet("GetMonitoringPartial")]
         public async Task<IActionResult> GetMonitoringPartial(string activity)
         {
+            var section = User.FindFirst("Section")?.Value;
+            var allowedActivities = GetAllowedActivitiesForSection(section);
+
+            if (!allowedActivities.Contains(activity))
+            {
+                return Content(@"
+        <div class='alert alert-danger text-center mt-4'>
+            <i class='fa-solid fa-lock me-2'></i>
+            Your section does not have access to this activity's monitoring data.
+        </div>");
+            }
+
             switch (activity)
             {
                 case "Renewal / Additional Mold":
@@ -92,10 +120,10 @@ namespace PartsControlSystem.Controllers
                     }
                 default:
                     return Content(@"
-                <div class='alert alert-info text-center mt-4'>
-                    <i class='fa-solid fa-circle-info me-2'></i>
-                    No monitoring data available for this activity yet.
-                </div>");
+        <div class='alert alert-info text-center mt-4'>
+            <i class='fa-solid fa-circle-info me-2'></i>
+            No monitoring data available for this activity yet.
+        </div>");
             }
         }
 
@@ -211,7 +239,7 @@ namespace PartsControlSystem.Controllers
                         controlNo => _dbContext.NewToolingLocalizationProcesses
                             .Any(x => x.ControlNumber == controlNo && x.CurrentProcess == "Completed"))
                 },
-                new ActivityCardViewModel { ActivityName = "Transfer Tooling", SectionCounts = GetSectionCounts(x => x.TransferTooling), TotalDelay = 0 },
+                //new ActivityCardViewModel { ActivityName = "Transfer Tooling", SectionCounts = GetSectionCounts(x => x.TransferTooling), TotalDelay = 0 },
 
                 new ActivityCardViewModel
                 {
@@ -224,8 +252,8 @@ namespace PartsControlSystem.Controllers
                             .Any(x => x.ControlNumber == controlNo && x.ProcessStep == "First Delivery Date"))
                 },
 
-                new ActivityCardViewModel { ActivityName = "New Model",      SectionCounts = GetSectionCounts(x => x.NewModel),      TotalDelay = 0 },
-                new ActivityCardViewModel { ActivityName = "Non-Concurrent", SectionCounts = GetSectionCounts(x => x.NonConcurrent), TotalDelay = 0 },
+                //new ActivityCardViewModel { ActivityName = "New Model",      SectionCounts = GetSectionCounts(x => x.NewModel),      TotalDelay = 0 },
+                //new ActivityCardViewModel { ActivityName = "Non-Concurrent", SectionCounts = GetSectionCounts(x => x.NonConcurrent), TotalDelay = 0 },
 
                 new ActivityCardViewModel
                 {
@@ -313,14 +341,7 @@ namespace PartsControlSystem.Controllers
         [HttpGet("GetActivitiesBySection")]
         public IActionResult GetActivitiesBySection(string section)
         {
-            var activities = _dbContext.LeadTimes
-                .Where(x => x.Section == section)
-                .Select(x => x.Activity)
-                .Distinct()
-                .OrderBy(x => x)
-                .ToList();
-
-            return Json(activities);
+            return Json(GetAllowedActivitiesForSection(section));
         }
 
         [HttpGet("GetActivityFields")]
@@ -1831,6 +1852,38 @@ namespace PartsControlSystem.Controllers
             if (data.NonConcurrent == "YES") return "Non-Concurrent";
             if (data.Other4M == "YES") return "Other 4M";
             return "Unknown";
+        }
+
+        // =====================================================================
+        // SHARED: Section → Allowed Activities (based on actual process-step ownership)
+        // =====================================================================
+        private List<string> GetAllowedActivitiesForSection(string section)
+        {
+            if (string.IsNullOrWhiteSpace(section))
+                return new List<string>();
+
+            var allowed = new List<string>();
+
+            if (_dbContext.LeadTimes.Any(x => x.Section == section))
+                allowed.Add("Renewal / Additional Mold");
+
+            if (_dbContext.NewToolingProcessMappings.Any(x => x.Category == "Localization" && x.Section == section))
+                allowed.Add("New Tooling / Localization");
+
+            if (_dbContext.NewToolingProcessMappings.Any(x => x.Category == "Supplier Change" && x.Section == section))
+                allowed.Add("Supplier Change / Localization");
+
+            if (_dbContext.NewToolingProcessMappings.Any(x => x.Category == "Multiple Procurement" && x.Section == section))
+                allowed.Add("Multiple Procurement / Localization");
+
+            if (_dbContext.ChangeMaterialProcessMappings.Any(x => x.Section == section))
+                allowed.Add("Change Material");
+
+            // Other4MProcessMappings has no Section column — hardcoded to IQC in the view
+            if (string.Equals(section, "IQC", StringComparison.OrdinalIgnoreCase))
+                allowed.Add("Other 4M");
+
+            return allowed;
         }
 
         private void WriteTransactionLog(

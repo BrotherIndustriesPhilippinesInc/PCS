@@ -1,7 +1,18 @@
 ﻿@model IEnumerable<PartsControlSystem.Models.ViewActivityMonitoring>
-
 @{
     ViewData["Title"] = "Activity Monitoring";
+    var allowedActivities = (List<string>)(ViewBag.AllowedActivities ?? new List<string>());
+    var defaultActivity = (string)ViewBag.DefaultActivity;
+
+    var allActivities = new[]
+    {
+        "Renewal / Additional Mold",
+        "New Tooling / Localization",
+        "Supplier Change / Localization",
+        "Multiple Procurement / Localization",
+        "Change Material",
+        "Other 4M"
+    };
 }
 
 <div class="card shadow-sm mb-3 border-0">
@@ -9,38 +20,61 @@
         <div class="row align-items-center g-2">
             <div class="col-md-3">
                 <label class="form-label small fw-semibold mb-1">Select Activity</label>
-                <select id="activitySelect" class="form-select form-select-sm">
-                    <option value="Renewal / Additional Mold">Renewal / Additional Mold</option>
-                    <option value="New Tooling / Localization">New Tooling / Localization</option>
-                    <option value="Supplier Change / Localization">Supplier Change / Localization</option>
-                    <option value="Multiple Procurement / Localization">Multiple Procurement / Localization</option>
-                    <option value="Transfer Tooling">Transfer Tooling</option>
-                    <option value="Change Material">Change Material</option>
-                    <option value="New Model">New Model</option>
-                    <option value="Non-Concurrent">Non-Concurrent</option>
-                    <option value="Other 4M">Other 4M</option>
-                </select>
+                @if (allowedActivities.Any())
+                {
+                    <select id="activitySelect" class="form-select form-select-sm">
+                        @foreach (var act in allActivities)
+                        {
+                            if (allowedActivities.Contains(act))
+                            {
+                                <option value="@act" selected="@(act == defaultActivity)">@act</option>
+                            }
+                        }
+                    </select>
+                }
+                else
+                {
+                    <select class="form-select form-select-sm" disabled>
+                        <option>No activities available for your section</option>
+                    </select>
+                }
             </div>
         </div>
     </div>
 </div>
 
-<!-- Monitoring table container — Renewal loads by default -->
+<!-- Monitoring table container -->
 <div id="monitoringContainer">
-    <partial name="Partials/Monitoring/_RenewalMonitoring" model="Model" />
+    @if (allowedActivities.Contains("Renewal / Additional Mold"))
+    {
+        <partial name="Partials/Monitoring/_RenewalMonitoring" model="Model" />
+    }
+    else if (allowedActivities.Any())
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <div class="mt-2 text-muted small">Loading monitoring data...</div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center mt-3">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            Your section does not have access to any activity monitoring data.
+        </div>
+    }
 </div>
 
 <script>
-    document.getElementById('activitySelect').addEventListener('change', function () {
-        const activity = this.value;
-        const container = document.getElementById('monitoringContainer');
+    const activitySelect = document.getElementById('activitySelect');
 
+    function loadMonitoring(activity) {
+        const container = document.getElementById('monitoringContainer');
         container.innerHTML = `
             <div class="text-center py-5">
                 <div class="spinner-border text-primary" role="status"></div>
                 <div class="mt-2 text-muted small">Loading monitoring data...</div>
             </div>`;
-
         fetch('@Url.Action("GetMonitoringPartial", "UpdatePerActivity")'
             + '?activity=' + encodeURIComponent(activity))
             .then(res => res.text())
@@ -51,5 +85,17 @@
                         Failed to load monitoring data.
                     </div>`;
             });
-    });
+    }
+
+    if (activitySelect) {
+        activitySelect.addEventListener('change', function () {
+            loadMonitoring(this.value);
+        });
+
+        // If default activity isn't Renewal (i.e. wasn't preloaded server-side), load it now
+        const defaultActivity = '@Html.Raw(defaultActivity)';
+        if (defaultActivity && defaultActivity !== 'Renewal / Additional Mold') {
+            loadMonitoring(defaultActivity);
+        }
+    }
 </script>

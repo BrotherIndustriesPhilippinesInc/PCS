@@ -18,21 +18,40 @@ namespace PartsControlSystem.Controllers
 
         public async Task<IActionResult> AllPartsData()
         {
-            var vm = await BuildViewModel();
+            var section = User.FindFirst("Section")?.Value;
+            var allowedActivities = SectionActivityHelper.GetAllowedActivitiesForSection(_context, section);
+
+            ViewBag.AllowedActivities = allowedActivities;
+
+            var vm = await BuildViewModel(allowedActivities);
             return View(vm);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetParts(string? activity, string? status)
         {
-            var rows = await FetchRows(activity, status);
+            var section = User.FindFirst("Section")?.Value;
+            var allowedActivities = SectionActivityHelper.GetAllowedActivitiesForSection(_context, section);
+
+            // Block requests for activities outside the user's section access,
+            // even if the request came from a manipulated URL/query string.
+            if (!string.IsNullOrEmpty(activity) && activity != "All" && !allowedActivities.Contains(activity))
+                return Json(new List<AllPartsDataRow>());
+
+            var rows = await FetchRows(activity, status, allowedActivities);
             return Json(rows);
         }
 
         [HttpGet]
         public async Task<IActionResult> Download(string? activity, string? status, string? month, string? year)
         {
-            var rows = await FetchRows(activity, status);
+            var section = User.FindFirst("Section")?.Value;
+            var allowedActivities = SectionActivityHelper.GetAllowedActivitiesForSection(_context, section);
+
+            if (!string.IsNullOrEmpty(activity) && activity != "All" && !allowedActivities.Contains(activity))
+                return BadRequest(new { success = false, message = "Your section does not have access to this activity." });
+
+            var rows = await FetchRows(activity, status, allowedActivities);
 
             if (!string.IsNullOrEmpty(month) && month != "All" && int.TryParse(month, out int m))
                 rows = rows.Where(r => r.InputDate.HasValue && r.InputDate.Value.ToLocalTime().Month == m).ToList();
@@ -128,9 +147,9 @@ namespace PartsControlSystem.Controllers
 
         // ── Private helpers ────────────────────────────────────────
 
-        private async Task<AllPartsDataViewModel> BuildViewModel()
+        private async Task<AllPartsDataViewModel> BuildViewModel(List<string> allowedActivities)
         {
-            var rows = await FetchRows(null, null);
+            var rows = await FetchRows(null, null, allowedActivities);
             return new AllPartsDataViewModel
             {
                 Parts = rows,
@@ -140,7 +159,7 @@ namespace PartsControlSystem.Controllers
             };
         }
 
-        private async Task<List<AllPartsDataRow>> FetchRows(string? activity, string? status)
+        private async Task<List<AllPartsDataRow>> FetchRows(string? activity, string? status, List<string> allowedActivities)
         {
             // ── Load all tables needed ─────────────────────────────
             var importList = await _context.ImportDatas.ToListAsync();
@@ -150,14 +169,11 @@ namespace PartsControlSystem.Controllers
             var other4MMappings = await _context.Other4MProcessMappings.ToListAsync();
             var today = DateTime.UtcNow;
 
-            // Latest TransactionLogs entry PER (ControlNo, Activity) — single source of truth
-            // for BOTH display (CurrentProcess shown on screen) AND status computation (Finished/Ongoing/Delay).
             var latestLogsPerActivity = await _context.TransactionLogs
                 .GroupBy(x => new { x.TransactionNumber, x.Activity })
                 .Select(g => g.OrderByDescending(x => x.InputDate).First())
                 .ToListAsync();
 
-            // Load remarks from each activity-specific process table
             var quotations = await _context.ToolingQuotationRequestApproval.ToListAsync();
             var requestOrders = await _context.MP2ToolingRequestOrder.ToListAsync();
             var poIssuances = await _context.MP2ToolingPoIssuance.ToListAsync();
@@ -170,7 +186,6 @@ namespace PartsControlSystem.Controllers
             var qaEvals = await _context.QASpecialEvaluations.ToListAsync();
             var testRuns = await _context.IQCTestRuns.ToListAsync();
 
-            // ── Completed sets — SAME source-of-truth tables as the Dashboard ──
             var completedRenewal = testRuns
                 .Select(t => t.ControlNumber)
                 .ToHashSet();
@@ -202,10 +217,10 @@ namespace PartsControlSystem.Controllers
                 {
                     ["Renewal / Additional Mold"] = imp.RenewalAdditionalMold,
                     ["New Tooling / Localization"] = imp.NewToolingLocalization,
-                    ["Transfer Tooling"] = imp.TransferTooling,
+                    // ["Transfer Tooling"] = imp.TransferTooling,     // ── Disabled: Transfer Tooling
                     ["Change Material"] = imp.ChangeMaterial,
-                    ["New Model"] = imp.NewModel,
-                    ["Non-Concurrent"] = imp.NonConcurrent,
+                    // ["New Model"] = imp.NewModel,                   // ── Disabled: New Model
+                    // ["Non-Concurrent"] = imp.NonConcurrent,         // ── Disabled: Non-Concurrent
                     ["Supplier Change / Localization"] = imp.SupplierChangeLocalization,
                     ["Other 4M"] = imp.Other4M,
                     ["Multiple Procurement / Localization"] = imp.MultipleProcurementLocalization,
@@ -224,13 +239,11 @@ namespace PartsControlSystem.Controllers
                 var imp = pair.imp;
                 var resolvedActivity = pair.activity;
 
-                // ── Single source of truth for display: latest log scoped to THIS activity ──
                 var latestLog = ActivityComputationHelper.GetLatestLogForActivity(
                     imp.ControlNo, resolvedActivity, latestLogsPerActivity);
 
                 string displayCurrentProcess = latestLog?.CurrentProcess ?? "N/A";
 
-                // ── Completed check — dedicated table per activity, SAME as Dashboard ──
                 bool isCompleted = resolvedActivity switch
                 {
                     "Renewal / Additional Mold" => completedRenewal.Contains(imp.ControlNo),
@@ -242,12 +255,10 @@ namespace PartsControlSystem.Controllers
                     _ => false
                 };
 
-                // ── Status — identical helper call as Dashboard, guaranteed to match ──
                 string resolvedStatus = ActivityComputationHelper.ResolveStatus(
                     isCompleted, latestLog, resolvedActivity,
                     leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
 
-                // ── Remarks: pick from the latest process table ────
                 var remarks = GetLatestRemarks(imp.ControlNo, displayCurrentProcess,
                     quotations, requestOrders, poIssuances, dfmApprovals,
                     fabrications, transfers, katakenSubs, katakenFinish,
@@ -267,6 +278,9 @@ namespace PartsControlSystem.Controllers
                     Status = resolvedStatus
                 };
             }).AsQueryable();
+
+            // ── Section restriction: only show activities the user's section is involved in ──
+            rows = rows.Where(r => allowedActivities.Contains(r.Activity));
 
             // ── Filters ────────────────────────────────────────────
             if (!string.IsNullOrEmpty(activity) && activity != "All")

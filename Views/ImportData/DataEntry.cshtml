@@ -93,24 +93,28 @@
                                     Select Applicable Activity
                                 </button>
 
-                                <ul class="dropdown-menu w-100 p-3">
+                                <ul class="dropdown-menu w-100 p-3" id="activityChecklist">
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="RenewalAdditionalMold">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="RenewalAdditionalMold" data-activity-name="Renewal / Additional Mold">
                                         <label class="form-check-label">Renewal / Additional Mold</label>
                                     </li>
                                     <!-- New Tooling / Localization = Localization category -->
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="NewToolingLocalization">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="NewToolingLocalization" data-activity-name="New Tooling / Localization">
                                         <label class="form-check-label">New Tooling / Localization</label>
                                     </li>
                                     <!-- Supplier Change / Localization = Supplier Change category -->
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="SupplierChangeLocalization">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="SupplierChangeLocalization" data-activity-name="Supplier Change / Localization">
                                         <label class="form-check-label">Supplier Change / Localization</label>
                                     </li>
                                     <!-- Multiple Procurement / Localization = Multiple Procurement category -->
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="MultipleProcurementLocalization">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="MultipleProcurementLocalization" data-activity-name="Multiple Procurement / Localization">
                                         <label class="form-check-label">Multiple Procurement / Localization</label>
                                     </li>
                                @*      <li class="form-check">
@@ -118,7 +122,8 @@
                                         <label class="form-check-label">Transfer Tooling</label>
                                     </li> *@
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="ChangeMaterial">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="ChangeMaterial" data-activity-name="Change Material">
                                         <label class="form-check-label">Change Material</label>
                                     </li>
 @*                                     <li class="form-check">
@@ -130,7 +135,8 @@
                                         <label class="form-check-label">Non-Concurrent</label>
                                     </li> *@
                                     <li class="form-check">
-                                        <input class="form-check-input activity-check" type="checkbox" data-field="Other4M">
+                                        <input class="form-check-input activity-check" type="checkbox"
+                                               data-field="Other4M" data-activity-name="Other 4M">
                                         <label class="form-check-label">Other 4M</label>
                                     </li>
                                 </ul>
@@ -589,5 +595,71 @@
                 toastr.error("An error occurred while exporting the data.");
             }
         });
+    </script>
+
+    <!-- Restrict Applicable Activity checkboxes based on user's Section (LeadTimes mapping) -->
+    <script>
+        (function () {
+            const currentSection = '@User.FindFirst("Section")?.Value';
+
+            document.addEventListener("DOMContentLoaded", function () {
+                if (!currentSection) {
+                    disableAllActivities("Section not found. Please re-login.");
+                    return;
+                }
+
+                fetch('@Url.Action("GetActivitiesBySection", "UpdatePerActivity")?section=' + encodeURIComponent(currentSection))
+                    .then(res => res.json())
+                    .then(allowedActivities => {
+                        applyActivityRestrictions(allowedActivities || []);
+                    })
+                    .catch(() => {
+                        disableAllActivities("Failed to load allowed activities for your section.");
+                    });
+            });
+
+            function applyActivityRestrictions(allowedActivities) {
+                const checkboxes = document.querySelectorAll(".activity-check");
+
+                checkboxes.forEach(cb => {
+                    const activityName = cb.dataset.activityName;
+                    const li = cb.closest("li");
+                    const isAllowed = allowedActivities.includes(activityName);
+
+                    if (!isAllowed) {
+                        cb.checked = false;
+                        cb.disabled = true;
+                        li.classList.add("text-muted");
+                        li.style.opacity = "0.5";
+                        li.style.pointerEvents = "none";
+                        li.title = "Not applicable to your section";
+
+                        // Ensure hidden field stays "NO" for disabled activities
+                        const hidden = document.querySelector(`input[type='hidden'][name='${cb.dataset.field}']`);
+                        if (hidden) hidden.value = "NO";
+                    } else {
+                        cb.disabled = false;
+                        li.classList.remove("text-muted");
+                        li.style.opacity = "";
+                        li.style.pointerEvents = "";
+                        li.removeAttribute("title");
+                    }
+                });
+
+                if (typeof updateActivityText === "function") updateActivityText();
+            }
+
+            function disableAllActivities(message) {
+                document.querySelectorAll(".activity-check").forEach(cb => {
+                    cb.checked = false;
+                    cb.disabled = true;
+                    const li = cb.closest("li");
+                    li.classList.add("text-muted");
+                    li.style.opacity = "0.5";
+                    li.style.pointerEvents = "none";
+                });
+                console.warn(message);
+            }
+        })();
     </script>
 }

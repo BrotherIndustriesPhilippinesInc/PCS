@@ -123,13 +123,11 @@
                                                 </a>
                                 }
 
-                                @if (User.HasClaim("UserRole", "Admin"))
-                                {
                                                 <a class="nav-link" asp-controller="TransactionLogs" asp-action="TransactionLogs">
                                                     <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
                                                     Transaction Logs
                                                 </a>
-                                }
+                               
 
                                         <a class="nav-link" asp-controller="AllPartsData" asp-action="AllPartsData">
                                             <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>

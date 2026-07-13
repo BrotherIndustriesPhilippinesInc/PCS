@@ -82,21 +82,32 @@
 </div>
 
 <!-- Filter bar (matches Transaction Logs style) -->
-<div class="filter-card">
-    <div class="filter-row">
-        <span class="filter-label">Activity</span>
-        <select class="filter-select" id="activityFilter" style="min-width:240px;">
-            <option value="All">All Activities</option>
-            <option value="Renewal / Additional Mold">Renewal / Additional Mold</option>
-            <option value="Multiple Procurement / Localization">Multiple Procurement / Localization</option>
-            <option value="Supplier Change / Localization">Supplier Change / Localization</option>
-            <option value="New Tooling / Localization">New Tooling / Localization</option>
-            <option value="Change Material">Change Material</option>
-            <option value="Transfer Tooling">Transfer Tooling</option>
-            <option value="New Model">New Model</option>
-            <option value="Non-Concurrent">Non-Concurrent</option>
-            <option value="Other 4M">Other 4M</option>
-        </select>
+<span class="filter-label">Activity</span>
+<select class="filter-select" id="activityFilter" style="min-width:240px;">
+    <option value="All">All Activities</option>
+    @{
+        var allowedActivities = (List<string>)(ViewBag.AllowedActivities ?? new List<string>());
+        var allActivities = new[]
+        {
+    "Renewal / Additional Mold",
+    "New Tooling / Localization",
+    "Supplier Change / Localization",
+    "Multiple Procurement / Localization",
+    "Change Material",
+    // "Transfer Tooling",   -- Disabled: Transfer Tooling
+    // "New Model",         -- Disabled: New Model
+    // "Non-Concurrent",    -- Disabled: Non-Concurrent
+    "Other 4M"
+    };
+    }
+    @foreach (var act in allActivities)
+    {
+        if (allowedActivities.Contains(act))
+        {
+            <option value="@act">@act</option>
+        }
+    }
+</select>
 
         <span class="filter-label">Status</span>
         <select class="filter-select" id="statusFilter" style="min-width:140px;">

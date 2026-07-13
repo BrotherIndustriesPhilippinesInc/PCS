@@ -40,6 +40,40 @@ namespace PartsControlSystem.Controllers
 
                 importData.Section = section;
 
+                // ── Validate: only allow activities registered for this Section in LeadTimes ──
+                var allowedActivities = await _dbContext.LeadTimes
+                    .Where(x => x.Section == section)
+                    .Select(x => x.Activity)
+                    .Distinct()
+                    .ToListAsync();
+
+                var activityFieldMap = new Dictionary<string, string>
+                {
+                    ["RenewalAdditionalMold"] = "Renewal / Additional Mold",
+                    ["NewToolingLocalization"] = "New Tooling / Localization",
+                    ["SupplierChangeLocalization"] = "Supplier Change / Localization",
+                    ["MultipleProcurementLocalization"] = "Multiple Procurement / Localization",
+                    ["ChangeMaterial"] = "Change Material",
+                    ["Other4M"] = "Other 4M"
+                };
+
+                foreach (var (field, activityName) in activityFieldMap)
+                {
+                    var prop = typeof(ImportData).GetProperty(field);
+                    var value = prop?.GetValue(importData) as string;
+
+                    if (string.Equals(value, "YES", StringComparison.OrdinalIgnoreCase)
+                        && !allowedActivities.Contains(activityName))
+                    {
+                        return Json(new
+                        {
+                            success = false,
+                            message = $"Your section ({section}) is not authorized for '{activityName}'."
+                        });
+                    }
+                }
+
+
                 // ── Generate Control No ──────────────────────────────────────
                 var today = DateTime.Now.ToString("yyyyMMdd");
                 var prefix = $"IMP-DATA-{today}-";
