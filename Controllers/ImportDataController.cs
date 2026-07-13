@@ -5,16 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
+using Microsoft.AspNetCore.Hosting;
 
 namespace PartsControlSystem.Controllers
 {
     public class ImportDataController : Controller
     {
         private readonly PostgreAppDbContext _dbContext;
+        private readonly IWebHostEnvironment _env;
 
-        public ImportDataController(PostgreAppDbContext dbContext)
+        public ImportDataController(PostgreAppDbContext dbContext, IWebHostEnvironment env)
         {
             _dbContext = dbContext;
+            _env = env;
         }
 
         public IActionResult DataEntry()
@@ -116,17 +119,23 @@ namespace PartsControlSystem.Controllers
             if (data.MultipleProcurementLocalization?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Mold LOA", "MultipleProcurement"));
 
+            /* ── Disabled: Transfer Tooling ──
             if (data.TransferTooling?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "TransferTooling"));
+            */
 
             if (data.ChangeMaterial?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Material LOA", "ChangeMaterial"));
 
+            /* ── Disabled: New Model ──
             if (data.NewModel?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "NewModel"));
+            */
 
+            /* ── Disabled: Non-Concurrent ──
             if (data.NonConcurrent?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Tooling Quotation Request~Approval", "NonConcurrent"));
+            */
 
             if (data.Other4M?.Equals("YES", StringComparison.OrdinalIgnoreCase) == true)
                 entries.Add(Make(data.ControlNo, "Test Run meeting date", "Other4M"));
@@ -152,10 +161,10 @@ namespace PartsControlSystem.Controllers
     {
         ("Renewal / Additional Mold",           x => x.RenewalAdditionalMold,           "Tooling Quotation Request~Approval"),
         ("New Tooling / Localization",          x => x.NewToolingLocalization,          "Tooling PO Issued Date"),
-        ("Transfer Tooling",                    x => x.TransferTooling,                 "Tooling Quotation Request~Approval"),
+        // ("Transfer Tooling",                 x => x.TransferTooling,                 "Tooling Quotation Request~Approval"),
         ("Change Material",                     x => x.ChangeMaterial,                  "Material LOA"),
-        ("New Model",                           x => x.NewModel,                        "Tooling Quotation Request~Approval"),
-        ("Non-Concurrent",                      x => x.NonConcurrent,                   "Tooling Quotation Request~Approval"),
+        // ("New Model",                        x => x.NewModel,                        "Tooling Quotation Request~Approval"),
+        // ("Non-Concurrent",                   x => x.NonConcurrent,                   "Tooling Quotation Request~Approval"),
         ("Supplier Change / Localization",      x => x.SupplierChangeLocalization,      "Mold LOA"),
         ("Other 4M",                            x => x.Other4M,                         "Test Run meeting date"),
         ("Multiple Procurement / Localization", x => x.MultipleProcurementLocalization, "Mold LOA"),
@@ -192,13 +201,18 @@ namespace PartsControlSystem.Controllers
 
         public IActionResult DownloadImportTemplate()
         {
-            var path = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot", "templates",
-                "ImportData_Batch Entry Template.xlsx");
+            var path = Path.Combine(_env.WebRootPath, "templates", "ImportData_Batch Entry Template.xlsx");
 
-            return PhysicalFile(
-                path,
+            if (!System.IO.File.Exists(path))
+                return NotFound($"Template file not found at: {path}");
+
+            Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            Response.Headers["Pragma"] = "no-cache";
+            Response.Headers["Expires"] = "0";
+
+            var bytes = System.IO.File.ReadAllBytes(path);
+            return File(
+                bytes,
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 "ImportData_Batch Entry Template.xlsx");
         }
@@ -255,10 +269,10 @@ namespace PartsControlSystem.Controllers
                 var newTooling = reader.GetValue(12)?.ToString()?.Trim();
                 var supplierChange = reader.GetValue(13)?.ToString()?.Trim();
                 var multipleProcurement = reader.GetValue(14)?.ToString()?.Trim();
-                var transferTooling = reader.GetValue(15)?.ToString()?.Trim();
+                //var transferTooling = reader.GetValue(15)?.ToString()?.Trim();
                 var changeMaterial = reader.GetValue(16)?.ToString()?.Trim();
-                var newModel = reader.GetValue(17)?.ToString()?.Trim();
-                var nonConcurrent = reader.GetValue(18)?.ToString()?.Trim();
+                //var newModel = reader.GetValue(17)?.ToString()?.Trim();
+                //var nonConcurrent = reader.GetValue(18)?.ToString()?.Trim();
                 var other4m = reader.GetValue(19)?.ToString()?.Trim();
                 var reasonOfChange = reader.GetValue(20)?.ToString()?.Trim();
 
@@ -288,10 +302,10 @@ namespace PartsControlSystem.Controllers
                     NewToolingLocalization = IsYes(newTooling) ? "YES" : "NO",
                     SupplierChangeLocalization = IsYes(supplierChange) ? "YES" : "NO",
                     MultipleProcurementLocalization = IsYes(multipleProcurement) ? "YES" : "NO",
-                    TransferTooling = IsYes(transferTooling) ? "YES" : "NO",
+                    //TransferTooling = IsYes(transferTooling) ? "YES" : "NO",
                     ChangeMaterial = IsYes(changeMaterial) ? "YES" : "NO",
-                    NewModel = IsYes(newModel) ? "YES" : "NO",
-                    NonConcurrent = IsYes(nonConcurrent) ? "YES" : "NO",
+                    //NewModel = IsYes(newModel) ? "YES" : "NO",
+                    //NonConcurrent = IsYes(nonConcurrent) ? "YES" : "NO",
                     Other4M = IsYes(other4m) ? "YES" : "NO",
                     ReasonOfChange = reasonOfChange,
                     DateImported = DateTime.UtcNow

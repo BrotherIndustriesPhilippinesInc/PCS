@@ -492,6 +492,7 @@
 
     <script>
         // ── Chart ────────────────────────────────────────────
+              // ── Chart ────────────────────────────────────────────
         const ctx = document.getElementById('partsChart').getContext('2d');
         let partsChart = new Chart(ctx, {
             type: 'bar',
@@ -517,6 +518,14 @@
                 }
             }
         });
+
+        /* ── API ENDPOINTS ── */
+        /* window.appBaseUrl is set in _Layout.cshtml via @Url.Content("~/"),
+           so this resolves correctly whether the app is hosted at root or in an IIS sub-application/virtual path */
+        const API = {
+            getParts: `${window.appBaseUrl}AllPartsData/GetParts`,
+            download: `${window.appBaseUrl}AllPartsData/Download`
+        };
 
         // ── Pagination state ─────────────────────────────────
         const PAGE_SIZE = 10;
@@ -666,7 +675,7 @@
             document.getElementById('emptyState').classList.add('d-none');
 
             try {
-                const res = await fetch(`/AllPartsData/GetParts?activity=${encodeURIComponent(activity)}&status=${encodeURIComponent(status)}`);
+                const res = await fetch(`${API.getParts}?activity=${encodeURIComponent(activity)}&status=${encodeURIComponent(status)}`);
                 allRows   = await res.json();
                 populateYearFilter();
                 applyMonthFilter();
@@ -677,13 +686,13 @@
             }
         }
 
-               // ── Download ─────────────────────────────────────────
+        // ── Download ─────────────────────────────────────────
         document.getElementById('btnDownload').addEventListener('click', () => {
             const activity = document.getElementById('activityFilter').value;
             const status   = document.getElementById('statusFilter').value;
             const month    = document.getElementById('chartMonthFilter').value;
             const year     = document.getElementById('chartYearFilter').value;
-            window.location.href = `/AllPartsData/Download?activity=${encodeURIComponent(activity)}&status=${encodeURIComponent(status)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
+            window.location.href = `${API.download}?activity=${encodeURIComponent(activity)}&status=${encodeURIComponent(status)}&month=${encodeURIComponent(month)}&year=${encodeURIComponent(year)}`;
         });
 
         // ── Filter events ────────────────────────────────────

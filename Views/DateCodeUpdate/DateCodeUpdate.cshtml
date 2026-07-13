@@ -894,7 +894,8 @@
             const titles = { mother: 'Update Correct Part Code', child: 'Update Correct Part Code', date: 'Update Date Imported' };
             document.getElementById('updatePanelTitle').textContent = titles[field];
             document.getElementById('updatePanelField').textContent = labels[field];
-            document.getElementById('updateNewLabel').textContent   = isDate ? 'New Date' : 'New Code';
+            const newLabels = { mother: 'New Mother Mold Code', child: 'New Child Part Code', date: 'New Date' };
+            document.getElementById('updateNewLabel').textContent   = newLabels[field];
 
             document.getElementById('updateRecordId').value    = id;
             document.getElementById('updateCurrentCode').value = isDate

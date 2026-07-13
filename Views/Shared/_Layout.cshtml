@@ -37,203 +37,212 @@
 <body class="sb-nav-fixed">
 
     @{
-
         bool hideFullLayout = ViewData["HideFullLayout"] as bool? ?? false;
+
+        bool isIqcSection = string.Equals(
+            User.FindFirst("Section")?.Value?.Trim(),
+            "IQC",
+            StringComparison.OrdinalIgnoreCase);
     }
 
     @if (!hideFullLayout)
     {
-        <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
-            <!-- Navbar Brand-->
-            <a class="navbar-brand ps-3" asp-controller="Home" asp-action="Index">
-                <img class="system-logo" src="~/images/PCS-logo.png" alt="Parts Control System" />
-            </a>
+            <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+                <!-- Navbar Brand-->
+                <a class="navbar-brand ps-3" asp-controller="Home" asp-action="Index">
+                    <img class="system-logo" src="~/images/PCS-logo.png" alt="Parts Control System" />
+                </a>
 
-            <!-- Sidebar Toggle-->
-            <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
-                <i class="fas fa-bars"></i>
-            </button>
+                <!-- Sidebar Toggle-->
+                <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
+                    <i class="fas fa-bars"></i>
+                </button>
 
-            <h4 class="system-name text-center">Welcome to Parts Control System</h4>
+                <h4 class="system-name text-center">Welcome to Parts Control System</h4>
 
-            <!-- Logout-->
-            <button class="btnLogout d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-                <form method="post" asp-controller="" asp-action="">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </form>
-            </button>
-        </nav>
+                <!-- Logout-->
+                <button class="btnLogout d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+                    <form method="post" asp-controller="" asp-action="">
+                        <i class="fa-solid fa-right-from-bracket"></i> Logout
+                    </form>
+                </button>
+            </nav>
 
         @if (!(ViewData["HideSidebar"] as bool? ?? false))
         {
-            <div id="layoutSidenav">
-                <div id="layoutSidenav_nav">
-                    <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-                        <div class="sb-sidenav-menu">
-                            <div class="nav">
-                                <div class="sb-sidenav-menu-heading">Module</div>
+                    <div id="layoutSidenav">
+                        <div id="layoutSidenav_nav">
+                            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                                <div class="sb-sidenav-menu">
+                                    <div class="nav">
+                                        <div class="sb-sidenav-menu-heading">Module</div>
 
-                                <a class="nav-link" asp-controller="Home" asp-action="Dashboard">
-                                    <div class="sb-nav-link-icon text-light"><i class="fas fa-tachometer-alt"></i></div>
-                                    Dashboard
-                                </a>
+                                        <a class="nav-link" asp-controller="Home" asp-action="Dashboard">
+                                            <div class="sb-nav-link-icon text-light"><i class="fas fa-tachometer-alt"></i></div>
+                                            Dashboard
+                                        </a>
 
-                                <a class="nav-link" asp-controller="ImportData" asp-action="DataEntry">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-import"></i></div>
-                                    Import File
-                                </a>
+                                        <a class="nav-link" asp-controller="ImportData" asp-action="DataEntry">
+                                            <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-import"></i></div>
+                                            Import File
+                                        </a>
 
 
-                                <li class="nav-item">
-                                    <a class="nav-link  d-flex justify-content-between align-items-center"
-                                       href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span>
-                                            <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
-                                            Update Per Activity
-                                        </span>
-                                        <i class="fa-solid fa-chevron-down small"></i>
-                                    </a>
-                                    <div class="collapse ps-3" id="updatePerActiviyDropdown">
-                                        <ul class="nav flex-column">
-                                            <li class="nav-item">
-                                                <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="UpdateActivity">
-                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                    Update Activity
+                                        <li class="nav-item">
+                                            <a class="nav-link  d-flex justify-content-between align-items-center"
+                                               href="#updatePerActiviyDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                                <span>
+                                                    <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
+                                                    Update Per Activity
+                                                </span>
+                                                <i class="fa-solid fa-chevron-down small"></i>
+                                            </a>
+                                            <div class="collapse ps-3" id="updatePerActiviyDropdown">
+                                                <ul class="nav flex-column">
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="UpdateActivity">
+                                                            <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                            Update Activity
+                                                        </a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="ActivityMonitoring">
+                                                            <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                            Activity Monitoring
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </li>
+
+                                @if (isIqcSection)
+                                {
+                                                <a class="nav-link" asp-controller="IQCMonitoring" asp-action="Index">
+                                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-desktop"></i></div>
+                                                    IQC Monitoring
                                                 </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" asp-controller="UpdatePerActivity" asp-action="ActivityMonitoring">
-                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                    Activity Monitoring
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
-
-                                <a class="nav-link" asp-controller="IQCMonitoring" asp-action="Index">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-desktop"></i></div>
-                                    IQC Monitoring
-                                </a>
+                                }
 
                                 @if (User.HasClaim("UserRole", "Admin"))
                                 {
-                                    <a class="nav-link" asp-controller="TransactionLogs" asp-action="TransactionLogs">
-                                        <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
-                                        Transaction Logs
-                                    </a>
+                                                <a class="nav-link" asp-controller="TransactionLogs" asp-action="TransactionLogs">
+                                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-network-wired"></i></div>
+                                                    Transaction Logs
+                                                </a>
                                 }
 
-                                <a class="nav-link" asp-controller="AllPartsData" asp-action="AllPartsData">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
-                                    All Parts Data
-                                </a>
+                                        <a class="nav-link" asp-controller="AllPartsData" asp-action="AllPartsData">
+                                            <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-table"></i></div>
+                                            All Parts Data
+                                        </a>
 
-                                <li class="nav-item">
-                                    <a class="nav-link  justify-content-between align-items-center"
-                                       href="#fourMFormDropdown" data-bs-toggle="collapse" aria-expanded="false">
-                                        <span>
-                                            <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
-                                            4M Form
-                                        </span>
-                                        <i class="fa-solid fa-chevron-down small"></i>
-                                    </a>
-                                    <div class="collapse ps-3" id="fourMFormDropdown">
-                                        <ul class="nav flex-column">
-                                            <li class="nav-item">
-                                                <a class="nav-link" asp-controller="_4mForm" asp-action="FourMForm">
-                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                    4M Form
-                                                </a>
-                                            </li>
-                                            <li class="nav-item">
-                                                <a class="nav-link" asp-controller="_4mForm" asp-action="ApprovalMonitoring">
-                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                    Approval Monitoring
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </li>
+                                @if (isIqcSection)
+                                {
+                                                <li class="nav-item">
+                                                    <a class="nav-link  justify-content-between align-items-center"
+                                                       href="#fourMFormDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                                        <span>
+                                                            <i class="fa-solid fa-file-arrow-down me-2 text-light"></i>
+                                                            4M Form
+                                                        </span>
+                                                        <i class="fa-solid fa-chevron-down small"></i>
+                                                    </a>
+                                                    <div class="collapse ps-3" id="fourMFormDropdown">
+                                                        <ul class="nav flex-column">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" asp-controller="_4mForm" asp-action="FourMForm">
+                                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                                    4M Form
+                                                                </a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" asp-controller="_4mForm" asp-action="ApprovalMonitoring">
+                                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                                    Approval Monitoring
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </li>
+                                }
 
-                                <a class="nav-link" href="#">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-file-excel"></i></div>
-                                    Reports
-                                </a>
 
                                 @if (User.HasClaim("UserRole", "Admin"))
                                 {
-                                    <li class="nav-item">
-                                        <a class="nav-link  d-flex justify-content-between align-items-center "
-                                           href="#AdminDropdown" data-bs-toggle="collapse" aria-expanded="false">
-                                            <span>
-                                                <i class="fa-solid fa-user-lock text-light"></i>
-                                                Admin Access
-                                            </span>
-                                            <i class="fa-solid fa-chevron-down small"></i>
-                                        </a>
-                                        <div class="collapse ps-3" id="AdminDropdown">
-                                            <ul class="nav flex-column">
                                                 <li class="nav-item">
-                                                    <a class="nav-link" asp-controller="Admin" asp-action="AdminAccess">
-                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                        User Setting
+                                                    <a class="nav-link  d-flex justify-content-between align-items-center "
+                                                       href="#AdminDropdown" data-bs-toggle="collapse" aria-expanded="false">
+                                                        <span>
+                                                            <i class="fa-solid fa-user-lock text-light"></i>
+                                                            Admin Access
+                                                        </span>
+                                                        <i class="fa-solid fa-chevron-down small"></i>
                                                     </a>
-                                                </li>
+                                                    <div class="collapse ps-3" id="AdminDropdown">
+                                                        <ul class="nav flex-column">
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" asp-controller="Admin" asp-action="AdminAccess">
+                                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                                    User Setting
+                                                                </a>
+                                                            </li>
 
-                                                <li class="nav-item">
-                                                    <a class="nav-link" asp-controller="Supplier" asp-action="SupplierSetting">
-                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                        Supplier Setting
-                                                    </a>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" asp-controller="Supplier" asp-action="SupplierSetting">
+                                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                                    Supplier Setting
+                                                                </a>
+                                                            </li>
+                                                            <li class="nav-item">
+                                                                <a class="nav-link" asp-controller="LeadTime" asp-action="LeadTimeSetting">
+                                                                    <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
+                                                                    Lead Time Setting
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
                                                 </li>
-                                                <li class="nav-item">
-                                                    <a class="nav-link" asp-controller="LeadTime" asp-action="LeadTimeSetting">
-                                                        <i class="fa-solid fa-circle-chevron-right me-2 small"></i>
-                                                        Lead Time Setting
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </li>
                                 }
 
-                                <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
-                                    <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
-                                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
-                                            Authentication
-                                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                        </a>
-                                        <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                            <nav class="sb-sidenav-menu-nested nav">
-                                                <a class="nav-link" href="login.html">Login</a>
-                                                <a class="nav-link" href="register.html">Register</a>
-                                                <a class="nav-link" href="password.html">Forgot Password</a>
+                                        <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                            <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                                                    Authentication
+                                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                                </a>
+                                                <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                                    <nav class="sb-sidenav-menu-nested nav">
+                                                        <a class="nav-link" href="login.html">Login</a>
+                                                        <a class="nav-link" href="register.html">Register</a>
+                                                        <a class="nav-link" href="password.html">Forgot Password</a>
+                                                    </nav>
+                                                </div>
+                                                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                                    Error
+                                                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                                </a>
+                                                <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                                    <nav class="sb-sidenav-menu-nested nav">
+                                                        <a class="nav-link" href="401.html">401 Page</a>
+                                                        <a class="nav-link" href="404.html">404 Page</a>
+                                                        <a class="nav-link" href="500.html">500 Page</a>
+                                                    </nav>
+                                                </div>
                                             </nav>
                                         </div>
-                                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
-                                            Error
-                                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                                        </a>
-                                        <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
-                                            <nav class="sb-sidenav-menu-nested nav">
-                                                <a class="nav-link" href="401.html">401 Page</a>
-                                                <a class="nav-link" href="404.html">404 Page</a>
-                                                <a class="nav-link" href="500.html">500 Page</a>
-                                            </nav>
-                                        </div>
-                                    </nav>
+
+                                @if (User.HasClaim("UserRole", "Admin"))
+                                {
+                                                <a class="nav-link" asp-controller="DateCodeUpdate" asp-action="DateCodeUpdate">
+                                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
+                                                    Updating of Dates / Part Codes
+                                                </a>
+                                }
+                                    </div>
                                 </div>
 
-                                <a class="nav-link" asp-controller="DateCodeUpdate" asp-action="DateCodeUpdate">
-                                    <div class="sb-nav-link-icon text-light"><i class="fa-solid fa-calendar-days"></i></div>
-                                    Updating of Dates / Part Codes
-                                </a>
-                            </div>
-                        </div>
-
-                        <div class="sb-sidenav-footer">
-                            <div class="small">Date: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
+                                <div class="sb-sidenav-footer">
+                                    <div class="small">Date: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
 
                             @* Display logged-in user *@
                             @{
@@ -246,42 +255,42 @@
                                 : "";
                             }
 
-                            <div>User: @userName - @userSection</div>
+                                    <div>User: @userName - @userSection</div>
+                                </div>
+                            </nav>
                         </div>
-                    </nav>
-                </div>
-                }
+                        }
 
-                <div id="layoutSidenav_content" style="background-color: #FFF;">
-                    <main class="mb-4">
-                        <div class="container-fluid px-4">
-                            <h5 class="mt-4 mb-4">@ViewData["Title"]</h5>
+                        <div id="layoutSidenav_content" style="background-color: #FFF;">
+                            <main class="mb-4">
+                                <div class="container-fluid px-4">
+                                    <h5 class="mt-4 mb-4">@ViewData["Title"]</h5>
                             @* <ol class="breadcrumb mb-4"> *@
                             @*     <li class="breadcrumb-item active">@ViewData["Title"]</li> *@
                             @* </ol> *@
 
-                            <div class="container-fluid">
-                                <main role="main" class="pb-3">
+                                    <div class="container-fluid">
+                                        <main role="main" class="pb-3">
                                     @RenderBody()
-                                </main>
-                            </div>
+                                        </main>
+                                    </div>
+                                </div>
+                            </main>
                         </div>
-                    </main>
-                </div>
-            </div>
+                    </div>
         }
         else
         {
-            <div id="layoutSidenav_content">
-                <main class="mb-4">
+                    <div id="layoutSidenav_content">
+                        <main class="mb-4">
                     @RenderBody()
-                </main>
-            </div>
+                        </main>
+                    </div>
         }
     }
     else
     {
-        <!--  NO SIDEBAR, BODY ONLY -->
+            <!--  NO SIDEBAR, BODY ONLY -->
         @RenderBody()
     }
 

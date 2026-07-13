@@ -113,22 +113,22 @@
                                         <input class="form-check-input activity-check" type="checkbox" data-field="MultipleProcurementLocalization">
                                         <label class="form-check-label">Multiple Procurement / Localization</label>
                                     </li>
-                                    <li class="form-check">
+                               @*      <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="TransferTooling">
                                         <label class="form-check-label">Transfer Tooling</label>
-                                    </li>
+                                    </li> *@
                                     <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="ChangeMaterial">
                                         <label class="form-check-label">Change Material</label>
                                     </li>
-                                    <li class="form-check">
+@*                                     <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="NewModel">
                                         <label class="form-check-label">New Model</label>
                                     </li>
                                     <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="NonConcurrent">
                                         <label class="form-check-label">Non-Concurrent</label>
-                                    </li>
+                                    </li> *@
                                     <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="Other4M">
                                         <label class="form-check-label">Other 4M</label>
@@ -214,10 +214,10 @@
                                         <th>New Tooling / Localization</th>
                                         <th>Supplier Change / Localization</th>
                                         <th>Multiple Procurement / Localization</th>
-                                        <th>Transfer Tooling</th>
+                                       @*  <th>Transfer Tooling</th> *@
                                         <th>Change Material</th>
-                                        <th>New Model</th>
-                                        <th>Non-Concurrent</th>
+                                       @*  <th>New Model</th>
+                                        <th>Non-Concurrent</th> *@
                                         <th>Other 4M</th>
                                         <th>Reason of Change</th>
                                     </tr>
@@ -459,10 +459,10 @@
                                     <td>${item.newToolingLocalization ?? ''}</td>
                                     <td>${item.supplierChangeLocalization ?? ''}</td>
                                     <td>${item.multipleProcurementLocalization ?? ''}</td>
-                                    <td>${item.transferTooling ?? ''}</td>
+                                    // <td>${item.transferTooling ?? ''}</td>
                                     <td>${item.changeMaterial ?? ''}</td>
-                                    <td>${item.newModel ?? ''}</td>
-                                    <td>${item.nonConcurrent ?? ''}</td>
+                                    // <td>${item.newModel ?? ''}</td>
+                                    // <td>${item.nonConcurrent ?? ''}</td>
                                     <td>${item.other4M ?? ''}</td>
                                     <td>${item.reasonOfChange ?? ''}</td>
                                 </tr>
@@ -489,33 +489,33 @@
                 return;
             }
 
-            const data = Array.from(rows).map(row => {
-                const cells = row.querySelectorAll("td");
-                return {
-                    ControlNo:                      cells[1].innerText.trim(),
-                    MotherMoldCode:                 cells[2].innerText.trim(),
-                    ChildPartcode:                  cells[3].innerText.trim(),
-                    PartName:                       cells[4].innerText.trim(),
-                    Model:                          cells[5].innerText.trim(),
-                    Supplier:                       cells[6].innerText.trim(),
-                    MoldMaker:                      cells[7].innerText.trim(),
-                    SupplierMoldNo:                 cells[8].innerText.trim(),
-                    BIPHMoldNo:                     cells[9].innerText.trim(),
-                    ToolingManagement:              cells[10].innerText.trim(),
-                    ToolingType:                    cells[11].innerText.trim(),
-                    ToolingCategory:                cells[12].innerText.trim(),
-                    RenewalAdditionalMold:          cells[13].innerText.trim(),
-                    NewToolingLocalization:         cells[14].innerText.trim(),
-                    SupplierChangeLocalization:     cells[15].innerText.trim(),
-                    MultipleProcurementLocalization: cells[16].innerText.trim(),
-                    TransferTooling:                cells[17].innerText.trim(),
-                    ChangeMaterial:                 cells[18].innerText.trim(),
-                    NewModel:                       cells[19].innerText.trim(),
-                    NonConcurrent:                  cells[20].innerText.trim(),
-                    Other4M:                        cells[21].innerText.trim(),
-                    ReasonOfChange:                 cells[22].innerText.trim()
-                };
-            });
+                    const data = Array.from(rows).map(row => {
+            const cells = row.querySelectorAll("td");
+            return {
+                ControlNo:                      cells[1].innerText.trim(),
+                MotherMoldCode:                 cells[2].innerText.trim(),
+                ChildPartcode:                  cells[3].innerText.trim(),
+                PartName:                       cells[4].innerText.trim(),
+                Model:                          cells[5].innerText.trim(),
+                Supplier:                       cells[6].innerText.trim(),
+                MoldMaker:                      cells[7].innerText.trim(),
+                SupplierMoldNo:                 cells[8].innerText.trim(),
+                BIPHMoldNo:                     cells[9].innerText.trim(),
+                ToolingManagement:              cells[10].innerText.trim(),
+                ToolingType:                    cells[11].innerText.trim(),
+                ToolingCategory:                cells[12].innerText.trim(),
+                RenewalAdditionalMold:          cells[13].innerText.trim(),
+                NewToolingLocalization:         cells[14].innerText.trim(),
+                SupplierChangeLocalization:     cells[15].innerText.trim(),
+                MultipleProcurementLocalization: cells[16].innerText.trim(),
+                TransferTooling:                "NO",
+                ChangeMaterial:                 cells[17].innerText.trim(),
+                NewModel:                       "NO",
+                NonConcurrent:                  "NO",
+                Other4M:                        cells[18].innerText.trim(),
+                ReasonOfChange:                 cells[19].innerText.trim()
+            };
+        });
 
             Swal.fire({
                 title: "Confirm Import",
