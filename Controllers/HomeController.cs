@@ -457,7 +457,8 @@ namespace PartsControlSystem.Controllers
                 new Claim(ClaimTypes.Surname, user.LastName ?? ""),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
                 new Claim("Section", user.Section ?? ""),
-                new Claim("UserRole", user.Authority ?? ""),
+                 new Claim("UserRole", user.Authority ?? ""),
+                new Claim(ClaimTypes.Role, user.Authority ?? ""),
                 new Claim("ApproverRole", user.ApproverRole ?? "")
             };
 

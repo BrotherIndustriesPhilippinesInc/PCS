@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
@@ -7,7 +8,9 @@ using PartsControlSystem.Models;
 namespace PartsControlSystem.Controllers
 {
 
+    [Authorize(Roles = "Admin")]
     [Route("Admin")]
+
     public class AdminController : Controller
     {
         private readonly PostgreAppDbContext _dbContext;
