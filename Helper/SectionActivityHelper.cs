@@ -9,25 +9,29 @@ namespace PartsControlSystem.Helpers
             if (string.IsNullOrWhiteSpace(section))
                 return new List<string>();
 
+            var trimmedSection = section.Trim();
             var allowed = new List<string>();
 
-            if (dbContext.LeadTimes.Any(x => x.Section == section))
+            if (dbContext.LeadTimes.Any(x => x.Section.Trim().ToLower() == trimmedSection.ToLower()))
                 allowed.Add("Renewal / Additional Mold");
 
-            if (dbContext.NewToolingProcessMappings.Any(x => x.Category == "Localization" && x.Section == section))
+            if (dbContext.NewToolingProcessMappings.Any(x =>
+                x.Category == "Localization" && x.Section.Trim().ToLower() == trimmedSection.ToLower()))
                 allowed.Add("New Tooling / Localization");
 
-            if (dbContext.NewToolingProcessMappings.Any(x => x.Category == "Supplier Change" && x.Section == section))
+            if (dbContext.NewToolingProcessMappings.Any(x =>
+                x.Category == "Supplier Change" && x.Section.Trim().ToLower() == trimmedSection.ToLower()))
                 allowed.Add("Supplier Change / Localization");
 
-            if (dbContext.NewToolingProcessMappings.Any(x => x.Category == "Multiple Procurement" && x.Section == section))
+            if (dbContext.NewToolingProcessMappings.Any(x =>
+                x.Category == "Multiple Procurement" && x.Section.Trim().ToLower() == trimmedSection.ToLower()))
                 allowed.Add("Multiple Procurement / Localization");
 
-            if (dbContext.ChangeMaterialProcessMappings.Any(x => x.Section == section))
+            if (dbContext.ChangeMaterialProcessMappings.Any(x => x.Section.Trim().ToLower() == trimmedSection.ToLower()))
                 allowed.Add("Change Material");
 
             // Other4MProcessMappings has no Section column — hardcoded to IQC in the view
-            if (string.Equals(section, "IQC", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(trimmedSection, "IQC", StringComparison.OrdinalIgnoreCase))
                 allowed.Add("Other 4M");
 
             return allowed;

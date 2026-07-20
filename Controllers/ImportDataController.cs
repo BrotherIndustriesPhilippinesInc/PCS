@@ -6,6 +6,7 @@ using OfficeOpenXml;
 using PartsControlSystem.Data;
 using PartsControlSystem.Models;
 using Microsoft.AspNetCore.Hosting;
+using PartsControlSystem.Helpers;
 
 namespace PartsControlSystem.Controllers
 {
@@ -40,12 +41,8 @@ namespace PartsControlSystem.Controllers
 
                 importData.Section = section;
 
-                // ── Validate: only allow activities registered for this Section in LeadTimes ──
-                var allowedActivities = await _dbContext.LeadTimes
-                    .Where(x => x.Section == section)
-                    .Select(x => x.Activity)
-                    .Distinct()
-                    .ToListAsync();
+                // ── Validate: only allow activities the user's section is actually involved in ──
+                var allowedActivities = SectionActivityHelper.GetAllowedActivitiesForSection(_dbContext, section);
 
                 var activityFieldMap = new Dictionary<string, string>
                 {

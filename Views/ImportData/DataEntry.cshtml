@@ -608,7 +608,7 @@
                     return;
                 }
 
-                fetch('@Url.Action("GetActivitiesBySection", "UpdatePerActivity")?section=' + encodeURIComponent(currentSection))
+                fetch('@Url.Action("GetAllowedActivities", "UpdatePerActivity")?section=' + encodeURIComponent(currentSection))
                     .then(res => res.json())
                     .then(allowedActivities => {
                         applyActivityRestrictions(allowedActivities || []);

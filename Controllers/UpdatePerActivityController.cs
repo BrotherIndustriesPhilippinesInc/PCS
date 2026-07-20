@@ -341,7 +341,20 @@ namespace PartsControlSystem.Controllers
         [HttpGet("GetActivitiesBySection")]
         public IActionResult GetActivitiesBySection(string section)
         {
-            return Json(GetAllowedActivitiesForSection(section));
+            var activities = _dbContext.LeadTimes
+                .Where(x => x.Section == section)
+                .Select(x => x.Activity)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            return Json(activities);
+        }
+
+        [HttpGet("GetAllowedActivities")]
+        public IActionResult GetAllowedActivities(string section)
+        {
+            return Json(SectionActivityHelper.GetAllowedActivitiesForSection(_dbContext, section));
         }
 
         [HttpGet("GetActivityFields")]
