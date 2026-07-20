@@ -445,35 +445,32 @@
                             return;
                         }
 
-                        $.each(data, function (index, item) {
-                            tbody.append(`
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td>${item.controlNo ?? ''}</td>
-                                    <td>${item.motherMoldCode ?? ''}</td>
-                                    <td>${item.childPartcode ?? ''}</td>
-                                    <td>${item.partName ?? ''}</td>
-                                    <td>${item.model ?? ''}</td>
-                                    <td>${item.supplier ?? ''}</td>
-                                    <td>${item.moldMaker ?? ''}</td>
-                                    <td>${item.supplierMoldNo ?? ''}</td>
-                                    <td>${item.biphMoldNo ?? ''}</td>
-                                   <td>${item.toolingManagement ?? ''}</td>
-                                    <td>${item.toolingType ?? ''}</td>
-                                    <td>${item.toolingCategory ?? ''}</td>
-                                    <td>${item.renewalAdditionalMold ?? ''}</td>
-                                    <td>${item.newToolingLocalization ?? ''}</td>
-                                    <td>${item.supplierChangeLocalization ?? ''}</td>
-                                    <td>${item.multipleProcurementLocalization ?? ''}</td>
-                                    // <td>${item.transferTooling ?? ''}</td>
-                                    <td>${item.changeMaterial ?? ''}</td>
-                                    // <td>${item.newModel ?? ''}</td>
-                                    // <td>${item.nonConcurrent ?? ''}</td>
-                                    <td>${item.other4M ?? ''}</td>
-                                    <td>${item.reasonOfChange ?? ''}</td>
-                                </tr>
-                            `);
-                        });
+                               $.each(data, function (index, item) {
+            tbody.append(`
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.controlNo ?? ''}</td>
+                    <td>${item.motherMoldCode ?? ''}</td>
+                    <td>${item.childPartcode ?? ''}</td>
+                    <td>${item.partName ?? ''}</td>
+                    <td>${item.model ?? ''}</td>
+                    <td>${item.supplier ?? ''}</td>
+                    <td>${item.moldMaker ?? ''}</td>
+                    <td>${item.supplierMoldNo ?? ''}</td>
+                    <td>${item.biphMoldNo ?? ''}</td>
+                    <td>${item.toolingManagement ?? ''}</td>
+                    <td>${item.toolingType ?? ''}</td>
+                    <td>${item.toolingCategory ?? ''}</td>
+                    <td>${item.renewalAdditionalMold ?? ''}</td>
+                    <td>${item.newToolingLocalization ?? ''}</td>
+                    <td>${item.supplierChangeLocalization ?? ''}</td>
+                    <td>${item.multipleProcurementLocalization ?? ''}</td>
+                    <td>${item.changeMaterial ?? ''}</td>
+                    <td>${item.other4M ?? ''}</td>
+                    <td>${item.reasonOfChange ?? ''}</td>
+                </tr>
+            `);
+        });
                     },
                     error: function (xhr) {
                         console.error(xhr.responseText);

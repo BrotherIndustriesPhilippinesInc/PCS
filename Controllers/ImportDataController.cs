@@ -294,18 +294,15 @@ namespace PartsControlSystem.Controllers
                 var supplierMoldNo = reader.GetValue(6)?.ToString()?.Trim();
                 var biphMoldNo = reader.GetValue(7)?.ToString()?.Trim();
                 var toolingManagement = reader.GetValue(8)?.ToString()?.Trim();
-                var toolingType = reader.GetValue(9)?.ToString()?.Trim();       // ← add
-                var toolingCategory = reader.GetValue(10)?.ToString()?.Trim();  // ← add
+                var toolingType = reader.GetValue(9)?.ToString()?.Trim();
+                var toolingCategory = reader.GetValue(10)?.ToString()?.Trim();
                 var renewalAdditionalMold = reader.GetValue(11)?.ToString()?.Trim();
                 var newTooling = reader.GetValue(12)?.ToString()?.Trim();
                 var supplierChange = reader.GetValue(13)?.ToString()?.Trim();
                 var multipleProcurement = reader.GetValue(14)?.ToString()?.Trim();
-                //var transferTooling = reader.GetValue(15)?.ToString()?.Trim();
-                var changeMaterial = reader.GetValue(16)?.ToString()?.Trim();
-                //var newModel = reader.GetValue(17)?.ToString()?.Trim();
-                //var nonConcurrent = reader.GetValue(18)?.ToString()?.Trim();
-                var other4m = reader.GetValue(19)?.ToString()?.Trim();
-                var reasonOfChange = reader.GetValue(20)?.ToString()?.Trim();
+                var changeMaterial = reader.GetValue(15)?.ToString()?.Trim();
+                var other4m = reader.GetValue(16)?.ToString()?.Trim();
+                var reasonOfChange = reader.GetValue(17)?.ToString()?.Trim();
 
                 // Skip blank rows
                 if (string.IsNullOrEmpty(motherMoldCode) && string.IsNullOrEmpty(partName) &&
@@ -333,10 +330,7 @@ namespace PartsControlSystem.Controllers
                     NewToolingLocalization = IsYes(newTooling) ? "YES" : "NO",
                     SupplierChangeLocalization = IsYes(supplierChange) ? "YES" : "NO",
                     MultipleProcurementLocalization = IsYes(multipleProcurement) ? "YES" : "NO",
-                    //TransferTooling = IsYes(transferTooling) ? "YES" : "NO",
                     ChangeMaterial = IsYes(changeMaterial) ? "YES" : "NO",
-                    //NewModel = IsYes(newModel) ? "YES" : "NO",
-                    //NonConcurrent = IsYes(nonConcurrent) ? "YES" : "NO",
                     Other4M = IsYes(other4m) ? "YES" : "NO",
                     ReasonOfChange = reasonOfChange,
                     DateImported = DateTime.UtcNow
