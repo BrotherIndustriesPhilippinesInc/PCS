@@ -20,7 +20,7 @@ namespace PartsControlSystem.Controllers
         private readonly SqlServerAppDbContextCas _sqlServerAppDbContextCas;
         private readonly MailService _mailService;
 
-        public HomeController(ILogger<HomeController> logger, PostgreAppDbContext postgreAppDbContext, SqlServerAppDbContext sqlServerAppDbContext, SqlServerAppDbContextCas sqlServerAppDbContextCas, MailService mailService)  
+        public HomeController(ILogger<HomeController> logger, PostgreAppDbContext postgreAppDbContext, SqlServerAppDbContext sqlServerAppDbContext, SqlServerAppDbContextCas sqlServerAppDbContextCas, MailService mailService)
         {
             _logger = logger;
             _sqlServerAppDbContext = sqlServerAppDbContext;
@@ -360,10 +360,15 @@ namespace PartsControlSystem.Controllers
             return (done, ongoing, delayed);
         }
 
+        // ── CHANGED: now calls the shared TryAutoLoginAsync() so a reload here retries the login check ──
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult IportalConfirmationForm(string? ip = null)
+        public async Task<IActionResult> IportalConfirmationForm(string? ip = null)
         {
+            var autoLoginResult = await TryAutoLoginAsync();
+            if (autoLoginResult != null)
+                return autoLoginResult;
+
             ViewData["HideFullLayout"] = true;
             string userIP = GetClientIp(HttpContext);
             return View(model: userIP);
@@ -418,9 +423,23 @@ namespace PartsControlSystem.Controllers
             return null;
         }
 
+        // ── CHANGED: login-check + sign-in logic extracted into TryAutoLoginAsync() below; this method now just calls it ──
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> Login()
+        {
+            var autoLoginResult = await TryAutoLoginAsync();
+            if (autoLoginResult != null)
+                return autoLoginResult;
+
+            Console.WriteLine("No login request found for IP: " + GetClientIp(HttpContext));
+            return RedirectToAction("IportalConfirmationForm", "Home");
+        }
+
+        // ── NEW: shared helper — looks up the latest iPortal login request for this IP and signs in if found.
+        // Returns null (no redirect) when there's still no active login request, so callers can fall back
+        // to showing the "Can't Proceed to Login" page instead of forcing a redirect loop. ──
+        private async Task<IActionResult?> TryAutoLoginAsync()
         {
             string localIP = GetClientIp(HttpContext);
 
@@ -435,10 +454,7 @@ namespace PartsControlSystem.Controllers
                 .FirstOrDefaultAsync();
 
             if (loginEntry == null)
-            {
-                Console.WriteLine("No login request found for IP: " + localIP);
-                return RedirectToAction("IportalConfirmationForm", "Home");
-            }
+                return null;
 
             var user = await _postgreAppDbContext.Users
                 .FirstOrDefaultAsync(x => x.EmployeeId == loginEntry.EmployeeId);
@@ -446,7 +462,7 @@ namespace PartsControlSystem.Controllers
             if (user == null)
             {
                 Console.WriteLine("Employee not found for EmployeeId: " + loginEntry.EmployeeId);
-                return RedirectToAction("IportalConfirmationForm", "Home");
+                return null;
             }
 
             var claims = new List<Claim>
@@ -457,7 +473,7 @@ namespace PartsControlSystem.Controllers
                 new Claim(ClaimTypes.Surname, user.LastName ?? ""),
                 new Claim(ClaimTypes.Email, user.Email ?? ""),
                 new Claim("Section", user.Section ?? ""),
-                 new Claim("UserRole", user.Authority ?? ""),
+                new Claim("UserRole", user.Authority ?? ""),
                 new Claim(ClaimTypes.Role, user.Authority ?? ""),
                 new Claim("ApproverRole", user.ApproverRole ?? "")
             };

@@ -14,11 +14,17 @@
                     <div class="row g-3">
                         <div class="col-md">
                             <label class="form-label fw-semibold">Mother Mold Code</label>
-                            <input type="text" name="MotherMoldCode" class="form-control" placeholder="Enter mother mold code" required>
+                            <input type="text" name="MotherMoldCode" class="form-control" placeholder="Enter mother mold code"
+                                   maxlength="9" pattern="[A-Za-z0-9]{1,9}" title="Letters and numbers only, max 9 characters"
+                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9)"
+                                   required>
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Child Partcode</label>
-                            <input type="text" name="ChildPartcode" class="form-control" placeholder="Enter part code" required>
+                            <input type="text" name="ChildPartcode" class="form-control" placeholder="Enter part code"
+                                   maxlength="9" pattern="[A-Za-z0-9]{1,9}" title="Letters and numbers only, max 9 characters"
+                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9)"
+                                   required>
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Part Name</label>
@@ -45,7 +51,9 @@
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Supplier Mold No.</label>
-                            <input type="text" name="SupplierMoldNo" class="form-control" placeholder="Enter supplier mold number">
+                            <input type="text" name="Supplier" class="form-control" placeholder="Enter supplier name"
+                                   inputmode="numeric" pattern="[0-9]*" title="Numbers only"
+                                   oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Tooling Management</label>
