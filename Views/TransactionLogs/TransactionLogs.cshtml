@@ -193,11 +193,6 @@
         }
 
         #transactionTable th:nth-child(14), #transactionTable td:nth-child(14) {
-            width: 140px;
-            min-width: 140px;
-        }
-
-        #transactionTable th:nth-child(15), #transactionTable td:nth-child(15) {
             width: 80px;
             min-width: 80px;
         }
@@ -567,7 +562,6 @@
                     <th>Input Date</th>
                     <th>Current Process</th>
                     <th>Status</th>
-                    <th>Remarks</th>
                     <th>History</th>
                 </tr>
             </thead>
@@ -614,7 +608,6 @@
                                 <span class="tlog-badge-inprogress">In Progress</span>
                             }
                         </td>
-                        <td class="col-remarks">@(string.IsNullOrEmpty(log.Remarks) ? "—" : log.Remarks)</td>
                         <td class="col-action">
                             <button class="btn-history"
                                     onclick="openHistory('@log.TransactionNumber', '@log.Activity')">
@@ -671,10 +664,12 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
-    
 
-    <span id="getHistoryUrl" data-url="@Url.Action("GetHistory", "TransactionLogs")" style="display:none;"></span>
     <script>
+        // Resolved server-side once, at script-parse time — no DOM lookup, can't be null.
+        var getHistoryUrl = '@Url.Action("GetHistory", "TransactionLogs")';
+        var downloadUrl   = '@Url.Action("Download", "TransactionLogs")';
+
         var table;
 
         function updateCount() {
@@ -727,7 +722,7 @@
                 scrollX:    false,
                 autoWidth:  false,
                 dom:        '<"tlog-dt-top"l>t',
-                columnDefs: [{ targets: 14, orderable: false, searchable: false }],
+                columnDefs: [{ targets: 13, orderable: false, searchable: false }],
                 language: {
                     emptyTable:  'No records found.',
                     zeroRecords: 'No matching records found.',
@@ -798,7 +793,7 @@
                 var searchValue = $('#searchValue').val() || '';
                 var startDate   = $('#filterStartDate').val() || '';
                 var endDate     = $('#filterEndDate').val() || '';
-                window.location.href = '/TransactionLogs/Download'
+                window.location.href = downloadUrl
                     + '?searchField=' + encodeURIComponent(searchField)
                     + '&searchValue=' + encodeURIComponent(searchValue)
                     + '&startDate='   + encodeURIComponent(startDate)
@@ -814,8 +809,13 @@
                 '<tr><td colspan="12" class="text-center text-muted py-3">Loading...</td></tr>';
             document.getElementById('historyModalBackdrop').style.display = 'flex';
 
-            var baseUrl = document.getElementById('getHistoryUrl').dataset.url;
-            var url = baseUrl
+            if (!getHistoryUrl) {
+                document.getElementById('historyTableBody').innerHTML =
+                    '<tr><td colspan="12" class="text-center text-danger py-3">History endpoint not configured.</td></tr>';
+                return;
+            }
+
+            var url = getHistoryUrl
                 + '?transactionNumber=' + encodeURIComponent(transactionNumber)
                 + '&activity='          + encodeURIComponent(activity);
 
@@ -834,7 +834,7 @@
                         var sourceBadge = row.source === 'Import File'
                             ? '<span class="tlog-source-import">Import File</span>'
                             : '<span class="tlog-source-activity">Update Activity</span>';
-                           var statusBadge = row.status === 'Completed'
+                        var statusBadge = row.status === 'Completed'
                             ? '<span class="tlog-badge-completed">Completed</span>'
                             : row.status === 'Delay'
                                 ? '<span class="tlog-badge-delay">Delay</span>'
@@ -873,4 +873,3 @@
         });
     </script>
 }
-

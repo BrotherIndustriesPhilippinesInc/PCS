@@ -278,6 +278,7 @@ namespace PartsControlSystem.Controllers
         [HttpGet("ActivityDetails")]
         public IActionResult ActivityDetails(string activityName)
         {
+            
             IQueryable<ImportData> query = _dbContext.ImportDatas;
 
             query = activityName switch
@@ -1953,6 +1954,11 @@ namespace PartsControlSystem.Controllers
         [HttpGet("GetOther4MPartial")]
         public async Task<IActionResult> GetOther4MPartial(string process)
         {
+            var section = User.FindFirst("Section")?.Value;
+            if (!string.Equals(section, "IQC", StringComparison.OrdinalIgnoreCase))
+            {
+                return Content("<div class='alert alert-danger text-center mt-3'><i class='fa-solid fa-lock me-2'></i>Your section does not have access to this process.</div>");
+            }
             if (string.IsNullOrWhiteSpace(process))
                 return Content("<div class='alert alert-warning'>Process is required.</div>");
 
@@ -2015,6 +2021,9 @@ namespace PartsControlSystem.Controllers
         [HttpGet("GetOther4MProcesses")]
         public IActionResult GetOther4MProcesses()
         {
+            var section = User.FindFirst("Section")?.Value;
+            if (!string.Equals(section, "IQC", StringComparison.OrdinalIgnoreCase))
+                return Json(new List<object>());
             var processes = _dbContext.Other4MProcessMappings
                 .OrderBy(x => x.StepOrder)
                 .Select(x => new { x.ProcessStep, x.StepOrder })
@@ -2026,6 +2035,10 @@ namespace PartsControlSystem.Controllers
         [HttpPost("SaveOther4MProcess")]
         public IActionResult SaveOther4MProcess([FromBody] SaveOther4MProcessDto dto)
         {
+            var section = User.FindFirst("Section")?.Value;
+            if (!string.Equals(section, "IQC", StringComparison.OrdinalIgnoreCase))
+                return StatusCode(403, new { success = false, message = "Your section does not have access to Other 4M." });
+
             if (dto == null || string.IsNullOrWhiteSpace(dto.ControlNumber) || string.IsNullOrWhiteSpace(dto.ProcessStep))
                 return BadRequest(new { success = false, message = "Invalid data" });
 

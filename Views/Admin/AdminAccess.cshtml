@@ -129,6 +129,16 @@
                                     <input type="text" id="department" class="form-control" placeholder="Auto fill" readonly>
                                 </td>
                             </tr>
+                            <tr id="sectionDeptToggleRow" style="display:none;">
+                                <th>User Section</th>
+                                <td>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="combineSectionDept">
+                                        <label class="form-check-label" for="combineSectionDept" id="combineLabel"></label>
+                                    </div>
+                                </td>
+                            </tr>
+
                             <tr>
                                 <th>Authority</th>
                                 <td>
@@ -146,6 +156,7 @@
 
             @* Position not visible in form *@
             <input type="hidden" id="position" name="position" />
+            <input type="hidden" id="finalSection" />
 
             <div class="d-flex justify-content-end align-items-center gap-2 mt-2">
                 <select id="approver" class="form-select w-auto" name="ApproverRole" required>
@@ -290,6 +301,10 @@
 
                     // Populate hidden Position
                     document.getElementById("position").value = data.position || "";
+                    // reset toggle every new lookup
+                    document.getElementById("combineSectionDept").checked = false;
+
+                    computeFinalSection();
                 })
                 .catch(error => {
                   console.error("Error fetching employee data:", error);
@@ -304,17 +319,17 @@
             e.preventDefault();
 
             const data = {
-                EmployeeId: document.getElementById("employeeNo").value.trim(),
-                ADID: document.getElementById("adid").value.trim(),
-                FirstName: document.getElementById("firstName").value.trim(),
-                LastName: document.getElementById("lastName").value.trim(),
-                Email: document.getElementById("email").value.trim(),
-                Section: document.getElementById("section").value.trim(),
-                Department: document.getElementById("department").value.trim(),
-                Position: document.getElementById("position").value.trim(),
-                Authority: document.getElementById("authority").value.trim(),
-                ApproverRole: document.getElementById("approver").value.trim()
-            };
+            EmployeeId: document.getElementById("employeeNo").value.trim(),
+            ADID: document.getElementById("adid").value.trim(),
+            FirstName: document.getElementById("firstName").value.trim(),
+            LastName: document.getElementById("lastName").value.trim(),
+            Email: document.getElementById("email").value.trim(),
+            Section: document.getElementById("finalSection").value.trim(),   
+            Department: document.getElementById("department").value.trim(), 
+            Position: document.getElementById("position").value.trim(),
+            Authority: document.getElementById("authority").value.trim(),
+            ApproverRole: document.getElementById("approver").value.trim()
+        };
 
             // ✅ Validation using SweetAlert2
             for (const [key, value] of Object.entries(data)) {
@@ -503,8 +518,35 @@
         });
     </script>
 
+     <script>
+        function computeFinalSection() {
+        const rawSection = document.getElementById("section").value.trim();
+        const rawDept = document.getElementById("department").value.trim();
+        const combined = rawDept ? `${rawSection}-${rawDept}` : rawSection;
 
-    
+        const finalSectionInput = document.getElementById("finalSection");
+        const toggleRow = document.getElementById("sectionDeptToggleRow");
+        const toggleCheckbox = document.getElementById("combineSectionDept");
+
+        if (rawSection === "PC") {
+            // always force combined, walang need i-toggle
+            finalSectionInput.value = combined;
+            toggleRow.style.display = "none";
+        } else if ((rawSection === "MP1" || rawSection === "MP2") && rawDept) {
+            toggleRow.style.display = "";
+            document.getElementById("combineLabel").textContent = `Save as "${combined}"`;
+            finalSectionInput.value = toggleCheckbox.checked ? combined : rawSection;
+        } else {
+            // DE, IQC, QA, SQC, etc. — walang combine option
+            toggleRow.style.display = "none";
+            toggleCheckbox.checked = false;
+            finalSectionInput.value = rawSection;
+        }
+    }
+
+    // listener para sa toggle mismo
+    document.getElementById("combineSectionDept").addEventListener("change", computeFinalSection);
+    </script>
 
 }
 

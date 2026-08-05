@@ -51,8 +51,8 @@
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Supplier Mold No.</label>
-                            <input type="text" name="Supplier" class="form-control" placeholder="Enter supplier name"
-                                   inputmode="numeric" pattern="[0-9]*" title="Numbers only"
+                            <input type="text" name="SupplierMoldNo" class="form-control" placeholder="Enter supplier mold number"
+                                   inputmode="numeric" pattern="[0-9]*" title="Numbers only" required
                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="col-md">
@@ -125,7 +125,7 @@
                                                data-field="MultipleProcurementLocalization" data-activity-name="Multiple Procurement / Localization">
                                         <label class="form-check-label">Multiple Procurement / Localization</label>
                                     </li>
-                               @*      <li class="form-check">
+                                    @*      <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="TransferTooling">
                                         <label class="form-check-label">Transfer Tooling</label>
                                     </li> *@
@@ -134,7 +134,7 @@
                                                data-field="ChangeMaterial" data-activity-name="Change Material">
                                         <label class="form-check-label">Change Material</label>
                                     </li>
-@*                                     <li class="form-check">
+                                    @*                                     <li class="form-check">
                                         <input class="form-check-input activity-check" type="checkbox" data-field="NewModel">
                                         <label class="form-check-label">New Model</label>
                                     </li>
@@ -228,9 +228,9 @@
                                         <th>New Tooling / Localization</th>
                                         <th>Supplier Change / Localization</th>
                                         <th>Multiple Procurement / Localization</th>
-                                       @*  <th>Transfer Tooling</th> *@
+                                        @*  <th>Transfer Tooling</th> *@
                                         <th>Change Material</th>
-                                       @*  <th>New Model</th>
+                                        @*  <th>New Model</th>
                                         <th>Non-Concurrent</th> *@
                                         <th>Other 4M</th>
                                         <th>Reason of Change</th>

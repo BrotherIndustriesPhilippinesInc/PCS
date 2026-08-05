@@ -103,6 +103,11 @@ namespace PartsControlSystem.Controllers
                 importData.Other4M ??= "NO";
                 importData.MultipleProcurementLocalization ??= "NO";
 
+                // ── Defensive default for a required text column ─────────────
+                // (SupplierMoldNo is NOT NULL in the DB; the client form now sends
+                // it correctly, but this guards against any client that doesn't.)
+                importData.SupplierMoldNo ??= "";
+
                 // ── Determine initial CurrentProcess per selected activity ───
                 // Each activity has its own starting process.
                 // If multiple are checked, we create one ActivityCurrentProcess per activity.
@@ -369,7 +374,10 @@ namespace PartsControlSystem.Controllers
                     item.SupplierChangeLocalization ??= "NO";
                     item.Other4M ??= "NO";
                     item.MultipleProcurementLocalization ??= "NO";
-                
+
+                    // ── Defensive default for a required text column ─────────
+                    item.SupplierMoldNo ??= "";
+
                     item.DateImported = DateTime.UtcNow;
                     // Correct initial CurrentProcess per activity
                     var acpEntries = BuildActivityCurrentProcesses(item);

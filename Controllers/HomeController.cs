@@ -363,6 +363,7 @@ namespace PartsControlSystem.Controllers
         // ── CHANGED: now calls the shared TryAutoLoginAsync() so a reload here retries the login check ──
         [HttpGet]
         [AllowAnonymous]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> IportalConfirmationForm(string? ip = null)
         {
             var autoLoginResult = await TryAutoLoginAsync();
@@ -448,10 +449,15 @@ namespace PartsControlSystem.Controllers
 
             long systemId = 81;
 
+            Console.WriteLine($"[AutoLogin] Checking IP: {localIP}, SystemId: {systemId}"); // ← ADD THIS
+
             var loginEntry = await _sqlServerAppDbContextCas.Tbl_LOGIN_Request
                 .Where(x => x.IpAddress == localIP && x.SystemId == systemId)
                 .OrderByDescending(x => x.Id)
                 .FirstOrDefaultAsync();
+
+            Console.WriteLine($"[AutoLogin] Found entry: {(loginEntry != null ? loginEntry.Id.ToString() : "null")}"); // ← ADD THIS
+
 
             if (loginEntry == null)
                 return null;
@@ -497,20 +503,23 @@ namespace PartsControlSystem.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+
+
+
         private static readonly Dictionary<string, string> SectionEmails = new()
         {
-            ["DE"] = "johncarlo.asi@brother-biph.com.ph",
-            ["IQC"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP2"] = "johncarlo.asi@brother-biph.com.ph",
-            ["QA"] = "johncarlo.asi@brother-biph.com.ph",
-            ["SQC"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP1-PUR"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP2-TOOLING"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP2-DOM"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP2-TOOL"] = "johncarlo.asi@brother-biph.com.ph",
-            ["PC-DCI"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP2-OVR"] = "johncarlo.asi@brother-biph.com.ph",
-            ["MP1"] = "johncarlo.asi@brother-biph.com.ph",
+            ["DE"] = "danedward.navarez@brother-biph.com.ph",
+            ["IQC"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP2"] = "danedward.navarez@brother-biph.com.ph",
+            ["QA"] = "danedward.navarez@brother-biph.com.ph",
+            ["SQC"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP1-PUR"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP2-TOOLING"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP2-DOM"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP2-TOOL"] = "danedward.navarez@brother-biph.com.ph",
+            ["PC-DCI"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP2-OVR"] = "danedward.navarez@brother-biph.com.ph",
+            ["MP1"] = "danedward.navarez@brother-biph.com.ph",
         };
     }
 }
