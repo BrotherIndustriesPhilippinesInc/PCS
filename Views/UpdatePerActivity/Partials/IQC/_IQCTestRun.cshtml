@@ -86,7 +86,16 @@
             <!-- ROW 3 -->
             <div class="row g-2 mb-2">
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Limit Date</label>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Limit Date</label>
+                        <input type="date" class="form-control form-control-sm"
+                               value="@(item.LimitDate?.ToString("yyyy-MM-dd"))" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Remaining Days</label>
+                        <input type="number" class="form-control form-control-sm"
+                               value="@item.RemainingDays" readonly />
+                    </div>  <label class="form-label small mb-1">Limit Date</label>
                     <input type="date" class="form-control form-control-sm" readonly />
                 </div>
 

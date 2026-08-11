@@ -535,8 +535,10 @@
                     <label id="updateNewLabel">New Value</label>
                     <input class="dcu-input" id="updateNewCode" placeholder="Enter new value…"
                            style="font-family:Consolas,monospace;font-weight:600;text-transform:uppercase"
-                           oninput="this.value=this.value.toUpperCase()"
-                           onkeydown="if(event.key==='Enter') doUpdateCode()" />
+                           onkeydown="if(event.key==='Enter') doUpdateCode()" 
+                           maxlength="9" pattern="[A-Za-z0-9]{1,9}" title="Letters and numbers only, max 9 characters"
+                           oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9)"
+                           required/>
                     <input class="dcu-input" id="updateNewDate" type="date"
                            style="display:none"
                            onkeydown="if(event.key==='Enter') doUpdateCode()" />

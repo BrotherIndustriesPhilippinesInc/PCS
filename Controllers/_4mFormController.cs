@@ -333,14 +333,19 @@ namespace PartsControlSystem.Controllers
                 // ================= READ EXCEL =================
                 var records = new List<_4mForm>();
                 int skippedRows = 0;
+                var skipReasons = new List<string>(); // NEW: per-row skip diagnostics
 
                 using var streamExcel = excelFile.OpenReadStream();
                 using var reader = ExcelDataReader.ExcelReaderFactory.CreateReader(streamExcel);
 
                 reader.Read(); // Skip header row
 
+                int excelRowNumber = 1; // header is row 1, so first data row is row 2
+
                 while (reader.Read())
                 {
+                    excelRowNumber++;
+
                     string GetStringSafe(int col) => reader.GetValue(col)?.ToString()?.Trim() ?? string.Empty;
 
                     DateTime GetDateTimeSafe(int col)
@@ -364,14 +369,32 @@ namespace PartsControlSystem.Controllers
                     var partCode = GetStringSafe(5);
                     var partName = GetStringSafe(6);
 
-                    // Skip row if any required field is missing or invalid
-                    if (string.IsNullOrEmpty(companyName) ||
-                        string.IsNullOrEmpty(partCode) ||
-                        string.IsNullOrEmpty(partName) ||
-                        supplierSubmissionDate == DateTime.MinValue ||
-                        targetImplementationDate == DateTime.MinValue)
+                    // Detect completely blank row (all key cells empty) — skip silently, don't report
+                    bool isCompletelyBlankRow =
+                        string.IsNullOrEmpty(companyName) &&
+                        string.IsNullOrEmpty(partCode) &&
+                        string.IsNullOrEmpty(partName) &&
+                        supplierSubmissionDate == DateTime.MinValue &&
+                        targetImplementationDate == DateTime.MinValue;
+
+                    if (isCompletelyBlankRow)
+                    {
+                        continue; // trailing empty rows in the sheet — not worth reporting
+                    }
+
+                    // Skip row if any required field is missing or invalid, and record WHY
+                    var rowIssues = new List<string>();
+
+                    if (string.IsNullOrEmpty(companyName)) rowIssues.Add("Company Name is empty");
+                    if (string.IsNullOrEmpty(partCode)) rowIssues.Add("Part Code is empty");
+                    if (string.IsNullOrEmpty(partName)) rowIssues.Add("Part Name is empty");
+                    if (supplierSubmissionDate == DateTime.MinValue) rowIssues.Add("Supplier Submission Date is missing/invalid");
+                    if (targetImplementationDate == DateTime.MinValue) rowIssues.Add("Target Implementation Date is missing/invalid");
+
+                    if (rowIssues.Any())
                     {
                         skippedRows++;
+                        skipReasons.Add($"Row {excelRowNumber}: {string.Join(", ", rowIssues)}");
                         continue;
                     }
 
@@ -388,14 +411,29 @@ namespace PartsControlSystem.Controllers
                         SupplierSubmissionDate = supplierSubmissionDate,
                         TargetImplementationDate = targetImplementationDate,
                         AttachmentPath = savedAttachmentPath,
-                        Status = "-"
+                        Status = "-",
+                        PdfAttachmentPath = ""
                     };
 
                     records.Add(form);
                 }
 
                 if (!records.Any())
-                    return Json(new { success = false, message = "Excel file contains no complete data to insert." });
+                {
+                    // NEW: return the specific per-row reasons instead of a generic message
+                    string detail = skipReasons.Any()
+                        ? "<br/>" + string.Join("<br/>", skipReasons.Take(20))
+                        : "";
+
+                    if (skipReasons.Count > 20)
+                        detail += $"<br/>...and {skipReasons.Count - 20} more.";
+
+                    return Json(new
+                    {
+                        success = false,
+                        message = "Excel file contains no complete data to insert." + detail
+                    });
+                }
 
                 // ================= SAVE BATCH =================
                 _dbContext._4mForms.AddRange(records);
@@ -404,7 +442,12 @@ namespace PartsControlSystem.Controllers
                 // ================= RETURN JSON WITH ALERT INFO =================
                 string message = $"Batch upload successful!<br/>Control Number: <strong>{controlNumber}</strong><br/>Inserted: {records.Count}";
                 if (skippedRows > 0)
+                {
                     message += $"<br/>Skipped incomplete rows: {skippedRows}";
+                    message += "<br/>" + string.Join("<br/>", skipReasons.Take(20));
+                    if (skipReasons.Count > 20)
+                        message += $"<br/>...and {skipReasons.Count - 20} more.";
+                }
 
                 return Json(new
                 {
@@ -998,7 +1041,7 @@ namespace PartsControlSystem.Controllers
                 {
                     form.Status = "REJECTED by " + approverName + " " + DateTime.UtcNow;
                     //form.RejectedBy = approverName;          // optional column
-          
+
 
                     _dbContext.Update(form);
                 }

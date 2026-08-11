@@ -90,10 +90,36 @@ namespace PartsControlSystem.Controllers
                 .Select(g => g.OrderByDescending(x => x.UpdateAt).First())
                 .ToListAsync();
 
+            // ── Completion markers per activity type ──────────────────────
+            // Kapag natapat ang latest CurrentProcess dito, tapos na ang
+            // activity — hindi na siya dapat ipakita bilang "Pending Items".
+            bool IsCompletionMarker(string activityType, string process)
+            {
+                if (string.IsNullOrWhiteSpace(process)) return false;
+
+                return activityType switch
+                {
+                    "Renewal" => process == "MP2-PDC",
+                    "ChangeMaterial" => process == "First Delivery Date",
+                    "Other4M" => process == "FIRST DELIVERY DATE",
+                    "Localization" => process == "Completed",
+                    "SupplierChange" => process == "Completed",
+                    "MultipleProcurement" => process == "Completed",
+                    _ => false
+                };
+            }
+
             string GetPending(string controlNo, string activityType)
-                => latestProcesses.FirstOrDefault(p =>
+            {
+                var process = latestProcesses.FirstOrDefault(p =>
                     p.ControlNumber == controlNo &&
-                    p.ActivityType == activityType)?.CurrentProcess ?? "—";
+                    p.ActivityType == activityType)?.CurrentProcess;
+
+                if (IsCompletionMarker(activityType, process))
+                    return "—";
+
+                return process ?? "—";
+            }
 
             // ── RENEWAL / ADDITIONAL MOLD ───────────────────────────────────
             var renewalImports = importDatas.Where(x => x.RenewalAdditionalMold == "YES").ToList();
@@ -584,16 +610,16 @@ namespace PartsControlSystem.Controllers
         {
             var ws = wb.Worksheets.Add("Renewal");
             WriteInfoHeaders(ws);
-                    WriteActivityHeaders(ws,
-            "Renewal / Additional Mold",
-            bandHex: "92d050", groupHex: "70ad47", subHdrHex: "d4edda",
-            darkText: false,
-            groupNames: new[] {
+            WriteActivityHeaders(ws,
+    "Renewal / Additional Mold",
+    bandHex: "92d050", groupHex: "70ad47", subHdrHex: "d4edda",
+    darkText: false,
+    groupNames: new[] {
                 "Kataken Submission (Local Trial)",
                 "Kataken Finish (Local Trial)",
                 "Test Run"
-            },
-            startCol: 7);
+    },
+    startCol: 7);
             SetColumnWidths(ws, 3);
 
             for (int i = 0; i < rows.Count; i++)

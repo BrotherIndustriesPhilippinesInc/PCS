@@ -209,29 +209,30 @@
 
                 return text ? JSON.parse(text) : {};
             })
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Success',
-                        text: data.message,
-                        confirmButtonColor: '#198754'
-                    });
-                    form.reset();
-                    const modalEl = document.getElementById('registerSupplierModal');
-                    const modal = bootstrap.Modal.getInstance(modalEl);
-                    if (modal) {
-                        modal.hide();
-                    }
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        html: Array.isArray(data.errors) ? data.errors.join("<br>") : (data.errors || "Unknown error"),
-                        confirmButtonColor: '#dc3545'
-                    });
-                }
-            })
+               .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: data.message,
+                confirmButtonColor: '#198754'
+            });
+            form.reset();
+            const modalEl = document.getElementById('registerSupplierModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) {
+                modal.hide();
+            }
+            loadUserTable();   // <-- ADD THIS: refreshes the table with the new supplier
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                html: Array.isArray(data.errors) ? data.errors.join("<br>") : (data.errors || "Unknown error"),
+                confirmButtonColor: '#dc3545'
+            });
+        }
+    })
             .catch(err => {
                 console.error("Fetch error:", err);
                 Swal.fire({

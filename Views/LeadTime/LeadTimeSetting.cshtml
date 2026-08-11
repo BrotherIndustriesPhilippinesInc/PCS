@@ -785,15 +785,15 @@
             }
 
             // Determine endpoint
-                let endpoint;
+                   let endpoint;
                     if (tabKey === 'renewal') {
-                        endpoint = '/LeadTime/SaveAllRenewal';
+                        endpoint = '@Url.Action("SaveAllRenewal", "LeadTime")';
                     } else if (tabKey === 'cm') {
-                        endpoint = '/LeadTime/SaveAllChangeMaterial';
+                        endpoint = '@Url.Action("SaveAllChangeMaterial", "LeadTime")';
                     } else if (tabKey === 'o4m') {
-                        endpoint = '/LeadTime/SaveAllOther4M';
+                        endpoint = '@Url.Action("SaveAllOther4M", "LeadTime")';
                     } else {
-                        endpoint = '/LeadTime/SaveAllTooling';
+                        endpoint = '@Url.Action("SaveAllTooling", "LeadTime")';
                     }
             const saveBtn    = document.getElementById(`btn-save-${tabKey}`);
 

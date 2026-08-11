@@ -129,13 +129,17 @@
                                     <input type="text" id="department" class="form-control" placeholder="Auto fill" readonly>
                                 </td>
                             </tr>
-                            <tr id="sectionDeptToggleRow" style="display:none;">
-                                <th>User Section</th>
+                            <tr id="groupRow" style="display:none;">
+                                <th>Group</th>
                                 <td>
-                                    <div class="form-check form-switch">
+                                    <!-- MP1: toggle version -->
+                                    <div class="form-check form-switch" id="groupToggleWrapper" style="display:none;">
                                         <input class="form-check-input" type="checkbox" id="combineSectionDept">
                                         <label class="form-check-label" for="combineSectionDept" id="combineLabel"></label>
                                     </div>
+
+                                    <!-- MP2: dropdown version -->
+                                    <select class="form-select" id="groupDropdown" style="display:none;"></select>
                                 </td>
                             </tr>
 
@@ -292,19 +296,19 @@
                         throw new Error(data.message || "User not found.");
                     }
 
-                    document.getElementById("adid").value = data.adid || "";
-                    document.getElementById("firstName").value = data.firstName || "";
-                    document.getElementById("lastName").value = data.lastName || "";
-                    document.getElementById("email").value = data.email || "";
-                    document.getElementById("section").value = data.section || "";
-                    document.getElementById("department").value = data.department || "";
+                        document.getElementById("adid").value = data.adid || "";
+                        document.getElementById("firstName").value = data.firstName || "";
+                        document.getElementById("lastName").value = data.lastName || "";
+                        document.getElementById("email").value = data.email || "";
+                        document.getElementById("section").value = data.section || "";
+                        document.getElementById("department").value = data.department || "";
+                        document.getElementById("position").value = data.position || "";
 
-                    // Populate hidden Position
-                    document.getElementById("position").value = data.position || "";
-                    // reset toggle every new lookup
-                    document.getElementById("combineSectionDept").checked = false;
+                        // reset Group controls every new employee lookup
+                        document.getElementById("combineSectionDept").checked = false;
+                        document.getElementById("groupDropdown").dataset.populated = "false";
 
-                    computeFinalSection();
+                        computeFinalSection();
                 })
                 .catch(error => {
                   console.error("Error fetching employee data:", error);
@@ -519,33 +523,75 @@
     </script>
 
      <script>
-        function computeFinalSection() {
-        const rawSection = document.getElementById("section").value.trim();
-        const rawDept = document.getElementById("department").value.trim();
-        const combined = rawDept ? `${rawSection}-${rawDept}` : rawSection;
+               function computeFinalSection() {
+            const rawSection = document.getElementById("section").value.trim();
+            const rawDept = document.getElementById("department").value.trim();
+            const combined = rawDept ? `${rawSection}-${rawDept}` : rawSection;
 
-        const finalSectionInput = document.getElementById("finalSection");
-        const toggleRow = document.getElementById("sectionDeptToggleRow");
-        const toggleCheckbox = document.getElementById("combineSectionDept");
+            const finalSectionInput = document.getElementById("finalSection");
+            const groupRow = document.getElementById("groupRow");
+            const toggleWrapper = document.getElementById("groupToggleWrapper");
+            const dropdownWrapper = document.getElementById("groupDropdown");
+            const toggleCheckbox = document.getElementById("combineSectionDept");
 
-        if (rawSection === "PC") {
-            // always force combined, walang need i-toggle
-            finalSectionInput.value = combined;
-            toggleRow.style.display = "none";
-        } else if ((rawSection === "MP1" || rawSection === "MP2") && rawDept) {
-            toggleRow.style.display = "";
-            document.getElementById("combineLabel").textContent = `Save as "${combined}"`;
-            finalSectionInput.value = toggleCheckbox.checked ? combined : rawSection;
-        } else {
-            // DE, IQC, QA, SQC, etc. — walang combine option
-            toggleRow.style.display = "none";
-            toggleCheckbox.checked = false;
-            finalSectionInput.value = rawSection;
+            // reset visibility ng both controls muna
+            toggleWrapper.style.display = "none";
+            dropdownWrapper.style.display = "none";
+
+            if (rawSection === "PC") {
+                // forced, walang interaction
+                finalSectionInput.value = combined || "PC-DCI";
+                groupRow.style.display = "none";
+
+            } else if (rawSection === "MP1") {
+                // toggle: MP1 or MP1-PUR
+                groupRow.style.display = "";
+                toggleWrapper.style.display = "";
+                document.getElementById("combineLabel").textContent = `Save as "MP1-PUR"`;
+                finalSectionInput.value = toggleCheckbox.checked ? "MP1-PUR" : "MP1";
+
+            } else if (rawSection === "MP2") {
+                // dropdown: MP2 (no group) or MP2-DOM/TOOLING/TOOL/OVR
+                groupRow.style.display = "";
+                dropdownWrapper.style.display = "";
+                populateMP2Dropdown();
+                finalSectionInput.value = dropdownWrapper.value || "MP2";
+
+            } else {
+                // DE, IQC, QA, SQC, atbp — walang Group field
+                groupRow.style.display = "none";
+                finalSectionInput.value = rawSection;
+            }
         }
-    }
 
-    // listener para sa toggle mismo
-    document.getElementById("combineSectionDept").addEventListener("change", computeFinalSection);
+        function populateMP2Dropdown() {
+            const dropdown = document.getElementById("groupDropdown");
+
+            // populate once lang, para hindi mareset selection pag tumawag ulit
+            if (dropdown.dataset.populated === "true") return;
+
+            const options = [
+                { value: "MP2", label: "MP2 (No Group)" },
+                { value: "MP2-DOM", label: "MP2-DOM" },
+                { value: "MP2-TOOLING", label: "MP2-TOOLING" },
+                { value: "MP2-TOOL", label: "MP2-TOOL" },
+                { value: "MP2-OVR", label: "MP2-OVR" }
+            ];
+
+            dropdown.innerHTML = "";
+            options.forEach(opt => {
+                const el = document.createElement("option");
+                el.value = opt.value;
+                el.textContent = opt.label;
+                dropdown.appendChild(el);
+            });
+
+            dropdown.dataset.populated = "true";
+        }
+
+        // listeners
+        document.getElementById("combineSectionDept").addEventListener("change", computeFinalSection);
+        document.getElementById("groupDropdown").addEventListener("change", computeFinalSection);
     </script>
 
 }

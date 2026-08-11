@@ -1,5 +1,23 @@
 ﻿@model List<PartsControlSystem.ViewModels.Other4MProcessVM>
 
+<style>
+    .required-asterisk {
+        color: #dc3545;
+        margin-left: 2px;
+        font-weight: bold;
+    }
+
+    .required-field {
+        border: 2px solid #dc3545 !important;
+        background-color: #fffbe6 !important;
+    }
+
+        .required-field:focus {
+            border-color: #dc3545 !important;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+        }
+</style>
+
 @foreach (var item in Model)
 {
     <div class="card shadow-sm border-0 mb-4 process-card"
@@ -115,8 +133,8 @@
                             <input type="date" name="KatakenApprovedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Kataken Status</label>
-                            <select name="KatakenStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">Kataken Status<span class="required-asterisk">*</span></label>
+                            <select name="KatakenStatus" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select status</option>
                                 <option>FOR REQUEST</option>
                                 <option>NOT RECEIVED</option>
@@ -159,8 +177,8 @@
                             <input type="date" name="DEActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small fw-semibold">DE Eval Status</label>
-                            <select name="DEEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">DE Eval Status<span class="required-asterisk">*</span></label>
+                            <select name="DEEvalStatus" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select status</option>
                                 <option>FOR DE WORKFLOW CREATION</option>
                                 <option>FOR REQUEST</option>
@@ -193,8 +211,8 @@
                             <input type="date" name="EEActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small fw-semibold">EE Eval Status</label>
-                            <select name="EEEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">EE Eval Status<span class="required-asterisk">*</span></label>
+                            <select name="EEEvalStatus" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select status</option>
                                 <option>FOR REQUEST</option>
                                 <option>NOT RECEIVED</option>
@@ -234,8 +252,8 @@
                             <input type="date" name="QAActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label small fw-semibold">QA Eval Status</label>
-                            <select name="QAEvalStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">QA Eval Status<span class="required-asterisk">*</span></label>
+                            <select name="QAEvalStatus" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select status</option>
                                 <option>FOR QA WORKFLOW CREATION</option>
                                 <option>FOR REQUEST P.O TO SUPPLIER</option>
@@ -262,8 +280,8 @@
                             <input type="date" name="ITFActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">ITF Status</label>
-                            <select name="ITFStatus" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">ITF Status<span class="required-asterisk">*</span></label>
+                            <select name="ITFStatus" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select status</option>
                                 <option>FOR ITF CREATION</option>
                                 <option>ONGOING SYSTEM APPROVAL</option>
@@ -319,8 +337,8 @@
                             <input type="date" name="TestRunActualFinishedDate" class="form-control form-control-sm" style="background-color:#fffbe6;" />
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Test Result</label>
-                            <select name="TestResult" class="form-select form-select-sm" style="background-color:#fffbe6;" required>
+                            <label class="form-label small fw-semibold">Test Result<span class="required-asterisk">*</span></label>
+                            <select name="TestResult" class="form-select form-select-sm required-field" required>
                                 <option value="" disabled selected>Select result</option>
                                 <option>FOR TEST RUN NO. CREATION</option>
                                 <option>FOR REQUEST P.O TO SUPPLIER</option>
@@ -343,15 +361,15 @@
 
                     case "Implementation Date":
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">Implementation Date</label>
-                            <input type="date" name="ImplementationDate" class="form-control form-control-sm" style="background-color:#fffbe6;" required />
+                            <label class="form-label small fw-semibold">Implementation Date<span class="required-asterisk">*</span></label>
+                            <input type="date" name="ImplementationDate" class="form-control form-control-sm required-field" required />
                         </div>
                         break;
 
                     case "First Delivery Date":
                         <div class="col-md-3">
-                            <label class="form-label small fw-semibold">First Delivery Date</label>
-                            <input type="date" name="FirstDeliveryDate" class="form-control form-control-sm" style="background-color:#fffbe6;" required />
+                            <label class="form-label small fw-semibold">First Delivery Date<span class="required-asterisk">*</span></label>
+                            <input type="date" name="FirstDeliveryDate" class="form-control form-control-sm required-field" required />
                         </div>
                         break;
                 }

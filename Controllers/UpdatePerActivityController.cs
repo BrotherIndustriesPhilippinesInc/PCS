@@ -2213,5 +2213,44 @@ namespace PartsControlSystem.Controllers
             "Test Run" => dto.TestRunRemarks ?? string.Empty,
             _ => string.Empty
         };
+
+        // =====================================================================
+        // SHARED: Compute LimitDate & RemainingDays for any Renewal step
+        // =====================================================================
+        private void ComputeLimitAndRemaining<T>(
+            List<T> items,
+            Func<T, string> getControlNumber,
+            Func<T, string> getSection,
+            string activityName,
+            string process) where T : BasedImportData
+        {
+            var today = DateTime.UtcNow.Date;
+
+            foreach (var vm in items)
+            {
+                var controlNumber = getControlNumber(vm);
+                var section = getSection(vm);
+
+                // Base date = when this control number entered the current process step
+                var acp = _dbContext.ActivityCurrentProcesses
+                    .Where(x => x.ControlNumber == controlNumber && x.CurrentProcess == process)
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefault();
+
+                var baseDate = (acp?.UpdateAt ?? DateTime.UtcNow).Date;
+
+                // Lead time days from LeadTimes table, matched by Section + Activity only
+                // (no per-process granularity in this table — one value covers the whole activity)
+                var leadTime = _dbContext.LeadTimes
+                    .FirstOrDefault(x => x.Section == section && x.Activity == activityName);
+
+                if (leadTime != null)
+                {
+                    var limitDate = baseDate.AddDays((double)leadTime.LeadTimeValue);
+                    vm.LimitDate = limitDate;
+                    vm.RemainingDays = (limitDate - today).Days;
+                }
+            }
+        }
     }
 }

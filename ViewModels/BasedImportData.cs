@@ -20,7 +20,7 @@
         public string Activity { get; set; }
 
         //// Common computed fields
-        //public DateTime? LimitDate { get; set; }
-        //public int RemainingDays { get; set; }
+        public DateTime? LimitDate { get; set; }
+        public int RemainingDays { get; set; }
     }
 }

@@ -165,6 +165,14 @@
         background: #0dcaf0;
         color: #000 !important;
     }
+
+    .summary-note {
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 10px;
+        font-style: italic;
+    }
 </style>
 
 <div class="container-fluid bg-white py-3">
@@ -198,91 +206,109 @@
     </div>
 
     <!-- RENEWAL CARDS -->
-    <div id="cards-renewal" class="summary-cards">
-        @{
-            var rRows = Model.RenewalRows;
-        }
-        <div class="summary-card"><div class="card-label">Kataken Submission (Local Trial)</div><div class="card-circle circle-blue">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Finish (Local Trial)</div><div class="card-circle circle-green">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenFinish))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-orange">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_TestRun))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@rRows.Count</div></div>
+    <div id="cards-renewal-wrap">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-renewal" class="summary-cards">
+            @{
+                var rRows = Model.RenewalRows;
+            }
+            <div class="summary-card"><div class="card-label">Kataken Submission (Local Trial)</div><div class="card-circle circle-blue">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken Finish (Local Trial)</div><div class="card-circle circle-green">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_KatakenFinish))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-orange">@rRows.Count(r => r.IsPendingOn(IQCStepNames.Renewal_TestRun))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@rRows.Count</div></div>
+        </div>
     </div>
 
     <!-- MULTIPLE PROCUREMENT CARDS -->
-    <div id="cards-multi" class="summary-cards" style="display:none">
-        @{
-            var mRows = Model.MultipleProcurementRows;
-        }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_PPS))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunPOReq))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunSched))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@mRows.Count</div></div>
+    <div id="cards-multi-wrap" style="display:none">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-multi" class="summary-cards">
+            @{
+                var mRows = Model.MultipleProcurementRows;
+            }
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_KatakenAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_PPS))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunPOReq))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunSched))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@mRows.Count(r => r.IsPendingOn(IQCStepNames.MP_TestRunAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@mRows.Count</div></div>
+        </div>
     </div>
 
     <!-- SUPPLIER CHANGE CARDS -->
-    <div id="cards-supplier" class="summary-cards" style="display:none">
-        @{
-            var sRows = Model.SupplierChangeRows;
-        }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_PPS))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunPOReq))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunSched))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunAppr))</div></div>
-        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_FourMAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@sRows.Count</div></div>
+    <div id="cards-supplier-wrap" style="display:none">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-supplier" class="summary-cards">
+            @{
+                var sRows = Model.SupplierChangeRows;
+            }
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_KatakenAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Availability of Parts Packaging Standard</div><div class="card-circle circle-teal">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_PPS))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunPOReq))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunSched))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_TestRunAppr))</div></div>
+            <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@sRows.Count(r => r.IsPendingOn(IQCStepNames.SC_FourMAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@sRows.Count</div></div>
+        </div>
     </div>
 
     <!-- LOCALIZATION CARDS -->
-    <div id="cards-local" class="summary-cards" style="display:none">
-        @{
-            var lRows = Model.LocalizationRows;
-        }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunPOReq))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunSched))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunAppr))</div></div>
-        <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_FourMAppr))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@lRows.Count</div></div>
+    <div id="cards-local-wrap" style="display:none">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-local" class="summary-cards">
+            @{
+                var lRows = Model.LocalizationRows;
+            }
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Approval</div><div class="card-circle circle-green">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_KatakenAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run PO Request Date</div><div class="card-circle circle-orange">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunPOReq))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Schedule</div><div class="card-circle circle-yellow">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunSched))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run Approval Date</div><div class="card-circle circle-purple">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_TestRunAppr))</div></div>
+            <div class="summary-card"><div class="card-label">4M Approval Date</div><div class="card-circle circle-red">@lRows.Count(r => r.IsPendingOn(IQCStepNames.Loc_FourMAppr))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@lRows.Count</div></div>
+        </div>
     </div>
 
     <!-- CHANGE MATERIAL CARDS -->
-    <div id="cards-change" class="summary-cards" style="display:none">
-        @{
-            var cRows = Model.ChangeMaterialRows;
-        }
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-teal">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenEval))</div></div>
-        <div class="summary-card"><div class="card-label">QA Evaluation</div><div class="card-circle circle-green">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_QAEval))</div></div>
-        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_DEEval))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-purple">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_TestRun))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@cRows.Count</div></div>
+    <div id="cards-change-wrap" style="display:none">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-change" class="summary-cards">
+            @{
+                var cRows = Model.ChangeMaterialRows;
+            }
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-blue">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-teal">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_KatakenEval))</div></div>
+            <div class="summary-card"><div class="card-label">QA Evaluation</div><div class="card-circle circle-green">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_QAEval))</div></div>
+            <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_DEEval))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-purple">@cRows.Count(r => r.IsPendingOn(IQCStepNames.CM_TestRun))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@cRows.Count</div></div>
+        </div>
     </div>
 
     <!-- OTHER 4M CARDS -->
-    <div id="cards-o4m" class="summary-cards" style="display:none">
-        @{
-            var oRows = Model.Other4MRows;
-        }
-        <div class="summary-card"><div class="card-label">Test Run Meeting Date</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunMeeting))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Request Date</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenRequest))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenSub))</div></div>
-        <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenEval))</div></div>
-        <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DEEval))</div></div>
-        <div class="summary-card"><div class="card-label">EE Evaluation</div><div class="card-circle circle-yellow">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_EEEval))</div></div>
-        <div class="summary-card"><div class="card-label">Special QA Evaluation</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_QAEval))</div></div>
-        <div class="summary-card"><div class="card-label">ITF Process</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_ITF))</div></div>
-        <div class="summary-card"><div class="card-label">Delivery PO Requisition</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DeliveryPO))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run PO Request</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunPO))</div></div>
-        <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRun))</div></div>
-        <div class="summary-card"><div class="card-label">Implementation Date</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_Implementation))</div></div>
-        <div class="summary-card"><div class="card-label">First Delivery Date</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_FirstDelivery))</div></div>
-        <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@oRows.Count</div></div>
+    <div id="cards-o4m-wrap" style="display:none">
+        <p class="summary-note">Note: Process step counts show items still pending on that step; they won't necessarily add up to Total.</p>
+        <div id="cards-o4m" class="summary-cards">
+            @{
+                var oRows = Model.Other4MRows;
+            }
+            <div class="summary-card"><div class="card-label">Test Run Meeting Date</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunMeeting))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken Request Date</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenRequest))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken PH Sample Submission</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenSub))</div></div>
+            <div class="summary-card"><div class="card-label">Kataken Evaluation Approval</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_KatakenEval))</div></div>
+            <div class="summary-card"><div class="card-label">DE Evaluation</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DEEval))</div></div>
+            <div class="summary-card"><div class="card-label">EE Evaluation</div><div class="card-circle circle-yellow">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_EEEval))</div></div>
+            <div class="summary-card"><div class="card-label">Special QA Evaluation</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_QAEval))</div></div>
+            <div class="summary-card"><div class="card-label">ITF Process</div><div class="card-circle circle-orange">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_ITF))</div></div>
+            <div class="summary-card"><div class="card-label">Delivery PO Requisition</div><div class="card-circle circle-blue">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_DeliveryPO))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run PO Request</div><div class="card-circle circle-teal">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRunPO))</div></div>
+            <div class="summary-card"><div class="card-label">Test Run</div><div class="card-circle circle-green">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_TestRun))</div></div>
+            <div class="summary-card"><div class="card-label">Implementation Date</div><div class="card-circle circle-purple">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_Implementation))</div></div>
+            <div class="summary-card"><div class="card-label">First Delivery Date</div><div class="card-circle circle-red">@oRows.Count(r => r.IsPendingOn(IQCStepNames.O4M_FirstDelivery))</div></div>
+            <div class="summary-card"><div class="card-label">Total</div><div class="card-circle circle-gray">@oRows.Count</div></div>
+        </div>
     </div>
 
     <!-- ══ PANEL 1 — RENEWAL ══ -->
@@ -740,15 +766,15 @@
 }
 
 <script>
-       const panelMap = { renewal:'panel-renewal', multi:'panel-multi', supplier:'panel-supplier', local:'panel-local', change:'panel-change', o4m:'panel-o4m' };
-    const cardMap  = { renewal:'cards-renewal', multi:'cards-multi', supplier:'cards-supplier', local:'cards-local', change:'cards-change', o4m:'cards-o4m' };
+    const panelMap = { renewal:'panel-renewal', multi:'panel-multi', supplier:'panel-supplier', local:'panel-local', change:'panel-change', o4m:'panel-o4m' };
+    const cardMap  = { renewal:'cards-renewal-wrap', multi:'cards-multi-wrap', supplier:'cards-supplier-wrap', local:'cards-local-wrap', change:'cards-change-wrap', o4m:'cards-o4m-wrap' };
 
     function switchActivity(val) {
         Object.values(panelMap).forEach(id => document.getElementById(id)?.classList.remove('active'));
         Object.values(cardMap).forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
         document.getElementById(panelMap[val])?.classList.add('active');
-        const cards = document.getElementById(cardMap[val]);
-        if (cards) cards.style.display = 'flex';
+        const cardsWrap = document.getElementById(cardMap[val]);
+        if (cardsWrap) cardsWrap.style.display = 'block';
         document.getElementById('txtSearch').value = '';
     }
 
