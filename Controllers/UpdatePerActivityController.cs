@@ -278,7 +278,7 @@ namespace PartsControlSystem.Controllers
         [HttpGet("ActivityDetails")]
         public IActionResult ActivityDetails(string activityName)
         {
-            
+
             IQueryable<ImportData> query = _dbContext.ImportDatas;
 
             query = activityName switch
@@ -466,22 +466,28 @@ namespace PartsControlSystem.Controllers
 
             return process switch
             {
-                "Tooling Quotation Request~Approval" => await HandleToolingQuotationRequestApproval(query, process),
-                "Tooling Request-Order" => await HandleToolingRequestOrder(query, process),
-                "Tooling PO Issuance" => await HandleToolingPoIssuance(query, process),
-                "DFM/QCD Approval" => await HandleDFMQCDApproval(query, process),
-                "Tooling Fabrication" => await HandleToolingFabrication(query, process),
-                "Tooling Transfer (Arrival in PH)" => await HandleToolingTransfer(query, process),
-                "Kataken Submission (Local Trial)" => await HandleKatakenSubmission(query, process),
-                "Kataken Finish (Local Trial)" => await HandleKatakenFinish(query, process),
-                "DE Evaluation" => await HandleEvaluation(query, process),
-                "QA Special Evaluation" => await HandleSpecialEvaluation(query, process),
-                "Test Run" => await HandleTestRun(query, process),
+                "Tooling Quotation Request~Approval" => await HandleToolingQuotationRequestApproval(query, process, section),
+                "Tooling Request-Order" => await HandleToolingRequestOrder(query, process, section),
+                "Tooling PO Issuance" => await HandleToolingPoIssuance(query, process, section),
+                "DFM/QCD Approval" => await HandleDFMQCDApproval(query, process, section),
+                "Tooling Fabrication" => await HandleToolingFabrication(query, process, section),
+                "Tooling Transfer (Arrival in PH)" => await HandleToolingTransfer(query, process, section),
+                "Kataken Submission (Local Trial)" => await HandleKatakenSubmission(query, process, section),
+                "Kataken Finish (Local Trial)" => await HandleKatakenFinish(query, process, section),
+                "DE Evaluation" => await HandleEvaluation(query, process, section),
+                "QA Special Evaluation" => await HandleSpecialEvaluation(query, process, section),
+                "Test Run" => await HandleTestRun(query, process, section),
                 _ => Content("<div class='text-muted'>No process partial defined</div>")
             };
         }
 
-        private async Task<IActionResult> HandleToolingQuotationRequestApproval(IQueryable<ImportData> query, string process)
+        // NOTE: All Handle* methods below now call ComputeLimitAndRemaining(...) right after
+        // mapping the raw ImportData rows into their VM, so LimitDate/RemainingDays are
+        // populated before the PartialView renders. Activity name passed is "Renewal / Additional
+        // Mold" to match the LeadTimes table lookup (Section + Activity), consistent with how
+        // the corresponding Save* actions on this controller tag these steps as ActivityType = "Renewal".
+
+        private async Task<IActionResult> HandleToolingQuotationRequestApproval(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -492,10 +498,22 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/MP2/_MP2ToolingQuotationRequestApproval", list.Select(a => _updateActivityMapperService.MapQuotationRequest(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapQuotationRequest(a)).ToList();
+
+            // Use the processing department's section (e.g. "MP2") for the LeadTimes lookup,
+            // NOT vm.Section — that's the part's origin section (e.g. "IQC") and won't match
+            // any row in LeadTimes for this activity.
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/MP2/_MP2ToolingQuotationRequestApproval", vms);
         }
 
-        private async Task<IActionResult> HandleToolingRequestOrder(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleToolingRequestOrder(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -506,10 +524,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/MP2/_MP2ToolingRequestOrder", list.Select(a => _updateActivityMapperService.MapRequestOrder(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapRequestOrder(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/MP2/_MP2ToolingRequestOrder", vms);
         }
 
-        private async Task<IActionResult> HandleToolingPoIssuance(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleToolingPoIssuance(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -520,10 +547,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/MP2/_MP2ToolingPOIssuance", list.Select(a => _updateActivityMapperService.MapPoIssuance(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapPoIssuance(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/MP2/_MP2ToolingPOIssuance", vms);
         }
 
-        private async Task<IActionResult> HandleDFMQCDApproval(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleDFMQCDApproval(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -534,10 +570,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/SQC/_SQCDFM_QCDApproval", list.Select(a => _updateActivityMapperService.MapDfmQcdApproval(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapDfmQcdApproval(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/SQC/_SQCDFM_QCDApproval", vms);
         }
 
-        private async Task<IActionResult> HandleToolingFabrication(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleToolingFabrication(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -548,10 +593,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/MP2/_MP2ToolingFabrication", list.Select(a => _updateActivityMapperService.MapToolingFabrication(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapToolingFabrication(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/MP2/_MP2ToolingFabrication", vms);
         }
 
-        private async Task<IActionResult> HandleToolingTransfer(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleToolingTransfer(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -562,10 +616,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/MP2/_MP2ToolingTransfer", list.Select(a => _updateActivityMapperService.MapToolingTransfer(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapToolingTransfer(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/MP2/_MP2ToolingTransfer", vms);
         }
 
-        private async Task<IActionResult> HandleKatakenSubmission(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleKatakenSubmission(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -576,10 +639,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/IQC/_IQCKatakenSubmission", list.Select(a => _updateActivityMapperService.MapKatakenSubmission(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapKatakenSubmission(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/IQC/_IQCKatakenSubmission", vms);
         }
 
-        private async Task<IActionResult> HandleKatakenFinish(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleKatakenFinish(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -590,10 +662,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/IQC/_IQCKatakenFinish", list.Select(a => _updateActivityMapperService.MapKatakenFinish(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapKatakenFinish(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/IQC/_IQCKatakenFinish", vms);
         }
 
-        private async Task<IActionResult> HandleEvaluation(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleEvaluation(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -604,10 +685,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/DE/_DEEvaluation", list.Select(a => _updateActivityMapperService.MapEvaluation(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapEvaluation(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/DE/_DEEvaluation", vms);
         }
 
-        private async Task<IActionResult> HandleSpecialEvaluation(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleSpecialEvaluation(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -618,10 +708,19 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/QA/_QASpecialEvaluation", list.Select(a => _updateActivityMapperService.MapSpecialEvaluation(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapSpecialEvaluation(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/QA/_QASpecialEvaluation", vms);
         }
 
-        private async Task<IActionResult> HandleTestRun(IQueryable<ImportData> query, string process)
+        private async Task<IActionResult> HandleTestRun(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
                 .Where(importData =>
@@ -632,7 +731,16 @@ namespace PartsControlSystem.Controllers
             if (!list.Any())
                 return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
 
-            return PartialView("Partials/IQC/_IQCTestRun", list.Select(a => _updateActivityMapperService.MapTestRun(a)));
+            var vms = list.Select(a => _updateActivityMapperService.MapTestRun(a)).ToList();
+
+            ComputeLimitAndRemaining(
+                vms,
+                vm => vm.ControlNo,
+                vm => section,
+                process,      // LeadTimes.Activity actually stores the process-step name
+                process);
+
+            return PartialView("Partials/IQC/_IQCTestRun", vms);
         }
 
         // =====================================================================
@@ -723,6 +831,13 @@ namespace PartsControlSystem.Controllers
                 StepOrder = mapping.StepOrder,
                 NextProcessStep = nextProcess
             }).ToList();
+
+            // NOTE: NewToolingLocalizationProcessVM does not currently inherit BasedImportData,
+            // so ComputeLimitAndRemaining(...) is not wired here. If you want Limit
+            // Date/Remaining Days on this screen too, add LimitDate/RemainingDays properties
+            // to NewToolingLocalizationProcessVM (or have it inherit BasedImportData) and share
+            // its VM class definition so the call can be added with the correct property
+            // accessors — same as was done for the MP2 handlers above.
 
             return PartialView("Partials/NewTooling/_NewToolingLocalizationProcess", viewModels);
         }
@@ -909,6 +1024,10 @@ namespace PartsControlSystem.Controllers
                 StepOrder = mapping.StepOrder,
                 NextProcessStep = nextProcess
             }).ToList();
+
+            // NOTE: same as GetNewToolingPartial above — ChangeMaterialProcessVM does not
+            // currently inherit BasedImportData, so LimitDate/RemainingDays are not wired
+            // here. Share the VM if you want this screen included too.
 
             return PartialView("Partials/ChangeMaterial/_ChangeMaterialProcess", viewModels);
         }
@@ -1907,7 +2026,7 @@ namespace PartsControlSystem.Controllers
             string nextProcess,
             string inputBy,
             string remarks = "")
-                {
+        {
             var previousLog = _dbContext.TransactionLogs
                 .Where(x => x.TransactionNumber == importData.ControlNo
                          && x.Activity == activity
@@ -2014,6 +2133,10 @@ namespace PartsControlSystem.Controllers
                 StepOrder = mapping.StepOrder,
                 NextProcessStep = displayNextStep
             }).ToList();
+
+            // NOTE: same as GetNewToolingPartial/GetChangeMaterialPartial above —
+            // Other4MProcessVM does not currently inherit BasedImportData, so
+            // LimitDate/RemainingDays are not wired here.
 
             return PartialView("Partials/Other4M/_Other4MProcess", viewModels);
         }
@@ -2231,24 +2354,43 @@ namespace PartsControlSystem.Controllers
                 var controlNumber = getControlNumber(vm);
                 var section = getSection(vm);
 
+                // ── TEMP DEBUG — remove after troubleshooting ──
+                Console.WriteLine($"[ComputeLimitAndRemaining] controlNumber='{controlNumber}' section='{section}' activityName(process)='{activityName}'");
+
                 // Base date = when this control number entered the current process step
                 var acp = _dbContext.ActivityCurrentProcesses
-                    .Where(x => x.ControlNumber == controlNumber && x.CurrentProcess == process)
+                    .Where(x => x.ControlNumber == controlNumber && x.CurrentProcess.Trim().ToLower() == process.Trim().ToLower())
                     .OrderByDescending(x => x.UpdateAt)
                     .FirstOrDefault();
+
+                // ── TEMP DEBUG ──
+                Console.WriteLine($"[ComputeLimitAndRemaining] acp found={acp != null}, acp.UpdateAt={acp?.UpdateAt}");
 
                 var baseDate = (acp?.UpdateAt ?? DateTime.UtcNow).Date;
 
                 // Lead time days from LeadTimes table, matched by Section + Activity only
                 // (no per-process granularity in this table — one value covers the whole activity)
                 var leadTime = _dbContext.LeadTimes
-                    .FirstOrDefault(x => x.Section == section && x.Activity == activityName);
+                    .FirstOrDefault(x =>
+                        x.Section.Trim().ToLower() == section.Trim().ToLower() &&
+                        x.Activity.Trim().ToLower() == activityName.Trim().ToLower());
+
+                // ── TEMP DEBUG ──
+                Console.WriteLine($"[ComputeLimitAndRemaining] leadTime found={leadTime != null}, leadTime.LeadTimeValue={leadTime?.LeadTimeValue}");
 
                 if (leadTime != null)
                 {
                     var limitDate = baseDate.AddDays((double)leadTime.LeadTimeValue);
                     vm.LimitDate = limitDate;
                     vm.RemainingDays = (limitDate - today).Days;
+
+                    // ── TEMP DEBUG ──
+                    Console.WriteLine($"[ComputeLimitAndRemaining] SET vm.LimitDate={vm.LimitDate}, vm.RemainingDays={vm.RemainingDays}");
+                }
+                else
+                {
+                    // ── TEMP DEBUG ──
+                    Console.WriteLine($"[ComputeLimitAndRemaining] SKIPPED — no LeadTimes match for section='{section}' activityName='{activityName}'");
                 }
             }
         }

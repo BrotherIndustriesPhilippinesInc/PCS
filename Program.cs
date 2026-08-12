@@ -23,8 +23,11 @@ builder.Services.AddDbContext<SqlServerAppDbContextCas>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection_CAS")));
 
 // PostgresSQL
+//builder.Services.AddDbContext<PostgreAppDbContext>(options =>
+//    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddDbContext<PostgreAppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .EnableSensitiveDataLogging());   // ← TEMPORARY, para makita totoong parameter values sa SQL logs — tanggalin pagkatapos ng troubleshooting
 
 builder.Services.AddScoped<IUpdateActivityMapperService, UpdateActivityMapperService>();
 //builder.Services.AddScoped<MP1SaveService>();
