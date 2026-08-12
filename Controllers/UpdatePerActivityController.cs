@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Drawing;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PartsControlSystem.Data;
 using PartsControlSystem.DTO;
@@ -487,32 +488,96 @@ namespace PartsControlSystem.Controllers
         // Mold" to match the LeadTimes table lookup (Section + Activity), consistent with how
         // the corresponding Save* actions on this controller tag these steps as ActivityType = "Renewal".
 
-        private async Task<IActionResult> HandleToolingQuotationRequestApproval(IQueryable<ImportData> query, string process, string section)
+        private async Task<IActionResult> HandleToolingQuotationRequestApproval(
+            IQueryable<ImportData> query,
+            string process,
+            string section)
         {
             var list = await query
                 .Where(importData =>
-                    !_dbContext.ToolingQuotationRequestApproval.Any(mp2 => mp2.ControlNumber == importData.ControlNo)
-                    && _dbContext.ActivityCurrentProcesses.Any(acp => acp.ControlNumber == importData.ControlNo && acp.CurrentProcess == process))
+                    !_dbContext.ToolingQuotationRequestApproval
+                        .Any(mp2 => mp2.ControlNumber == importData.ControlNo)
+                    &&
+                    _dbContext.ActivityCurrentProcesses
+                        .Any(acp =>
+                            acp.ControlNumber == importData.ControlNo &&
+                            acp.CurrentProcess == process))
                 .ToListAsync();
 
             if (!list.Any())
-                return Content("<div class='alert alert-warning text-center mt-3'><i class='fa-solid fa-triangle-exclamation me-2'></i>No imported data for this process yet.</div>");
+            {
+                return Content(
+                    "<div class='alert alert-warning text-center mt-3'>" +
+                    "<i class='fa-solid fa-triangle-exclamation me-2'></i>" +
+                    "No imported data for this process yet." +
+                    "</div>");
+            }
 
-            var vms = list.Select(a => _updateActivityMapperService.MapQuotationRequest(a)).ToList();
+            var vms = list
+                .Select(a => _updateActivityMapperService.MapQuotationRequest(a))
+                .ToList();
 
-            // Use the processing department's section (e.g. "MP2") for the LeadTimes lookup,
-            // NOT vm.Section — that's the part's origin section (e.g. "IQC") and won't match
-            // any row in LeadTimes for this activity.
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
 
-            return PartialView("Partials/MP2/_MP2ToolingQuotationRequestApproval", vms);
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
+
+            return PartialView(
+                "Partials/MP2/_MP2ToolingQuotationRequestApproval",
+                vms);
         }
-
         private async Task<IActionResult> HandleToolingRequestOrder(IQueryable<ImportData> query, string process, string section)
         {
             var list = await query
@@ -526,12 +591,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapRequestOrder(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/MP2/_MP2ToolingRequestOrder", vms);
         }
@@ -549,12 +664,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapPoIssuance(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/MP2/_MP2ToolingPOIssuance", vms);
         }
@@ -572,12 +737,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapDfmQcdApproval(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/SQC/_SQCDFM_QCDApproval", vms);
         }
@@ -595,12 +810,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapToolingFabrication(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/MP2/_MP2ToolingFabrication", vms);
         }
@@ -618,12 +883,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapToolingTransfer(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/MP2/_MP2ToolingTransfer", vms);
         }
@@ -641,12 +956,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapKatakenSubmission(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/IQC/_IQCKatakenSubmission", vms);
         }
@@ -664,12 +1029,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapKatakenFinish(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/IQC/_IQCKatakenFinish", vms);
         }
@@ -687,12 +1102,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapEvaluation(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/DE/_DEEvaluation", vms);
         }
@@ -710,12 +1175,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapSpecialEvaluation(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/QA/_QASpecialEvaluation", vms);
         }
@@ -733,12 +1248,62 @@ namespace PartsControlSystem.Controllers
 
             var vms = list.Select(a => _updateActivityMapperService.MapTestRun(a)).ToList();
 
-            ComputeLimitAndRemaining(
-                vms,
-                vm => vm.ControlNo,
-                vm => section,
-                process,      // LeadTimes.Activity actually stores the process-step name
-                process);
+            // ============================================================
+            // GET LEAD TIME FROM DATABASE
+            // ============================================================
+
+            var leadTime = await _dbContext.LeadTimes
+                .FirstOrDefaultAsync(x =>
+                    x.Activity.Trim().ToLower() == process.Trim().ToLower() &&
+                    x.Section.Trim().ToLower() == section.Trim().ToLower());
+
+            if (leadTime == null)
+            {
+                return Content(
+                    $"<div class='alert alert-danger text-center mt-3'>" +
+                    $"Lead Time not configured for " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(process)}</strong> " +
+                    $"and section " +
+                    $"<strong>{System.Net.WebUtility.HtmlEncode(section)}</strong>." +
+                    $"</div>");
+            }
+
+            var today = DateTime.UtcNow.Date;
+
+            // ============================================================
+            // COMPUTE EACH ITEM
+            // ============================================================
+
+            foreach (var v in vms)
+            {
+                var acp = await _dbContext.ActivityCurrentProcesses
+                    .Where(x =>
+                        x.ControlNumber == v.ControlNo &&
+                        x.CurrentProcess.Trim().ToLower() ==
+                        process.Trim().ToLower())
+                    .OrderByDescending(x => x.UpdateAt)
+                    .FirstOrDefaultAsync();
+
+                if (acp == null)
+                {
+                    v.LimitDate = null;
+                    v.RemainingDays = 0;
+                    continue;
+                }
+
+                // WHEN THE ITEM ENTERED THE CURRENT PROCESS
+                var baseDate = acp.UpdateAt.Date;
+
+                // BASE DATE + DATABASE LEAD TIME
+                var limitDate = baseDate.AddDays(
+                    (double)leadTime.LeadTimeValue);
+
+                v.LimitDate = limitDate;
+
+                // LIMIT DATE - TODAY
+                v.RemainingDays =
+                    (limitDate - DateTime.UtcNow.Date).Days;
+            }
 
             return PartialView("Partials/IQC/_IQCTestRun", vms);
         }
@@ -2340,7 +2905,7 @@ namespace PartsControlSystem.Controllers
         // =====================================================================
         // SHARED: Compute LimitDate & RemainingDays for any Renewal step
         // =====================================================================
-        private void ComputeLimitAndRemaining<T>(
+        private string ComputeLimitAndRemaining<T>(
             List<T> items,
             Func<T, string> getControlNumber,
             Func<T, string> getSection,
@@ -2348,6 +2913,7 @@ namespace PartsControlSystem.Controllers
             string process) where T : BasedImportData
         {
             var today = DateTime.UtcNow.Date;
+            string diagnostic = null;
 
             foreach (var vm in items)
             {
@@ -2378,6 +2944,23 @@ namespace PartsControlSystem.Controllers
                 // ── TEMP DEBUG ──
                 Console.WriteLine($"[ComputeLimitAndRemaining] leadTime found={leadTime != null}, leadTime.LeadTimeValue={leadTime?.LeadTimeValue}");
 
+                // ── TEMP DIAGNOSTIC — collected here and returned to the caller (instead of
+                // thrown) so it can be rendered directly as the HTML response, guaranteed
+                // visible in the browser regardless of exception-handling middleware setup.
+                // Only triggers for the one control number we're debugging, only when no
+                // match was found. Shows the exact runtime values as hex so any invisible
+                // character (non-breaking space, different tilde, etc.) is exposed.
+                if (leadTime == null && diagnostic == null)
+                {
+                    string ToHex(string s) => s == null ? "(null)" : string.Join(" ", System.Text.Encoding.UTF8.GetBytes(s).Select(b => b.ToString("X2")));
+                    diagnostic =
+                        $"DEBUG: no LeadTimes match.\n" +
+                        $"controlNumber='{controlNumber}'\n" +
+                        $"section='{section}' (len={section?.Length}) hex=[{ToHex(section)}]\n" +
+                        $"activityName(process)='{activityName}' (len={activityName?.Length}) hex=[{ToHex(activityName)}]\n" +
+                        $"process param='{process}' (len={process?.Length}) hex=[{ToHex(process)}]";
+                }
+
                 if (leadTime != null)
                 {
                     var limitDate = baseDate.AddDays((double)leadTime.LeadTimeValue);
@@ -2393,6 +2976,8 @@ namespace PartsControlSystem.Controllers
                     Console.WriteLine($"[ComputeLimitAndRemaining] SKIPPED — no LeadTimes match for section='{section}' activityName='{activityName}'");
                 }
             }
+
+            return diagnostic;
         }
     }
 }
