@@ -547,17 +547,18 @@
         }
 
         // Chevron rotation
-        document.querySelectorAll('tr[data-bs-toggle="collapse"]').forEach(tr => {
-            tr.addEventListener('click', function() {
-                const icon = this.querySelector('.fa-chevron-down');
-                const targetId = this.getAttribute('data-bs-target');
-                const collapseEl = document.querySelector(targetId);
-                if (collapseEl.classList.contains('show')) {
-                    icon.style.transform = 'rotate(0deg)';
-                } else {
-                    icon.style.transform = 'rotate(180deg)';
-                }
-            });
+                document.addEventListener('click', function (e) {
+            const tr = e.target.closest('tr[data-bs-toggle="collapse"]');
+            if (!tr) return;
+
+            const icon = tr.querySelector('.fa-chevron-down');
+            const targetId = tr.getAttribute('data-bs-target');
+            const collapseEl = document.querySelector(targetId);
+            if (!icon || !collapseEl) return;
+
+            icon.style.transform = collapseEl.classList.contains('show')
+                ? 'rotate(0deg)'
+                : 'rotate(180deg)';
         });
     </script>
 
@@ -713,41 +714,38 @@
 
     <script>
         // Handle click for send button
-        document.addEventListener("DOMContentLoaded", () => {
-            document.querySelectorAll(".send-btn").forEach(btn => {
-                btn.addEventListener("click", async function () {
-                    const id = this.dataset.id;
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                 document.addEventListener("click", async function (e) {
+            const btn = e.target.closest(".send-btn");
+            if (!btn) return;
 
-                    const formData = new FormData();
-                    formData.append("id", id);
-                    formData.append("__RequestVerificationToken", token);
+            const id = btn.dataset.id;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
 
-                    try {
-                        const res = await fetch('@Url.Action("SendEmail", "_4mForm")', {
-                            method: "POST",
-                            body: formData
-                        });
+            btn.disabled = true; // prevent double-click while the request is in flight
 
-                        const data = await res.json();
+            const formData = new FormData();
+            formData.append("id", id);
+            formData.append("__RequestVerificationToken", token);
 
-                        if (data.success) {
-                            Swal.fire({
-                                icon: "success",
-                                title: "Email Sent!",
-                                text: data.message
-                            });
-
-                            // Reload table or hide sent row
-                            refreshFormUpdateTable();
-                        } else {
-                            Swal.fire("Error", data.message, "error");
-                        }
-                    } catch (err) {
-                        Swal.fire("Error", err.toString(), "error");
-                    }
+            try {
+                const res = await fetch('@Url.Action("SendEmail", "_4mForm")', {
+                    method: "POST",
+                    body: formData
                 });
-            });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    Swal.fire({ icon: "success", title: "Email Sent!", text: data.message });
+                    refreshFormUpdateTable();
+                } else {
+                    Swal.fire("Error", data.message, "error");
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                Swal.fire("Error", err.toString(), "error");
+                btn.disabled = false;
+            }
         });
     </script>
 

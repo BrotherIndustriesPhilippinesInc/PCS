@@ -63,7 +63,7 @@ namespace PartsControlSystem.Controllers
             // Filter forms by mapped status
             var approvalForms = allForms
                 .Where(f => f.Status == statusForApproval)
-                .DistinctBy(f => f.ControlNumber)
+                //.DistinctBy(f => f.ControlNumber)
                 .ToList();
 
             var vm = new FourMFormViewModel

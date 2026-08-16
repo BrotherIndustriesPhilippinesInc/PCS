@@ -31,39 +31,43 @@ namespace PartsControlSystem.Controllers
             var today = DateTime.UtcNow;
 
             var viewModel = logs
-                .OrderByDescending(x => x.InputDate)
-                .Select(x =>
+            .OrderByDescending(x => x.InputDate)
+            .Select(x =>
+            {
+                string actualCurrentProcess = x.CurrentProcess;
+                bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
+
+                string resolvedStatus = x.Status == "Deleted"
+                    ? "Deleted"
+                    : ActivityComputationHelper.ResolveTransactionLogStatus(
+                        isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
+                        leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
+
+                // ✅ kapag na-reach na yung final step, ipapakita na lang "Completed"
+                // sa Current Process column, tugma sa Status na "Completed" na rin
+                string displayCurrentProcess = (x.Status != "Deleted" && isCompleted)
+                    ? "Completed"
+                    : actualCurrentProcess;
+
+                return new TransactionLogViewModel
                 {
-                    // ✅ ginagamit na yung CurrentProcess ng row mismo — tama na ito
-                    // dahil naka-scope na siya per (TransactionNumber, Activity) mula sa GroupBy sa taas
-                    string actualCurrentProcess = x.CurrentProcess;
-                    bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
-
-                    string resolvedStatus = x.Status == "Deleted"
-                        ? "Deleted"
-                        : ActivityComputationHelper.ResolveTransactionLogStatus(
-                            isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
-                            leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
-
-                    return new TransactionLogViewModel
-                    {
-                        TransactionNumber = x.TransactionNumber,
-                        PartName = x.PartName,
-                        Supplier = x.Supplier,
-                        Model = x.Model,
-                        Activity = x.Activity,
-                        Source = x.Source,
-                        PIC = x.PIC,
-                        StartDate = x.StartDate,
-                        EndDate = x.EndDate,
-                        ReceivedDate = x.ReceivedDate,
-                        InputDate = x.InputDate,
-                        CurrentProcess = x.CurrentProcess,
-                        Status = resolvedStatus,
-                        Remarks = x.Remarks
-                    };
-                })
-                .ToList();
+                    TransactionNumber = x.TransactionNumber,
+                    PartName = x.PartName,
+                    Supplier = x.Supplier,
+                    Model = x.Model,
+                    Activity = x.Activity,
+                    Source = x.Source,
+                    PIC = x.PIC,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    ReceivedDate = x.ReceivedDate,
+                    InputDate = x.InputDate,
+                    CurrentProcess = displayCurrentProcess,
+                    Status = resolvedStatus,
+                    Remarks = x.Remarks
+                };
+            })
+            .ToList();
 
             return View("TransactionLogs", viewModel);
         }
@@ -96,39 +100,41 @@ namespace PartsControlSystem.Controllers
             var today = DateTime.UtcNow;
 
             var rows = logs
-                .OrderByDescending(x => x.InputDate)
-                .Select(x =>
+            .OrderByDescending(x => x.InputDate)
+            .Select(x =>
+            {
+                string actualCurrentProcess = x.CurrentProcess;
+                bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
+
+                string resolvedStatus = x.Status == "Deleted"
+                    ? "Deleted"
+                    : ActivityComputationHelper.ResolveTransactionLogStatus(
+                        isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
+                        leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
+
+                string displayCurrentProcess = (x.Status != "Deleted" && isCompleted)
+                    ? "Completed"
+                    : actualCurrentProcess;
+
+                return new TransactionLogViewModel
                 {
-                    // ✅ x.CurrentProcess na mismo — tama na ito dahil naka-scope na
-                    // per (TransactionNumber, Activity) mula sa GroupBy sa taas
-                    string actualCurrentProcess = x.CurrentProcess;
-                    bool isCompleted = IsCompleted(x.Activity, actualCurrentProcess);
-
-                    string resolvedStatus = x.Status == "Deleted"
-                        ? "Deleted"
-                        : ActivityComputationHelper.ResolveTransactionLogStatus(
-                            isCompleted, actualCurrentProcess, x.InputDate, x.Activity,
-                            leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
-
-                    return new TransactionLogViewModel
-                    {
-                        TransactionNumber = x.TransactionNumber,
-                        PartName = x.PartName,
-                        Supplier = x.Supplier,
-                        Model = x.Model,
-                        Activity = x.Activity,
-                        Source = x.Source,
-                        PIC = x.PIC,
-                        StartDate = x.StartDate,
-                        EndDate = x.EndDate,
-                        ReceivedDate = x.ReceivedDate,
-                        InputDate = x.InputDate,
-                        CurrentProcess = x.CurrentProcess,
-                        Status = resolvedStatus,
-                        Remarks = x.Remarks
-                    };
-                })
-                .ToList();
+                    TransactionNumber = x.TransactionNumber,
+                    PartName = x.PartName,
+                    Supplier = x.Supplier,
+                    Model = x.Model,
+                    Activity = x.Activity,
+                    Source = x.Source,
+                    PIC = x.PIC,
+                    StartDate = x.StartDate,
+                    EndDate = x.EndDate,
+                    ReceivedDate = x.ReceivedDate,
+                    InputDate = x.InputDate,
+                    CurrentProcess = displayCurrentProcess,
+                    Status = resolvedStatus,
+                    Remarks = x.Remarks
+                };
+            })
+            .ToList();
 
             // ── Apply search filter ────────────────────────────────────────
             if (!string.IsNullOrWhiteSpace(searchValue) && !string.IsNullOrWhiteSpace(searchField))
@@ -301,6 +307,8 @@ namespace PartsControlSystem.Controllers
             var result = history.Select((row, index) =>
             {
                 string status;
+                string displayCurrentProcess = row.CurrentProcess;
+
                 if (row.Status == "Deleted")
                 {
                     status = "Deleted";
@@ -311,6 +319,9 @@ namespace PartsControlSystem.Controllers
                     status = ActivityComputationHelper.ResolveTransactionLogStatus(
                         isCompleted, row.CurrentProcess, row.InputDate, row.Activity,
                         leadTimes, newToolingMappings, changeMaterialMappings, other4MMappings, today);
+
+                    if (isCompleted)
+                        displayCurrentProcess = "Completed";
                 }
                 else
                 {
@@ -339,14 +350,13 @@ namespace PartsControlSystem.Controllers
                         ? row.InputDate.Value.ToLocalTime().ToString("MM/dd/yyyy HH:mm")
                         : "—",
 
-                    row.CurrentProcess,
+                    CurrentProcess = displayCurrentProcess,
 
                     Status = status,
 
                     row.Remarks
                 };
             }).ToList();
-
             return Json(result);
         }
         // =====================================================================

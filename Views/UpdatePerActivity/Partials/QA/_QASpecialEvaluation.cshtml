@@ -95,10 +95,9 @@
                     <input type="number" class="form-control form-control-sm"
                            value="@item.RemainingDays" readonly />
                 </div>
-
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Need / No Need?</label>
-                    <select class="form-select form-select-sm"
+                    <label class="form-label small mb-1">Need / No Need? <span class="text-danger">*</span></label>
+                    <select class="form-select form-select-sm border-danger"
                             name="NeedNoNeed"
                             style="background-color: #FFF4B6; color: #333333"
                             required>
@@ -107,27 +106,24 @@
                         <option value="No Need">No Need</option>
                     </select>
                 </div>
-
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Lead Time (No. of Days)</label>
+                    <label class="form-label small mb-1">Lead Time (No. of Days) <span class="text-danger">*</span></label>
                     <input type="text"
-                           class="form-control form-control-sm"
+                           class="form-control form-control-sm border-danger"
                            name="LeadTime"
                            style="background-color: #FFF4B6; color: #333333" required />
                 </div>
-
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Actual Finish Date</label>
+                    <label class="form-label small mb-1">Actual Finish Date <span class="text-danger">*</span></label>
                     <input type="date"
-                           class="form-control form-control-sm"
+                           class="form-control form-control-sm border-danger"
                            name="ActualFinishDate"
                            style="background-color: #FFF4B6; color: #333333" required />
                 </div>
-
                 <div class="col-md-2">
-                    <label class="form-label small mb-1">Result (OK/NG/No Need)</label>
+                    <label class="form-label small mb-1">Result (OK/NG/No Need) <span class="text-danger">*</span></label>
                     <input type="text"
-                           class="form-control form-control-sm"
+                           class="form-control form-control-sm border-danger"
                            name="Result"
                            style="background-color: #FFF4B6; color: #333333" required />
                 </div>

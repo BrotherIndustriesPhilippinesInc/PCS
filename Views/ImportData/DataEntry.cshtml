@@ -15,16 +15,18 @@
                         <div class="col-md">
                             <label class="form-label fw-semibold">Mother Mold Code</label>
                             <input type="text" name="MotherMoldCode" class="form-control" placeholder="Enter mother mold code"
-                                   maxlength="9" pattern="[A-Za-z0-9]{1,9}" title="Letters and numbers only, max 9 characters"
-                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9)"
+                                   maxlength="9" pattern="[A-Za-z0-9]{9}" title="Letters and numbers only, must be exactly 9 characters"
+                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9); this.classList.toggle('is-invalid', this.value.length !== 9);"
                                    required>
+                            <div class="invalid-feedback" style="font-size: 0.60rem;">Mother Mold Code must be exactly 9 characters.</div>
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Child Partcode</label>
                             <input type="text" name="ChildPartcode" class="form-control" placeholder="Enter part code"
-                                   maxlength="9" pattern="[A-Za-z0-9]{1,9}" title="Letters and numbers only, max 9 characters"
-                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9)"
+                                   maxlength="9" pattern="[A-Za-z0-9]{9}" title="Letters and numbers only, must be exactly 9 characters"
+                                   oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 9); this.classList.toggle('is-invalid', this.value.length !== 9);"
                                    required>
+                            <div class="invalid-feedback" style="font-size: 0.60rem;">Child Partcode must be exactly 9 characters.</div>
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Part Name</label>
@@ -32,7 +34,8 @@
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Supplier</label>
-                            <input type="text" name="Supplier" class="form-control" placeholder="Enter supplier name">
+                            <input type="text" name="Supplier" class="form-control" placeholder="Enter supplier name" list="supplierList" autocomplete="off">
+                            <datalist id="supplierList"></datalist>
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Model</label>
@@ -47,7 +50,9 @@
                     <div class="row g-3 mt-2">
                         <div class="col-md">
                             <label class="form-label fw-semibold">BIPH Mold No.</label>
-                            <input type="text" name="BIPHMoldNo" class="form-control" placeholder="Enter BIPH mold number" required>
+                            <input type="text" name="BIPHMoldNo" class="form-control" placeholder="Enter BIPH mold number" 
+                                    inputmode="numeric" pattern="[0-9]*" title="Numbers only"  required
+                                    oninput="thisvalue = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="col-md">
                             <label class="form-label fw-semibold">Supplier Mold No.</label>
@@ -666,5 +671,27 @@
                 console.warn(message);
             }
         })();
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('@Url.Action("GetSupplier", "Supplier")')
+                .then(res => res.json())
+                .then(json => {
+                    const suppliers = json.data || [];
+                    const datalist = document.getElementById("supplierList");
+                    datalist.innerHTML = "";
+
+                    // Avoid duplicate supplier names in the suggestion list
+                    const uniqueNames = [...new Set(suppliers.map(s => s.supplierName))];
+
+                    uniqueNames.forEach(name => {
+                        const option = document.createElement("option");
+                        option.value = name;
+                        datalist.appendChild(option);
+                    });
+                })
+                .catch(err => console.error("Failed to load supplier list:", err));
+        });
     </script>
 }
